@@ -18,7 +18,7 @@
  * the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
  * Boston, MA 02110-1301, USA.  
  *
- * $Id$
+ * $Id: check_mdl.h 1825 2011-03-11 20:42:14Z ela $
  *
  */
 
@@ -38,7 +38,7 @@ __BEGIN_DECLS
 /* Available functions of the checker. */
 int  mdl_check (void);
 int  mdl_parse (void);
-int  mdl_error (const char *);
+int  mdl_error (char *);
 int  mdl_lex (void);
 int  mdl_lex_destroy (void);
 void mdl_destroy (void);

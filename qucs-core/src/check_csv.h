@@ -18,7 +18,7 @@
  * the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
  * Boston, MA 02110-1301, USA.  
  *
- * $Id$
+ * $Id: check_csv.h 1825 2011-03-11 20:42:14Z ela $
  *
  */
 
@@ -42,7 +42,7 @@ __BEGIN_DECLS
 
 /* Available functions of the checker. */
 int csv_parse (void);
-int csv_error (const char *);
+int csv_error (char *);
 int csv_lex (void);
 int csv_lex_destroy (void);
 int csv_check (void);

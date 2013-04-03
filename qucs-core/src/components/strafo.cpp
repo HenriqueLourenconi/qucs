@@ -18,7 +18,7 @@
  * the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
  * Boston, MA 02110-1301, USA.  
  *
- * $Id$
+ * $Id: strafo.cpp 1837 2011-04-03 13:02:58Z ela $
  *
  */
 

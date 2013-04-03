@@ -18,7 +18,7 @@
  * the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
  * Boston, MA 02110-1301, USA.  
  *
- * $Id$
+ * $Id: module.cpp 1826 2011-03-12 01:00:56Z ela $
  *
  */
 
@@ -192,7 +192,6 @@ void module::registerModules (void) {
   REGISTER_CIRCUIT (msgap);
   REGISTER_CIRCUIT (msmbend);
   REGISTER_CIRCUIT (mscoupled);
-  REGISTER_CIRCUIT (mslange);  
   REGISTER_CIRCUIT (mstee);
   REGISTER_CIRCUIT (mscross);
   REGISTER_CIRCUIT (msvia);

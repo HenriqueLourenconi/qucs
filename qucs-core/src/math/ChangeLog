@@ -1,3 +1,8 @@
+2011-12-11  Stefan Jahn  <stefan@lkcc.org>
+
+	* complex.h: Changes to solve compile issues with gcc 4.5 and
+	above.
+
 2008-12-19  Stefan Jahn  <stefan@lkcc.org>
 
 	* complex.h: Try avoiding compile failure on platforms where

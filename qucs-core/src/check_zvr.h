@@ -18,7 +18,7 @@
  * the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
  * Boston, MA 02110-1301, USA.  
  *
- * $Id$
+ * $Id: check_zvr.h 1825 2011-03-11 20:42:14Z ela $
  *
  */
 
@@ -38,7 +38,7 @@ __BEGIN_DECLS
 /* Available functions of the checker. */
 int  zvr_check (void);
 int  zvr_parse (void);
-int  zvr_error (const char *);
+int  zvr_error (char *);
 int  zvr_lex (void);
 int  zvr_lex_destroy (void);
 void zvr_destroy (void);

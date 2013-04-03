@@ -1,7 +1,7 @@
 /*
  * complex.h - complex number class definitions
  *
- * Copyright (C) 2008 Stefan Jahn <stefan@lkcc.org>
+ * Copyright (C) 2008, 2011 Stefan Jahn <stefan@lkcc.org>
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  * the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
  * Boston, MA 02110-1301, USA.  
  *
- * $Id$
+ * $Id: complex.h 1840 2011-12-11 16:29:43Z ela $
  *
  */
 
@@ -33,7 +33,6 @@ typedef cmplx nr_complex_t;
 #elif defined HAVE_TR1_COMPLEX
 #include <tr1/complex>
 using namespace std;
-//using namespace std::tr1;
 typedef std::complex<nr_double_t> nr_complex_t;
 #else
 #include <complex>

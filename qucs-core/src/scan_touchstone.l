@@ -21,7 +21,7 @@
  * the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
  * Boston, MA 02110-1301, USA.  
  *
- * $Id$
+ * $Id: scan_touchstone.l 1825 2011-03-11 20:42:14Z ela $
  *
  */
 

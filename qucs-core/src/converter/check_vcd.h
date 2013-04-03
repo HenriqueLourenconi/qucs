@@ -19,7 +19,7 @@
  * the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
  * Boston, MA 02110-1301, USA.  
  *
- * $Id$
+ * $Id: check_vcd.h 1825 2011-03-11 20:42:14Z ela $
  *
  */
 
@@ -44,7 +44,7 @@ extern int vcd_correct;
 /* Available functions of the checker. */
 int  vcd_checker (void);
 int  vcd_parse (void);
-int  vcd_error (const char *);
+int  vcd_error (char *);
 int  vcd_lex (void);
 int  vcd_lex_destroy (void);
 void vcd_destroy (void);

@@ -235,7 +235,6 @@ void Module::registerModules (void) {
   REGISTER_TRANS_1 (Substrate);
   REGISTER_TRANS_1 (MSline);
   REGISTER_TRANS_1 (MScoupled);
-  REGISTER_TRANS_1 (MSlange);
   REGISTER_TRANS_1 (MScorner);
   REGISTER_TRANS_1 (MSmbend);
   REGISTER_TRANS_1 (MSstep);

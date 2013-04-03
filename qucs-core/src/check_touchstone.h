@@ -18,7 +18,7 @@
  * the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
  * Boston, MA 02110-1301, USA.  
  *
- * $Id$
+ * $Id: check_touchstone.h 1825 2011-03-11 20:42:14Z ela $
  *
  */
 
@@ -68,7 +68,7 @@ extern struct touchstone_t touchstone_options;
 
 /* Available functions of the checker. */
 int touchstone_parse (void);
-int touchstone_error (const char *);
+int touchstone_error (char *);
 int touchstone_lex (void);
 int touchstone_lex_destroy (void);
 int touchstone_check (void);

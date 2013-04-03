@@ -18,7 +18,7 @@
  * the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
  * Boston, MA 02110-1301, USA.  
  *
- * $Id$
+ * $Id: components.h 1826 2011-03-12 01:00:56Z ela $
  *
  */
 
@@ -115,7 +115,6 @@
 #include "microstrip/msopen.h"
 #include "microstrip/msgap.h"
 #include "microstrip/mscoupled.h"
-#include "microstrip/mslange.h"
 #include "microstrip/mstee.h"
 #include "microstrip/mscross.h"
 #include "microstrip/msvia.h"

@@ -18,7 +18,7 @@
  * the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
  * Boston, MA 02110-1301, USA.  
  *
- * $Id$
+ * $Id: check_spice.h 1825 2011-03-11 20:42:14Z ela $
  *
  */
 
@@ -51,7 +51,7 @@ extern struct definition_t * device_root;
 /* Available functions of the checker. */
 int  spice_checker (void);
 int  spice_parse (void);
-int  spice_error (const char *);
+int  spice_error (char *);
 int  spice_lex (void);
 int  spice_lex_destroy (void);
 void spice_destroy (void);

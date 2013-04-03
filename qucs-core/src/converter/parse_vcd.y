@@ -22,7 +22,7 @@
  * the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
  * Boston, MA 02110-1301, USA.  
  *
- * $Id$
+ * $Id: parse_vcd.y 1853 2013-01-09 08:26:09Z fransschreuder $
  *
  */
 

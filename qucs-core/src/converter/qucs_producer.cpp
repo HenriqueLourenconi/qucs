@@ -18,7 +18,7 @@
  * the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
  * Boston, MA 02110-1301, USA.  
  *
- * $Id$
+ * $Id: qucs_producer.cpp 1826 2011-03-12 01:00:56Z ela $
  *
  */
 

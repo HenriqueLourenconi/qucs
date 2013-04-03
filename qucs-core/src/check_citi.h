@@ -18,7 +18,7 @@
  * the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
  * Boston, MA 02110-1301, USA.  
  *
- * $Id$
+ * $Id: check_citi.h 1825 2011-03-11 20:42:14Z ela $
  *
  */
 
@@ -58,7 +58,7 @@ extern struct citi_t citi_options;
 
 /* Available functions of the checker. */
 int citi_parse (void);
-int citi_error (const char *);
+int citi_error (char *);
 int citi_lex (void);
 int citi_lex_destroy (void);
 int citi_check (void);

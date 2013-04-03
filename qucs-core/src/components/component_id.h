@@ -18,7 +18,7 @@
  * the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
  * Boston, MA 02110-1301, USA.  
  *
- * $Id$
+ * $Id: component_id.h 1826 2011-03-12 01:00:56Z ela $
  *
  */
 
@@ -105,7 +105,6 @@ enum circuit_type {
   CIR_MSOPEN,
   CIR_MSGAP,
   CIR_MSCOUPLED,
-  CIR_MSLANGE,
   CIR_MSTEE,
   CIR_MSCROSS,
   CIR_MSVIA,

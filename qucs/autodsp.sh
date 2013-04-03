@@ -19,7 +19,7 @@
 # the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
 # Boston, MA 02110-1301, USA.  
 #
-# $Id$
+# $Id: autodsp.sh 1828 2011-03-12 14:33:11Z ela $
 #
 
 use strict;
