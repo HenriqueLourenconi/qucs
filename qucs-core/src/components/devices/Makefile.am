@@ -32,7 +32,8 @@ libdevices_la_SOURCES = device.cpp diode.cpp jfet.cpp bjt.cpp mosfet.cpp \
 noinst_HEADERS = device.h diode.h jfet.h bjt.h mosfet.h eqndefined.h diac.h \
   thyristor.h triac.h tunneldiode.h
 
-AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_srcdir)/src/math \
+
+AM_CPPFLAGS = $(EIGEN3_CFLAGS) -I$(top_srcdir)/src -I$(top_srcdir)/src/math \
   -I$(top_srcdir)/src/components
 
 CLEANFILES = *~ *.orig *.rej
