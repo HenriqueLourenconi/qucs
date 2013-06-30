@@ -38,6 +38,7 @@ echo -n "Creating configure... "
 autoconf
 echo "done."
 
+
 #
 # run configure, maybe with parameters recorded in config.status
 #
@@ -56,3 +57,4 @@ else
 fi
 echo Running `for i; do echo "'$i'"; done` ...
 "$@"
+

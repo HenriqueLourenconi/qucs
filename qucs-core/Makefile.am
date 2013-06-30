@@ -38,7 +38,7 @@ endif
 ## to be build first, followed by src, then doc
 SUBDIRS += src doc .
 
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I m4 --install
 
 EXTRA_DIST = BUGS bootstrap.sh depcomp RELEASE
 

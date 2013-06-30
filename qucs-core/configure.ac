@@ -9,6 +9,8 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AC_CONFIG_SRCDIR([src/circuit.cpp])
 AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([build-aux])
 
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -23,7 +25,11 @@ dnl Checks for programs.
 AC_PROG_CXX
 AX_CXX_COMPILE_STDCXX_11
 AC_PROG_CC
-AC_CHECK_TOOL(AR, ar, :)
+AC_PROG_RANLIB
+AM_PROG_AR
+AC_PROG_LN_S
+AC_PROG_INSTALL
+AC_PROG_CC_C_O
 
 dnl Check for parser and lexer generators.
 AC_PROG_YACC
@@ -245,7 +251,7 @@ AC_CHECK_FUNCS([floor pow exp sqrt log10 log cos sin acos asin tan atan sinh \
 PKG_CHECK_MODULES([EIGEN3],[eigen3])
 
 dnl Checks for complex classes and functions.
-AC_CXX_NAMESPACES
+AX_CXX_NAMESPACES
 AC_CXX_HAVE_COMPLEX
 AS_IF([test "X$ac_cv_cxx_have_complex" = "X"],[AC_MSG_ERROR([Qucs Need a templated complex class])])
 AC_CXX_HAVE_TR1_COMPLEX
