@@ -59,4 +59,4 @@ else
 fi
 echo Running `for i; do echo "'$i'"$@; done` ...
 "$@" --with-mkadms=internal
-x
+

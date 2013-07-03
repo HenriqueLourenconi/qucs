@@ -2,11 +2,21 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="qucs-core" />
-		<Option makefile_is_custom="1" />
-		<Option pch_mode="2" />
+		<Option title="libqucs-core" />
 		<Option compiler="gcc" />
 		<Build>
+			<Target title="Library">
+				<Option output="qucs-core" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-fPIC" />
+					<Add option="-DDEBUG" />
+				</Compiler>
+			</Target>
 			<Target title="Debug">
 				<Option output="bin/Debug/qucs-core" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug/" />
@@ -31,11 +41,44 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add option="-DHAVE_CONFIG_H" />
+			<Add directory="/home/s0237326/src/qucs/qucs-core/" />
+			<Add directory="/home/s0237326/src/qucs/qucs-core/src/" />
+			<Add directory="/home/s0237326/src/qucs/qucs-core/src/components/" />
+			<Add directory="/home/s0237326/src/qucs/qucs-core/src/components/devices/" />
+			<Add directory="/home/s0237326/src/qucs/qucs-core/src/components/digital/" />
+			<Add directory="/home/s0237326/src/qucs/qucs-core/src/components/microstrip/" />
+			<Add directory="/home/s0237326/src/qucs/qucs-core/src/components/verilog/" />
+			<Add directory="/home/s0237326/src/qucs/qucs-core/src/math/" />
+			<Add directory="/home/s0237326/src/qucs/qucs-core/src/interface/" />
 		</Compiler>
-		<Unit filename="Makefile.am" />
-		<Unit filename="configure.ac" />
-		<Unit filename="doc/Makefile.am" />
-		<Unit filename="src/Makefile.am" />
+		<Linker>
+			<Add directory="/home/s0237326/src/qucs/qucs-core/" />
+			<Add directory="/home/s0237326/src/qucs/qucs-core/src/" />
+			<Add directory="/home/s0237326/src/qucs/qucs-core/src/components/" />
+			<Add directory="/home/s0237326/src/qucs/qucs-core/src/components/devices/" />
+			<Add directory="/home/s0237326/src/qucs/qucs-core/src/components/digital/" />
+			<Add directory="/home/s0237326/src/qucs/qucs-core/src/components/microstrip/" />
+			<Add directory="/home/s0237326/src/qucs/qucs-core/src/components/verilog/" />
+			<Add directory="/home/s0237326/src/qucs/qucs-core/src/math/" />
+			<Add directory="/home/s0237326/src/qucs/qucs-core/src/interface/" />
+		</Linker>
+		<Unit filename="Makefile.am">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="configure.ac">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="doc/Makefile.am">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/Makefile.am">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/acsolver.cpp" />
 		<Unit filename="src/acsolver.h" />
 		<Unit filename="src/analyses.h" />
@@ -61,7 +104,10 @@
 		<Unit filename="src/circuit.cpp" />
 		<Unit filename="src/circuit.h" />
 		<Unit filename="src/compat.h" />
-		<Unit filename="src/components/Makefile.am" />
+		<Unit filename="src/components/Makefile.am">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/components/amplifier.cpp" />
 		<Unit filename="src/components/amplifier.h" />
 		<Unit filename="src/components/attenuator.cpp" />
@@ -91,7 +137,10 @@
 		<Unit filename="src/components/dcblock.h" />
 		<Unit filename="src/components/dcfeed.cpp" />
 		<Unit filename="src/components/dcfeed.h" />
-		<Unit filename="src/components/devices/Makefile.am" />
+		<Unit filename="src/components/devices/Makefile.am">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/components/devices/bjt.cpp" />
 		<Unit filename="src/components/devices/bjt.h" />
 		<Unit filename="src/components/devices/device.cpp" />
@@ -112,7 +161,10 @@
 		<Unit filename="src/components/devices/triac.h" />
 		<Unit filename="src/components/devices/tunneldiode.cpp" />
 		<Unit filename="src/components/devices/tunneldiode.h" />
-		<Unit filename="src/components/digital/Makefile.am" />
+		<Unit filename="src/components/digital/Makefile.am">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/components/digital/and.cpp" />
 		<Unit filename="src/components/digital/and.h" />
 		<Unit filename="src/components/digital/buffer.cpp" />
@@ -302,6 +354,26 @@
 		<Unit filename="src/components/verilog/binarytogrey4bit.core.cpp" />
 		<Unit filename="src/components/verilog/binarytogrey4bit.core.h" />
 		<Unit filename="src/components/verilog/binarytogrey4bit.defs.h" />
+		<Unit filename="src/components/verilog/bsim3v34nMOS.analogfunction.cpp" />
+		<Unit filename="src/components/verilog/bsim3v34nMOS.analogfunction.h" />
+		<Unit filename="src/components/verilog/bsim3v34nMOS.core.cpp" />
+		<Unit filename="src/components/verilog/bsim3v34nMOS.core.h" />
+		<Unit filename="src/components/verilog/bsim3v34nMOS.defs.h" />
+		<Unit filename="src/components/verilog/bsim3v34pMOS.analogfunction.cpp" />
+		<Unit filename="src/components/verilog/bsim3v34pMOS.analogfunction.h" />
+		<Unit filename="src/components/verilog/bsim3v34pMOS.core.cpp" />
+		<Unit filename="src/components/verilog/bsim3v34pMOS.core.h" />
+		<Unit filename="src/components/verilog/bsim3v34pMOS.defs.h" />
+		<Unit filename="src/components/verilog/bsim4v30nMOS.analogfunction.cpp" />
+		<Unit filename="src/components/verilog/bsim4v30nMOS.analogfunction.h" />
+		<Unit filename="src/components/verilog/bsim4v30nMOS.core.cpp" />
+		<Unit filename="src/components/verilog/bsim4v30nMOS.core.h" />
+		<Unit filename="src/components/verilog/bsim4v30nMOS.defs.h" />
+		<Unit filename="src/components/verilog/bsim4v30pMOS.analogfunction.cpp" />
+		<Unit filename="src/components/verilog/bsim4v30pMOS.analogfunction.h" />
+		<Unit filename="src/components/verilog/bsim4v30pMOS.core.cpp" />
+		<Unit filename="src/components/verilog/bsim4v30pMOS.core.h" />
+		<Unit filename="src/components/verilog/bsim4v30pMOS.defs.h" />
 		<Unit filename="src/components/verilog/comp_1bit.analogfunction.cpp" />
 		<Unit filename="src/components/verilog/comp_1bit.analogfunction.h" />
 		<Unit filename="src/components/verilog/comp_1bit.core.cpp" />
@@ -402,6 +474,11 @@
 		<Unit filename="src/components/verilog/hicumL2V2p24.core.cpp" />
 		<Unit filename="src/components/verilog/hicumL2V2p24.core.h" />
 		<Unit filename="src/components/verilog/hicumL2V2p24.defs.h" />
+		<Unit filename="src/components/verilog/hicumL2V2p31n.analogfunction.cpp" />
+		<Unit filename="src/components/verilog/hicumL2V2p31n.analogfunction.h" />
+		<Unit filename="src/components/verilog/hicumL2V2p31n.core.cpp" />
+		<Unit filename="src/components/verilog/hicumL2V2p31n.core.h" />
+		<Unit filename="src/components/verilog/hicumL2V2p31n.defs.h" />
 		<Unit filename="src/components/verilog/hpribin4bit.analogfunction.cpp" />
 		<Unit filename="src/components/verilog/hpribin4bit.analogfunction.h" />
 		<Unit filename="src/components/verilog/hpribin4bit.core.cpp" />
@@ -505,30 +582,86 @@
 		<Unit filename="src/components/vvnoise.h" />
 		<Unit filename="src/constants.h" />
 		<Unit filename="src/consts.h" />
-		<Unit filename="src/converter/Makefile.am" />
-		<Unit filename="src/converter/check_spice.cpp" />
-		<Unit filename="src/converter/check_spice.h" />
-		<Unit filename="src/converter/check_vcd.cpp" />
-		<Unit filename="src/converter/check_vcd.h" />
-		<Unit filename="src/converter/csv_producer.cpp" />
-		<Unit filename="src/converter/csv_producer.h" />
-		<Unit filename="src/converter/matlab_producer.cpp" />
-		<Unit filename="src/converter/matlab_producer.h" />
-		<Unit filename="src/converter/parse_spice.cpp" />
-		<Unit filename="src/converter/parse_spice.y" />
-		<Unit filename="src/converter/parse_vcd.cpp" />
-		<Unit filename="src/converter/parse_vcd.y" />
-		<Unit filename="src/converter/qucs_producer.cpp" />
-		<Unit filename="src/converter/qucs_producer.h" />
-		<Unit filename="src/converter/qucsconv.cpp" />
-		<Unit filename="src/converter/scan_spice.cpp" />
-		<Unit filename="src/converter/scan_spice.l" />
-		<Unit filename="src/converter/scan_vcd.cpp" />
-		<Unit filename="src/converter/scan_vcd.l" />
-		<Unit filename="src/converter/tokens_spice.h" />
-		<Unit filename="src/converter/tokens_vcd.h" />
-		<Unit filename="src/converter/touchstone_producer.cpp" />
-		<Unit filename="src/converter/touchstone_producer.h" />
+		<Unit filename="src/converter/Makefile.am">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/check_spice.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/check_spice.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/check_vcd.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/check_vcd.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/csv_producer.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/csv_producer.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/matlab_producer.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/matlab_producer.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/parse_spice.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/parse_vcd.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/qucs_producer.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/qucs_producer.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/qucsconv.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/scan_spice.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/scan_vcd.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/tokens_spice.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/tokens_vcd.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/touchstone_producer.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/converter/touchstone_producer.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/dataset.cpp" />
 		<Unit filename="src/dataset.h" />
 		<Unit filename="src/dcsolver.cpp" />
@@ -539,7 +672,10 @@
 		<Unit filename="src/differentiate.h" />
 		<Unit filename="src/environment.cpp" />
 		<Unit filename="src/environment.h" />
-		<Unit filename="src/eqnsys.cpp" />
+		<Unit filename="src/eqnsys.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/eqnsys.h" />
 		<Unit filename="src/equation.cpp" />
 		<Unit filename="src/equation.h" />
@@ -551,10 +687,22 @@
 		<Unit filename="src/exceptionstack.h" />
 		<Unit filename="src/fourier.cpp" />
 		<Unit filename="src/fourier.h" />
-		<Unit filename="src/gperfappgen.cpp" />
-		<Unit filename="src/gperfappgen.h" />
-		<Unit filename="src/gperfapphash.cpp" />
-		<Unit filename="src/hash.cpp" />
+		<Unit filename="src/gperfappgen.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/gperfappgen.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/gperfapphash.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/hash.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/hash.h" />
 		<Unit filename="src/hbsolver.cpp" />
 		<Unit filename="src/hbsolver.h" />
@@ -564,7 +712,10 @@
 		<Unit filename="src/input.h" />
 		<Unit filename="src/integrator.cpp" />
 		<Unit filename="src/integrator.h" />
-		<Unit filename="src/interface/Makefile.am" />
+		<Unit filename="src/interface/Makefile.am">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/interface/e_trsolver.cpp" />
 		<Unit filename="src/interface/e_trsolver.h" />
 		<Unit filename="src/interface/qucs_interface.cpp" />
@@ -576,7 +727,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/logging.h" />
-		<Unit filename="src/math/Makefile.am" />
+		<Unit filename="src/math/Makefile.am">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/math/cbesselj.cpp" />
 		<Unit filename="src/math/cmplx.cpp" />
 		<Unit filename="src/math/cmplx.h" />
@@ -596,9 +750,15 @@
 		<Unit filename="src/matvec.h" />
 		<Unit filename="src/module.cpp" />
 		<Unit filename="src/module.h" />
-		<Unit filename="src/nasolution.cpp" />
+		<Unit filename="src/nasolution.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/nasolution.h" />
-		<Unit filename="src/nasolver.cpp" />
+		<Unit filename="src/nasolver.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/nasolver.h" />
 		<Unit filename="src/net.cpp" />
 		<Unit filename="src/net.h" />
@@ -618,23 +778,47 @@
 		<Unit filename="src/parasweep.cpp" />
 		<Unit filename="src/parasweep.h" />
 		<Unit filename="src/parse_citi.cpp" />
-		<Unit filename="src/parse_citi.y" />
+		<Unit filename="src/parse_citi.y">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/parse_csv.cpp" />
-		<Unit filename="src/parse_csv.y" />
+		<Unit filename="src/parse_csv.y">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/parse_dataset.cpp" />
-		<Unit filename="src/parse_dataset.y" />
+		<Unit filename="src/parse_dataset.y">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/parse_mdl.cpp" />
-		<Unit filename="src/parse_mdl.y" />
+		<Unit filename="src/parse_mdl.y">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/parse_netlist.cpp" />
-		<Unit filename="src/parse_netlist.y" />
+		<Unit filename="src/parse_netlist.y">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/parse_touchstone.cpp" />
-		<Unit filename="src/parse_touchstone.y" />
+		<Unit filename="src/parse_touchstone.y">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/parse_zvr.cpp" />
-		<Unit filename="src/parse_zvr.y" />
+		<Unit filename="src/parse_zvr.y">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/poly.h" />
 		<Unit filename="src/property.cpp" />
 		<Unit filename="src/property.h" />
-		<Unit filename="src/ptrlist.cpp" />
+		<Unit filename="src/ptrlist.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/ptrlist.h" />
 		<Unit filename="src/qucsdefs.h" />
 		<Unit filename="src/range.cpp" />
@@ -642,30 +826,29 @@
 		<Unit filename="src/receiver.cpp" />
 		<Unit filename="src/receiver.h" />
 		<Unit filename="src/scan_citi.cpp" />
-		<Unit filename="src/scan_citi.l" />
 		<Unit filename="src/scan_csv.cpp" />
-		<Unit filename="src/scan_csv.l" />
 		<Unit filename="src/scan_dataset.cpp" />
-		<Unit filename="src/scan_dataset.l" />
 		<Unit filename="src/scan_mdl.cpp" />
-		<Unit filename="src/scan_mdl.l" />
 		<Unit filename="src/scan_netlist.cpp" />
-		<Unit filename="src/scan_netlist.l" />
 		<Unit filename="src/scan_touchstone.cpp" />
-		<Unit filename="src/scan_touchstone.l" />
 		<Unit filename="src/scan_zvr.cpp" />
-		<Unit filename="src/scan_zvr.l" />
 		<Unit filename="src/spline.cpp" />
 		<Unit filename="src/spline.h" />
 		<Unit filename="src/spsolver.cpp" />
 		<Unit filename="src/spsolver.h" />
-		<Unit filename="src/states.cpp" />
+		<Unit filename="src/states.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/states.h" />
 		<Unit filename="src/strlist.cpp" />
 		<Unit filename="src/strlist.h" />
 		<Unit filename="src/sweep.cpp" />
 		<Unit filename="src/sweep.h" />
-		<Unit filename="src/tmatrix.cpp" />
+		<Unit filename="src/tmatrix.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/tmatrix.h" />
 		<Unit filename="src/tokens_citi.h" />
 		<Unit filename="src/tokens_csv.h" />
@@ -676,14 +859,26 @@
 		<Unit filename="src/tokens_zvr.h" />
 		<Unit filename="src/transient.cpp" />
 		<Unit filename="src/transient.h" />
-		<Unit filename="src/tridiag.cpp" />
+		<Unit filename="src/tridiag.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/tridiag.h" />
 		<Unit filename="src/trsolver.cpp" />
 		<Unit filename="src/trsolver.h" />
-		<Unit filename="src/tvector.cpp" />
+		<Unit filename="src/tvector.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/tvector.h" />
-		<Unit filename="src/ucs.cpp" />
-		<Unit filename="src/valuelist.cpp" />
+		<Unit filename="src/ucs.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/valuelist.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/valuelist.h" />
 		<Unit filename="src/variable.cpp" />
 		<Unit filename="src/variable.h" />
