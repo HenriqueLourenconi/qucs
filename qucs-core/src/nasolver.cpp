@@ -1305,7 +1305,7 @@ void nasolver<nr_type_t>::recallSolution (void)
    into the output dataset. */
 template <class nr_type_t>
 void nasolver<nr_type_t>::saveResults (const char * volts, const char * amps,
-                                       int saveOPs, vector * f)
+                                       int saveOPs, ::vector * f)
 {
     int N = countNodes ();
     int M = countVoltageSources ();
