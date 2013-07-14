@@ -36,15 +36,6 @@ typedef std::complex<nr_double_t> nr_complex_t;
 #undef log2
 #endif
 
-/*!\brief Construct a complex number using rectangular notation
-   \param[in] x Real part
-   \param[in] y Imagninary part
-   \return complex number in rectangular form
-*/
-inline nr_complex_t rect (const nr_double_t x, const nr_double_t y = 0.0) {
-  return nr_complex_t (x, y);
-}
-
 // overloaded math functions
 #ifndef HAVE_CXX_COMPLEX_ACOS
 nr_complex_t    acos (const nr_complex_t);
@@ -131,7 +122,7 @@ inline nr_double_t norm (const nr_complex_t z) {
    \return complex number in rectangular form
 */
 inline nr_complex_t polar (const nr_double_t mag, const nr_double_t ang = 0.0) {
-  return rect (mag * cos (ang), mag * sin (ang));
+  return nr_complex_t (mag * cos (ang), mag * sin (ang));
 }
 #endif
 
@@ -219,7 +210,7 @@ nr_double_t   xhypot (const nr_complex_t, const nr_double_t);
     \return floored complex number
 */
 inline nr_complex_t   floor (const nr_complex_t z) {
-  return rect (floor (real (z)), floor (imag (z)));
+  return nr_complex_t (floor (real (z)), floor (imag (z)));
 }
 #endif
 
@@ -230,7 +221,7 @@ inline nr_complex_t   floor (const nr_complex_t z) {
     \return ceilled complex number
 */
 inline nr_complex_t ceil (const nr_complex_t z) {
-  return rect (ceil (real (z)), ceil (imag (z)));
+  return nr_complex_t (ceil (real (z)), ceil (imag (z)));
 }
 /*!\brief Complex fix
     
@@ -244,7 +235,7 @@ inline nr_complex_t fix (const nr_complex_t z) {
   nr_double_t y = imag (z);
   x = (x > 0) ? floor (x) : ceil (x);
   y = (y > 0) ? floor (y) : ceil (y);
-  return rect (x, y);
+  return nr_complex_t (x, y);
 }
 /*!\brief Complex round
     round is the nearest integral value 
@@ -253,7 +244,7 @@ inline nr_complex_t fix (const nr_complex_t z) {
     \return rounded complex number
 */
 inline nr_complex_t round (const nr_complex_t z) {
-  return rect (round (real (z)), round (imag (z)));
+  return nr_complex_t (round (real (z)), round (imag (z)));
 }
 
 /*!\brief Complex trunc
@@ -263,7 +254,7 @@ inline nr_complex_t round (const nr_complex_t z) {
     \return rounded complex number
 */
 inline nr_complex_t trunc (const nr_complex_t z) {
-  return rect (trunc (real (z)), trunc (imag (z)));
+  return nr_complex_t (trunc (real (z)), trunc (imag (z)));
 }
 
 #ifndef HAVE_CXX_COMPLEX_FMOD
@@ -312,7 +303,7 @@ inline nr_complex_t  fmod (const nr_double_t x, const nr_complex_t y) {
 inline nr_complex_t sqr (const nr_complex_t z) {
   nr_double_t r = real (z);
   nr_double_t i = imag (z);
-  return rect (r * r - i * i, 2 * r * i);
+  return nr_complex_t (r * r - i * i, 2 * r * i);
 }
 
 nr_complex_t    step (const nr_complex_t);
