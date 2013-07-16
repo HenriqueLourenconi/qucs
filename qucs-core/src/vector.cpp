@@ -27,6 +27,8 @@
 # include <config.h>
 #endif
 
+#include <limits>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -937,7 +939,7 @@ vector linspace (nr_double_t start, nr_double_t stop, int points) {
   nr_double_t val, step = (stop - start) / (points - 1);
   for (int i = 0; i < points; i++) {
     val = start + (i * step);
-    if (i != 0 && fabs (val) < fabs (step) / 4 && fabs (val) < NR_EPSI)
+    if (i != 0 && fabs (val) < fabs (step) / 4 && fabs (val) < std::numeric_limits<nr_double_t>::epsilon())
       val = 0.0;
     result.set (val, i);
   }

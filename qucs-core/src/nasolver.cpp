@@ -33,6 +33,8 @@
 #include <float.h>
 #include <assert.h>
 
+#include <limits>
+
 #include "matrix.h"
 #include "logging.h"
 #include "complex.h"
@@ -314,7 +316,7 @@ int nasolver<nr_type_t>::solve_nonlinear_continuation_gMin (void)
         {
             gStep /= 2;
             // here the absolute minimum step checker
-            if (gStep < NR_EPSI)
+            if (gStep < std::numeric_limits<nr_double_t>::epsilon())
             {
                 error = 1;
                 e = new qucs::exception (EXCEPTION_NO_CONVERGENCE);
@@ -388,7 +390,7 @@ int nasolver<nr_type_t>::solve_nonlinear_continuation_Source (void)
             restorePreviousIteration ();
             saveSolution ();
             // here the absolute minimum step checker
-            if (sStep < NR_EPSI)
+            if (sStep < std::numeric_limits<nr_double_t>::epsilon())
             {
                 error = 1;
                 e = new qucs::exception (EXCEPTION_NO_CONVERGENCE);
