@@ -27,14 +27,7 @@
 
 #include "pair.h"
 
-class operatingpoint : public ::pair
-{
- public:
-  operatingpoint ();
-  operatingpoint (const char *);
-  operatingpoint (const char *, nr_double_t);
-  operatingpoint (const operatingpoint &);
-  ~operatingpoint () { }
-};
+typedef class ::pair operatingpoint;
+
 
 #endif /* __OPERATINGPOINT_H__ */

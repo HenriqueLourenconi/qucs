@@ -27,14 +27,6 @@
 
 #include "pair.h"
 
-class characteristic : public ::pair
-{
- public:
-  characteristic ();
-  characteristic (const char *);
-  characteristic (const char *, nr_double_t);
-  characteristic (const characteristic &);
-  ~characteristic () { }
-};
+typedef class ::pair characteristic;
 
 #endif /* __CHARACTERISTIC_H__ */
