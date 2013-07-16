@@ -111,7 +111,7 @@ int parasweep::initialize (void) {
   env->setDouble (n, v);
 
   // also run initialize functionality for all children
-  for (int k = 0; actions && k < actions->length (); k++) {
+  for (int k = 0; actions && k < actions->size (); k++) {
     analysis * a = actions->get (k);
     a->initialize ();
     a->setProgress (false);
@@ -130,7 +130,7 @@ int parasweep::cleanup (void) {
   }
 
   // also run cleanup functionality for all children
-  for (int k = 0; actions && k < actions->length (); k++) {
+  for (int k = 0; actions && k < actions->size (); k++) {
     analysis * a = actions->get (k);
     a->cleanup ();
   }
@@ -163,7 +163,7 @@ int parasweep::solve (void) {
     logprint (LOG_STATUS, "NOTIFY: %s: running netlist for %s = %g\n",
 	      getName (), n, v);
 #endif
-    for (int k = 0; k < actions->length (); k++) {
+    for (int k = 0; k < actions->size (); k++) {
       analysis * a = actions->get (k);
       err |= a->solve ();
       // assign variable dataset dependencies to last order analyses
