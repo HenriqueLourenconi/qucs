@@ -31,7 +31,9 @@ class variable;
 class checker;
 class solver;
 class dataset;
-template <class type_t> class ptrlist;
+
+#include <list>
+
 
 class environment
 {
@@ -87,7 +89,7 @@ class environment
   variable * root;
   eqn::checker * checkee;
   eqn::solver * solvee;
-  ptrlist<environment> * children;
+  std::list<environment *> children;
   bool iscopy;
   struct definition_t * defs;
 };
