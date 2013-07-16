@@ -25,6 +25,9 @@
 #ifndef __CIRCUIT_H__
 #define __CIRCUIT_H__
 
+#include "characteristic.h"
+#include "operatingpoint.h"
+
 enum circuit_flag {
   CIRCUIT_ENABLED     = 1,
   CIRCUIT_LINEAR      = 2,
@@ -61,8 +64,6 @@ enum circuit_flag {
 class node;
 class property;
 class substrate;
-class operatingpoint;
-class characteristic;
 class matrix;
 class net;
 class environment;
