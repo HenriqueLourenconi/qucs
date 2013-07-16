@@ -38,6 +38,7 @@
 #include "analysis.h"
 #include "nasolver.h"
 #include "acsolver.h"
+#include "vector.h"
 
 // Constructor creates an unnamed instance of the acsolver class.
 acsolver::acsolver () : nasolver<nr_complex_t> () {

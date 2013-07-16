@@ -1380,10 +1380,10 @@ void hbsolver::finalSolution (void) {
 
 // Saves simulation results.
 void hbsolver::saveResults (void) {
-  vector * f;
+  ::vector * f;
   // add current frequency to the dependency of the output dataset
   if ((f = data->findDependency ("hbfrequency")) == NULL) {
-    f = new vector ("hbfrequency");
+    f = new ::vector ("hbfrequency");
     data->addDependency (f);
   }
   // save frequency vector
