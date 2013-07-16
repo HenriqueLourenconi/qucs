@@ -32,7 +32,7 @@ noinst_HEADERS = complex.h fspecial.h real.h matrix.h
 noinst_LTLIBRARIES = libqucsmath.la
 
 libqucsmath_la_SOURCES = complex.cpp fspecial.cpp matrix.cpp real.cpp \
-  cbesselj.cpp precision.c
+  cbesselj.cpp
 
 CLEANFILES = *~ *.orig *.rej *.output
 MAINTAINERCLEANFILES = Makefile.in
