@@ -206,7 +206,7 @@ int vector::checkSizes (vector v1, vector v2) {
 // complex numbers in the 2. and 3. quadrant are counted as "-abs(c)".
 nr_double_t vector::maximum (void) {
   nr_complex_t c;
-  nr_double_t d, max_D = -NR_MAX;
+  nr_double_t d, max_D = -std::numeric_limits<nr_double_t>::max();
   for (int i = 0; i < getSize (); i++) {
     c = data[i];
     d = fabs (arg (c)) < M_PI_2 ? abs (c) : -abs (c);
@@ -220,7 +220,7 @@ nr_double_t vector::maximum (void) {
 // complex numbers in the 2. and 3. quadrant are counted as "-abs(c)".
 nr_double_t vector::minimum (void) {
   nr_complex_t c;
-  nr_double_t d, min_D = +NR_MAX;
+  nr_double_t d, min_D = +std::numeric_limits<nr_double_t>::max();
   for (int i = 0; i < getSize (); i++) {
     c = data[i];
     d = fabs (arg (c)) < M_PI_2 ? abs (c) : -abs (c);

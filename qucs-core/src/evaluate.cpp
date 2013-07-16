@@ -3107,7 +3107,7 @@ constant * evaluate::xvalue_d (constant * args) {
   }
   ::vector * indep = SOLVEE(0)->getDataVector (deps->get (0));
   int idx, i;
-  nr_double_t t, diff = NR_MAX;
+  nr_double_t t, diff = std::numeric_limits<nr_double_t>::max();
   for (idx = i = 0; i < v->getSize (); i++) {
     t = abs (v->get (i) - d);
     if (t < diff) {
@@ -3129,7 +3129,7 @@ constant * evaluate::xvalue_c (constant * args) {
   }
   ::vector * indep = SOLVEE(0)->getDataVector (deps->get (0));
   int idx, i;
-  nr_double_t t, diff = NR_MAX;
+  nr_double_t t, diff = std::numeric_limits<nr_double_t>::max();
   for (idx = i = 0; i < v->getSize (); i++) {
     t = abs (v->get (i) - *c);
     if (t < diff) {
@@ -3152,7 +3152,7 @@ constant * evaluate::yvalue_d (constant * args) {
   }
   ::vector * indep = SOLVEE(0)->getDataVector (deps->get (0));
   int idx, i;
-  nr_double_t t, diff = NR_MAX;
+  nr_double_t t, diff = std::numeric_limits<nr_double_t>::max();
   for (idx = i = 0; i < indep->getSize (); i++) {
     t = abs (indep->get (i) - d);
     if (t < diff) {
@@ -3174,7 +3174,7 @@ constant * evaluate::yvalue_c (constant * args) {
   }
   ::vector * indep = SOLVEE(0)->getDataVector (deps->get (0));
   int idx, i;
-  nr_double_t t, diff = NR_MAX;
+  nr_double_t t, diff = std::numeric_limits<nr_double_t>::max();
   for (idx = i = 0; i < indep->getSize (); i++) {
     t = abs (indep->get (i) - *c);
     if (t < diff) {
@@ -3197,7 +3197,7 @@ constant * evaluate::max_r (constant * args) {
   }
   ::vector * indep = SOLVEE(0)->getDataVector (deps->get (0));
   nr_complex_t c;
-  nr_double_t d, M = -NR_MAX;
+  nr_double_t d, M = -std::numeric_limits<nr_double_t>::max();
   for (int i = 0; i < indep->getSize (); i++) {
     if (r->inside (real (indep->get (i)))) {
       c = v->get (i);
@@ -3219,7 +3219,7 @@ constant * evaluate::min_r (constant * args) {
   }
   ::vector * indep = SOLVEE(0)->getDataVector (deps->get (0));
   nr_complex_t c;
-  nr_double_t d, M = +NR_MAX;
+  nr_double_t d, M = +std::numeric_limits<nr_double_t>::max();
   for (int i = 0; i < indep->getSize (); i++) {
     if (r->inside (real (indep->get (i)))) {
       c = v->get (i);

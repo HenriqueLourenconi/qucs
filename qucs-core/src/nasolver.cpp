@@ -1052,7 +1052,7 @@ void nasolver<nr_type_t>::lineSearch (void)
 
     // compute solution deviation vector
     tvector<nr_type_t> dx = *x - *xprev;
-    nMin = NR_MAX;
+    nMin = std::numeric_limits<nr_double_t>::max();
 
     do
     {
