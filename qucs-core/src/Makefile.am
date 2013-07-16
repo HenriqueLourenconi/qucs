@@ -47,7 +47,7 @@ pkginclude_HEADERS = logging.h net.h input.h dataset.h equation.h    \
 	environment.h exceptionstack.h check_netlist.h module.h
 
 noinst_TEMPLATES = tmatrix.cpp eqnsys.cpp nasolver.cpp states.cpp tvector.cpp \
-	ptrlist.cpp tridiag.cpp hash.cpp valuelist.cpp nasolution.cpp
+	tridiag.cpp hash.cpp valuelist.cpp nasolution.cpp
 
 noinst_HEADERS = $(noinst_TEMPLATES)            \
 	tokens_netlist.h node.h property.h vector.h       \

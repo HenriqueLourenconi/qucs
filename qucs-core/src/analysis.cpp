@@ -95,7 +95,9 @@ void analysis::addAnalysis (analysis * a) {
 /* This function deletes the given analysis from the actions being
    associated with the current analysis object. */
 void analysis::delAnalysis (analysis * a) {
-  if (actions) actions->del (a);
+  if (actions != nullptr) {
+    actions->remove (a);
+  }
 }
 
 /* The following function creates a sweep object depending on the

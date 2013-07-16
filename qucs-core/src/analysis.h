@@ -28,6 +28,8 @@
  * Contains the analysis class definition.
  */
 
+#include "ptrlist.h"
+
 #ifndef __ANALYSIS_H__
 #define __ANALYSIS_H__
 
@@ -46,7 +48,7 @@ class net;
 class object;
 class environment;
 class sweep;
-template <class type_t> class ptrlist;
+
 
 /*! \enum analysis_type
  * \brief enumerates the analysis types available.
