@@ -63,7 +63,6 @@ int main (int argc, char ** argv) {
   int ret = 0;
 
   loginit ();
-  precinit ();
   ::srand (::time (NULL));
 
   // check program arguments

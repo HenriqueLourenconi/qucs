@@ -61,7 +61,6 @@ qucsint::qucsint ()
     err = 0;
 
     loginit ();
-    precinit ();
     ::srand (::time (NULL));
 
 //  // check program arguments
