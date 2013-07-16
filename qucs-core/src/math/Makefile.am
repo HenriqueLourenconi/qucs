@@ -27,12 +27,14 @@ AM_CPPFLAGS = $(EIGEN3_CFLAGS) -I$(top_srcdir)/src
 
 pkginclude_HEADERS = precision.h
 
-noinst_HEADERS = complex.h fspecial.h real.h matrix.h
+noinst_HEADERS = complex.h fspecial.h real.h matrix.h tmatrix.h
 
 noinst_LTLIBRARIES = libqucsmath.la
 
 libqucsmath_la_SOURCES = complex.cpp fspecial.cpp matrix.cpp real.cpp \
   cbesselj.cpp
+
+noinst_TEMPLATES = tmatrix.cpp
 
 CLEANFILES = *~ *.orig *.rej *.output
 MAINTAINERCLEANFILES = Makefile.in
