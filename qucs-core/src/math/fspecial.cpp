@@ -36,18 +36,20 @@
 #include "constants.h"
 #include "fspecial.h"
 
+#include <limits>
+
 /* The function computes the complete elliptic integral of first kind
    K() and the second kind E() using the arithmetic-geometric mean
    algorithm (AGM) by Abramowitz and Stegun. */
 void fspecial::ellip_ke (nr_double_t arg, nr_double_t &k, nr_double_t &e) {
   int iMax = 16;
   if (arg == 1.0) {
-    k = NR_INF; // infinite
+    k = std::numeric_limits<nr_double_t>::infinity(); 
     e = 0;
   }
   else if (isinf (arg) && arg < 0) {
     k = 0;
-    e = NR_INF; // infinite
+    e = std::numeric_limits<nr_double_t>::infinity();
   }
   else {
     nr_double_t a, b, c, f, s, fk = 1, fe = 1, t, da = arg;
@@ -556,11 +558,11 @@ nr_double_t fspecial::ltqnorm (nr_double_t x) {
   }
   // Case when X = 0:
   else if (x == 0.0) {
-    z = -NR_INF;
+    z = -std::numeric_limits<nr_double_t>::infinity(); 
   }
   // Case when X = 1:
   else if (x == 1.0) {
-    z = +NR_INF;
+    z = +std::numeric_limits<nr_double_t>::infinity();
   }
   // Cases when output will be NaN:
   else if (x < 0.0 || x > 1.0 || isnan (x)) {
