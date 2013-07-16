@@ -253,8 +253,17 @@ PKG_CHECK_MODULES([EIGEN3],[eigen3])
 
 dnl Checks for complex classes and functions.
 AX_CXX_NAMESPACES
+AS_VAR_IF([ax_cv_cxx_namespaces],[yes],
+         [],
+         [AC_MSG_ERROR([require a c++ namespace])])
+AX_CXX_HAVE_NUMERIC_LIMITS
+AS_VAR_IF([ax_cv_cxx_have_numeric_limits],[yes],
+         [],
+         [AC_MSG_ERROR([require a c++ std::numeric_limits<> class])])
 AC_CXX_HAVE_COMPLEX
-AS_IF([test "X$ac_cv_cxx_have_complex" = "X"],[AC_MSG_ERROR([Qucs Need a templated complex class])])
+AS_VAR_IF([ac_cv_cxx_have_complex],[yes],
+	  [],
+          [AC_MSG_ERROR([Qucs Need a templated complex class])])
 AC_CHECK_CXX_COMPLEX_FUNCS([cos cosh exp log log10 sin sinh sqrt tan tanh])
 AC_CHECK_CXX_COMPLEX_FUNCS([acos acosh asin asinh atan atanh])
 AC_CHECK_CXX_COMPLEX_FUNCS([log2 norm])
