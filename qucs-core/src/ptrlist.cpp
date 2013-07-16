@@ -32,11 +32,10 @@
 #include <string.h>
 
 #include "ptrlist.h"
-
 // Constructor creates an unnamed instance of the ptrlist class.
 template <class type_t>
 ptrlist<type_t>::ptrlist () {
-  size = 0;
+  this->s = 0;
   root = NULL;
 }
 
@@ -45,9 +44,9 @@ ptrlist<type_t>::ptrlist () {
 template <class type_t>
 ptrlist<type_t>::ptrlist (const ptrlist<type_t> & p) {
   ptrentry<type_t> * ptr;
-  size = 0;
+  this->s = 0;
   root = NULL;
-  for (ptr = p.root; ptr != NULL; ptr = ptr->next) append (ptr->data);
+  for (ptr = p.root; ptr != NULL; ptr = ptr->next) this->push_back (ptr->data);
 }
 
 // Destructor deletes a ptrlist object.
@@ -57,26 +56,26 @@ ptrlist<type_t>::~ptrlist () {
   while (root) {
     next = root->next;
     delete root;
-    size--;
+    s--;
     root = next;
   }
 }
 
 // Puts a new entry at the beginning of the pointer list.
 template <class type_t>
-void ptrlist<type_t>::add (type_t * ptr) {
+void ptrlist<type_t>::push_front (type_t * ptr) {
   ptrentry<type_t> * entry = new ptrentry<type_t> ();
   if (root) root->prev = entry;
   entry->data = ptr;
   entry->next = root;
   entry->prev = NULL;
   root = entry;
-  size++;
+  s++;
 }
 
 // Appends a new entry at the end of the pointer list.
 template <class type_t>
-void ptrlist<type_t>::append (type_t * ptr) {
+void ptrlist<type_t>::push_back (type_t * ptr) {
   ptrentry<type_t> * entry = new ptrentry<type_t> ();
   entry->data = ptr;
   entry->next = NULL;
@@ -90,13 +89,7 @@ void ptrlist<type_t>::append (type_t * ptr) {
     root = entry;
     entry->prev = NULL;
   }
-  size++;
-}
-
-// Returns the size of the pointer list.
-template <class type_t>
-int ptrlist<type_t>::length (void) {
-  return size;
+  s++;
 }
 
 // Removes any occurrence of the given pointer from the pointer list.
@@ -115,29 +108,9 @@ void ptrlist<type_t>::del (type_t * ptr) {
 	if (p->next) p->next->prev = p->prev;
       }
       delete p;
-      size--;
+      s--;
     }
   }
-}
-
-// Returns the number of occurrences of the given pointer in the list.
-template <class type_t>
-int ptrlist<type_t>::contains (type_t * ptr) {
-  int count = 0;
-  for (ptrentry<type_t> * p = root; p != NULL; p = p->next) {
-    if (p->data == ptr) count++;
-  }
-  return count;
-}
-
-// Returns the first position of the given pointer in the list.
-template <class type_t>
-int ptrlist<type_t>::index (type_t * ptr) {
-  int idx = -1;
-  for (ptrentry<type_t> * p = root; p != NULL; p = p->next, idx++) {
-    if (p->data == ptr) break;
-  }
-  return idx;
 }
 
 // Returns the pointer at the given position.
@@ -146,7 +119,7 @@ type_t * ptrlist<type_t>::get (int idx) {
   ptrentry<type_t> * ptr = root;
   for (int i = 0 ; i < idx && ptr != NULL; ptr = ptr->next, i++) ;
   return ptr ? ptr->data : NULL;
-}
+  }
 
 // Constructor for pointer list iterator.
 template <class type_t>
@@ -171,7 +144,7 @@ ptrlistiterator<type_t>::~ptrlistiterator () {
 // Returns number of items this iterator operates on.
 template <class type_t>
 int ptrlistiterator<type_t>::count (void) {
-  return _ptrlist->size;
+  return _ptrlist->s;
 }
 
 // Sets the current to the first item in the iterator list.
@@ -187,7 +160,7 @@ type_t * ptrlistiterator<type_t>::toLast (void) {
   for (_last = _ptrlist->root; _last && _last->next; _last = _last->next) ;
   _current = _last;
   return _current ? _current->data : NULL;
-}
+  }
 
 // Makes the succeeding item current and returns the new current item.
 template <class type_t>
@@ -211,7 +184,7 @@ type_t * ptrlistiterator<type_t>::current (void) {
 
 // Returns the first iterator item.
 template <class type_t>
-type_t * ptrlistiterator<type_t>::first (void) {
+type_t * ptrlistiterator<type_t>::begin (void) {
   return _first ? _first->data : NULL;
 }
 
