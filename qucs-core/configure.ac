@@ -69,6 +69,15 @@ EOF
   unset lexout
 fi
 
+dnl Check for additional programs.
+AC_PATH_PROG(GPERF, gperf, :)
+if test $USE_MAINTAINER_MODE = yes; then
+  if test "$GPERF" = ":"; then
+    AC_MSG_ERROR([The $PACKAGE package requires an installed gperf.])
+  fi
+fi
+
+
 dnl Check for debugging.
 AC_ARG_ENABLE([debug],
   AS_HELP_STRING([--enable-debug],
@@ -103,10 +112,17 @@ if test "x$GCC" = xyes; then
   CFLAGS="$CFLAGS -pipe"
   CXXFLAGS="$CXXFLAGS -pipe -fno-exceptions -fno-rtti -fno-check-new"
   if test $USE_MAINTAINER_MODE = yes; then
-    CFLAGS="$CFLAGS -W -Wall -Wmissing-prototypes"
-    CXXFLAGS="$CXXFLAGS -W -Wall"
+    CFLAGS="$CFLAGS -W -Wmissing-prototypes"
+    CXXFLAGS="$CXXFLAGS -W"
   fi
 fi
+
+
+dnl check for compiler characteristic
+AX_CFLAGS_WARN_ALL
+AX_CXXFLAGS_WARN_ALL
+
+
 
 dnl Check for new platforms.
 osversion="`grep \"$host\" $srcdir/doc/PLATFORMS 2>/dev/null`"
