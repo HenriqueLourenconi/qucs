@@ -25,6 +25,8 @@
 #ifndef __EQNSYS_H__
 #define __EQNSYS_H__
 
+#include <limits>
+
 // Definition of equation system solving algorithms.
 enum algo_type {
   ALGO_INVERSE                    = 0x0001,
@@ -70,11 +72,12 @@ class eqnsys
 			tvector<nr_type_t> *);
   void solve (void);
 
-  void solve_svd (nr_double_t thres = NR_EPSI);
+  void solve_svd (nr_double_t thres = std::numeric_limits<nr_double_t>::epsilon()
+);
   void get_svd (tmatrix<nr_double_t> *retU = NULL,
 		tvector<nr_double_t> *retS = NULL,
 		tmatrix<nr_double_t> *retV = NULL,
-		nr_double_t thres = NR_EPSI);
+		nr_double_t thres = std::numeric_limits<nr_double_t>::epsilon());
 
  private:
   int update;

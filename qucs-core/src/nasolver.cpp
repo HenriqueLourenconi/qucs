@@ -1389,7 +1389,7 @@ void nasolver<nr_type_t>::lineSearch (void)
     nr_double_t alpha = 0.5, n, nMin, aprev = 1.0, astep = 0.5, adiff;
     int dir = -1;
 
-    nMin = NR_MAX;
+    nMin = std::numeric_limits<nr_double_t>::max();
 
     do
     {
