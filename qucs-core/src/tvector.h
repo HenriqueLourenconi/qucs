@@ -75,12 +75,12 @@ class tvector
   tvector (const tvector &);
   const tvector& operator = (const tvector &);
   ~tvector ();
-  nr_type_t get (int);
+  nr_type_t get (int) const;
   void set (int, nr_type_t);
   void set (nr_type_t);
   void set (nr_type_t, int, int);
   void set (tvector, int, int);
-  int  getSize (void) { return size; }
+  int  getSize (void) const { return size; }
   nr_type_t * getData (void) { return data; }
   void setData (nr_type_t *, int);
   void add (nr_type_t);

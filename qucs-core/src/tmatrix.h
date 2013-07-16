@@ -25,85 +25,288 @@
 #ifndef __TMATRIX_H__
 #define __TMATRIX_H__
 
+#include <Eigen/Core>
+#include <Eigen/Dense>
+
 #include <assert.h>
 
-template <class nr_type_t>
-class tmatrix;
 
-// Forward declarations of friend functions.
-template <class nr_type_t>
-tmatrix<nr_type_t> inverse (tmatrix<nr_type_t>);
-template <class nr_type_t>
-nr_double_t infnorm (tmatrix<nr_type_t> a);
-template <class nr_type_t>
-nr_double_t condition (tmatrix<nr_type_t> a);
-template <class nr_type_t>
-tmatrix<nr_type_t> teye (int);
-template <class nr_type_t>
-tmatrix<nr_type_t> operator * (tmatrix<nr_type_t>, tmatrix<nr_type_t>);
-template <class nr_type_t>
-tmatrix<nr_type_t> operator * (nr_type_t, tmatrix<nr_type_t>);
-template <class nr_type_t>
-tvector<nr_type_t> operator * (tmatrix<nr_type_t>, tvector<nr_type_t>);
-template <class nr_type_t>
-tvector<nr_type_t> operator * (tvector<nr_type_t>, tmatrix<nr_type_t>);
+template <typename nr_type_t> class tvector;
+template <typename nr_type_t> class tmatrix;
+template <typename nr_type_t> tmatrix<nr_type_t> teye (const int &n);
+template <typename T>  tmatrix<T> operator * (const tmatrix<T> &a, const tmatrix<T> & b);
+template <typename T>  tmatrix<T> operator * (const T &a, const tmatrix<T> & b);
+template <typename nr_type_t> tvector<nr_type_t> operator * (const tmatrix<nr_type_t> &a, const tvector<nr_type_t> &b);
 
-template <class nr_type_t>
+/*! \brief Compatibility class arround Eigen 
+    \todo: die
+*/
+template <typename nr_type_t>
 class tmatrix
 {
  public:
-  tmatrix ();
-  tmatrix (int);
-  tmatrix (int, int);
-  tmatrix (const tmatrix &);
-  const tmatrix& operator = (const tmatrix &);
-  ~tmatrix ();
-  nr_type_t get (int, int);
-  void set (int, int, nr_type_t);
-  void set (nr_type_t);
-  int  getCols (void) { return cols; }
-  int  getRows (void) { return rows; }
-  nr_type_t * getData (void) { return data; }
-  tvector<nr_type_t> getRow (int);
-  void setRow (int, tvector<nr_type_t>);
-  tvector<nr_type_t> getCol (int);
-  void setCol (int, tvector<nr_type_t>);
-  void exchangeRows (int, int);
-  void exchangeCols (int, int);
-  void transpose (void);
-  int  isFinite (void);
+  /*! \brief default constructor */
+  tmatrix () : m() {};
+
+  /*! \brief Create a square matrix */
+  tmatrix (const int i): m(i,i) {};
+
+  /* \brief General constructor case */
+  tmatrix (const int line, const int col) : m(line,col) {};
+
+  /* default copy constructor */
+  /* tmatrix (const tmatrix &); */
+
+  /* \brief Creates a tmatrix from an eigen matrix */
+  template <typename Derived> tmatrix(const Eigen::EigenBase<Derived>& a) {
+    this->m = a;
+  };
+  
+  /* \brief conversion operator to eigen class */
+  template <typename Derived> operator Eigen::EigenBase<Derived>() {
+    return this->m;
+  };
+
+  /*\brief assignment copy constructor 
+    \param[in] a: matrix to assign
+  */
+  const tmatrix& operator = (const tmatrix & a) {
+    if(&a != this) {
+      this->m = a.m;
+    }
+    return *this;
+  }
+
+  /*! easy accessor operators (read only) */
+  nr_type_t  operator () (const int r, const int c) const {
+    return m(r,c);
+  }
+  
+  /*! easy accessor operators  */
+  nr_type_t& operator () (const int r, const int c) {
+    return m(r,c);
+  }
+
+  /*! return number of columns */
+  int  getCols (void) const { 
+    return this->m.cols(); 
+  }
+  
+  /*! return number of rows */
+  int  getRows (void) const { 
+    return this->m.rows(); 
+  }
+  
+  /* default destructor thanks eigen */
+  /* ~tmatrix (); */
+
+  /*! \brief acess alias  */
+  nr_type_t get (const int r, const int c) const {
+    return this->m(r,c);
+  }
+  
+  /*! \brief acess alias  */
+  void set (const int r, const int c, const nr_type_t &v) {
+    this->m(r,c)=v;
+  }
+  
+  /*!\brief fill matrix */
+  void set (const nr_type_t &v) {
+    this->m.setConstant(v);
+  }
+  
+  /*! \brief return raw array */
+  nr_type_t * const getData (void) const { 
+    return this->m.data(); 
+  }
+  
+  /*!\brief The function returns the given row in a tvector 
+    \todo simplifie when tvector is converted
+  */
+  tvector<nr_type_t> getRow (const int r) const {
+    const int cols = this.getCols();
+    const int rows = this.getRows();
+    
+    assert (r >= 0 && r < rows);
+    
+    tvector<nr_type_t> res (cols);
+    for(int c = 0; c < cols; c++)
+      res(c) = this->m(r,c);
+   
+    return res;
+  }
+
+  /*! Puts the given tvector into the given row of the tmatrix instance */
+  void setRow (const int r, const tvector<nr_type_t> & v) {
+    const int cols = this.getCols();
+    const int rows = this.getRows();   
+
+    assert (r >= 0 && r < rows && v.getSize () == cols);
+
+    for(int c = 0; c < cols; c++)
+      this->m(r,c) = v(c);
+  }
+  
+  /*! The function returns the given column in a tvector */
+  tvector<nr_type_t> getCol (const int c) const {
+    const int cols = this.getCols();
+    const int rows = this.getRows();
+    assert (c >= 0 && c < cols);
+
+    tvector<nr_type_t> res (rows);
+    for(int r = 0; r < rows; r++)
+      res(r) = this->m(r,c);
+    return res;
+  }
+
+  /*! Puts the given tvector into the given column of the tmatrix instance. */
+  void setCol (const int c, const tvector<nr_type_t> &v) {
+    const int cols = this.getCols();
+    const int rows = this.getRows();
+    assert (c >= 0 && c < cols);
+
+    for(int r = 0; r < rows; r++)
+      this->m(r,c) = v(c);
+  }
+
+  /*!\brief The function swaps the given rows with each other.
+    \param[in] r1 source row
+    \param[in] r2 destination row
+  */
+  void exchangeRows (const int r1, const int r2) {
+    this->m.row(r1).swap(this->m.row(r2));
+  }
+
+  /*!\brief The function swaps the given column with each other.
+    \param[in] c1 source column
+    \param[in] c2 destination column
+  */
+  void exchangeCols (const int c1, const int c2) {
+    this->m.col(c1).swap(this->m.col(c2));
+  }
+  
+  /*! \transpose in place a matrix */
+  void transpose (void) {
+    this->m.transposeInPlace();
+  }
+  
+  /*! Checks validity of matrix*/
+  bool  isFinite (void) const {
+    const int rows = this->getRows();
+    const int cols = this->getCols();
+    for (int i = 0; i < rows; i++)
+      for(int j=0;j < cols; j++)
+	if (!finite (real ((*this)(i,j)))) 
+	  return false;
+    return true;
+  };
+  
   void print (bool realonly = false);
 
-  // some basic matrix operations
-#ifndef _MSC_VER
-  friend tmatrix inverse<> (tmatrix);
-  friend nr_double_t infnorm<> (tmatrix);
-  friend nr_double_t condition<> (tmatrix);
-  friend tmatrix teye<nr_type_t> (int);
-  friend tmatrix operator *<> (tmatrix, tmatrix);
-  friend tmatrix operator *<> (nr_type_t, tmatrix);
-  friend tvector<nr_type_t> operator *<> (tmatrix, tvector<nr_type_t>);
-  friend tvector<nr_type_t> operator *<> (tvector<nr_type_t>, tmatrix);
-#endif
+ /*!\brief return L inf norm of norm-1 vector of rowise */
+ nr_double_t infnorm () {
+   return ((this->m.rowwise()).template lpNorm<1>()).template lpNorm<Eigen::Infinity>();
+ }
+
+ /* \brief return condition number 
+    \note slow For debugging purposes only
+ */
+ nr_double_t condition () {
+   return this->infnorm () * inverse(this).infnorm();
+ }
+
+  template<typename T> friend tmatrix<T> operator * (const tmatrix<T> &a, const tmatrix<T> & b);
+  template<typename T> friend tmatrix<T> operator * (const T &a, const tmatrix<T> & b);
+  template<typename T> friend tvector<T> operator * (const tmatrix<T> &a, const tvector<T> &b);
+  template<typename T> friend tvector<T> operator * (const tvector<T> &a, const tmatrix<T> &b);
+  template<typename T> friend tmatrix<T> inverse (const tmatrix<T> &a);
+    
+  static tmatrix teye(const int n) {
+    tmatrix<nr_type_t> ret;
+    ret.m = Eigen::Matrix<nr_type_t, Eigen::Dynamic, Eigen::Dynamic >::Identity(n,n);
+    return ret;
+  }
+ 
 
   // intrinsic operators
-  tmatrix operator += (tmatrix);
-  tmatrix operator -= (tmatrix);
-  tmatrix operator *= (nr_type_t);
+  tmatrix<nr_type_t> operator += (const tmatrix<nr_type_t> & t) {
+    this->m+=t.m;
+    return *this;
+  }
 
-  // easy accessor operators
-  nr_type_t  operator () (int r, int c) const {
-    assert (r >= 0 && r < rows && c >= 0 && c < cols);
-    return data[r * cols + c]; }
-  nr_type_t& operator () (int r, int c) {
-    assert (r >= 0 && r < rows && c >= 0 && c < cols);
-    return data[r * cols + c]; }
+  tmatrix<nr_type_t> operator -= (const tmatrix<nr_type_t> &t) {
+    this->m-= t.m;
+    return *this;
+  }
+
+  // intrinsic operators
+  tmatrix<nr_type_t> operator *= (const nr_type_t & t) {
+    this->m*=t;
+    return *this;
+  }
 
  private:
-  int cols;
-  int rows;
-  nr_type_t * data;
+  /*! Matrix data */
+  Eigen::Matrix<nr_type_t,Eigen::Dynamic, Eigen::Dynamic,Eigen::RowMajor> m;
 };
+
+/*! Multiplication of two matrix */
+template <typename nr_type_t>
+tmatrix<nr_type_t> operator * (const tmatrix<nr_type_t> &a, const tmatrix<nr_type_t>& b) {
+  assert (a.getCols () == b.getRows ());
+
+  tmatrix<nr_type_t> ret;
+  ret.m = a.m * b.m;
+  
+  return ret;
+}
+
+/*! Multiplication of scalar and matrix */
+template <typename nr_type_t>
+tmatrix<nr_type_t> operator * (const nr_type_t &a, const tmatrix<nr_type_t>& b) {
+  return a * b.m;
+}
+
+/*! identity 
+  \todo should die 
+*/
+template <class nr_type_t> tmatrix<nr_type_t> teye (const int &n) 
+{
+  return tmatrix<nr_type_t>::teye(n);
+}
+
+
+/*! Multiplication of matrix and vector
+    \todo should die 
+*/
+template <class nr_type_t>
+tvector<nr_type_t> operator * (const tmatrix<nr_type_t> &a, const tvector<nr_type_t> &b) {
+  assert (a.getCols () == b.getSize ());
+  int r, c, n = a.getCols ();
+  nr_type_t z;
+  tvector<nr_type_t> res (n);
+
+  for (r = 0; r < n; r++) {
+    for (c = 0, z = 0; c < n; c++) z += a.get (r, c) * b.get (c);
+    res.set (r, z);
+  }
+  return res;
+}
+
+template <class nr_type_t>
+tvector<nr_type_t> operator * (const tvector<nr_type_t> &a, const tmatrix<nr_type_t> &b) {
+  assert (a.getSize () == b.getRows ());
+  int r, c, n = b.getRows ();
+  nr_type_t z;
+  tvector<nr_type_t> res (n);
+
+  for (c = 0; c < n; c++) {
+    for (r = 0, z = 0; r < n; r++) z += a.get (r) * b.get (r, c);
+    res.set (c, z);
+  }
+  return res;
+}
+
 
 #include "tmatrix.cpp"
 

@@ -38,6 +38,7 @@
 #include "analysis.h"
 #include "nasolver.h"
 #include "acsolver.h"
+#include "vector.h"
 
 // Constructor creates an unnamed instance of the acsolver class.
 acsolver::acsolver () : nasolver<nr_complex_t> () {
@@ -139,10 +140,10 @@ void acsolver::init (void) {
 /* This function saves the results of a single solve() functionality
    (for the given frequency) into the output dataset. */
 void acsolver::saveAllResults (nr_double_t freq) {
-  vector * f;
+  ::vector * f;
   // add current frequency to the dependency of the output dataset
   if ((f = data->findDependency ("acfrequency")) == NULL) {
-    f = new vector ("acfrequency");
+    f = new ::vector ("acfrequency");
     data->addDependency (f);
   }
   if (runs == 1) f->add (freq);
@@ -156,7 +157,7 @@ void acsolver::saveAllResults (nr_double_t freq) {
 
 /* The function computes the final noise results and puts them into
    the output dataset. */
-void acsolver::saveNoiseResults (vector * f) {
+void acsolver::saveNoiseResults (::vector * f) {
   int N = countNodes ();
   int M = countVoltageSources ();
   for (int r = 0; r < N + M; r++) {
