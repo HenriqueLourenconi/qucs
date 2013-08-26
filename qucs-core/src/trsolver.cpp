@@ -140,6 +140,8 @@ int trsolver::dcAnalysis (void)
     solve_pre ();
     applyNodeset ();
 
+    fixpoint = 0;
+
     // Run the DC solver once.
     try_running ()
     {
@@ -222,6 +224,7 @@ int trsolver::solve (void)
     }
 
     convHelper = CONV_None;
+    fixpoint = 1;
 
     // Initialize transient analysis.
     setDescription ("transient");
@@ -603,14 +606,22 @@ void trsolver::combineMatrices (void)
 
 void trsolver::combineEuler (void)
 {
-    *MA = *A; *MA += corrCoeff[0] * *F;
+    if (updateMatrix)
+    {
+        *MA = *A;
+	*MA += corrCoeff[0] * *F;
+    }
     *mz = *z - *A * *mx;
     *mz += corrCoeff[1] * (*F * *dmxsum);
 }
 
 void trsolver::combineBilinear (void)
 {
-    *MA = *A; *MA += corrCoeff[0] * *F;
+    if (updateMatrix)
+    {
+        *MA = *A;
+	*MA += corrCoeff[0] * *F;
+    }
     *mz = *z - *A * *mx + *RHS(1);
     *mz += corrCoeff[1] * (*F * *dmxsum);
 }
@@ -619,7 +630,11 @@ void trsolver::combineGear (void)
 {
     nr_double_t dc = 0;
 
-    *MA = *A; *MA += corrCoeff[0] * *F;
+    if (updateMatrix)
+    {
+        *MA = *A;
+	*MA += corrCoeff[0] * *F;
+    }
     *mz = *z - *A * *mx;
     for (int i = corrOrder; i > 1; i--) {
 	dc += corrCoeff[i];
@@ -631,7 +646,11 @@ void trsolver::combineGear (void)
 
 void trsolver::combineMoulton (void)
 {
-    *MA = *A; *MA += corrCoeff[0] * *F;
+    if (updateMatrix)
+    {
+        *MA = *A;
+	*MA += corrCoeff[0] * *F;
+    }
     *mz = *z - *A * *mx;
     *mz += corrCoeff[1] * (*F * *dmxsum);
     for (int i = 1; i < corrOrder; i++) {

@@ -73,7 +73,8 @@ public:
     virtual int getSysSize (void)
     { return countVoltageSources () + countNodes (); }
     virtual void combineMatrices (void)
-    { combineMA (); combineZ (); }
+    { if (updateMatrix) combineMA ();
+      combineZ (); }
     virtual void combineMA (void)
     { *MA = *A; }
     virtual void combineZ (void)

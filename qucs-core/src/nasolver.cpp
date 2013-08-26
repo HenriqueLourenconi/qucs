@@ -60,6 +60,8 @@
 
 using namespace qucs;
 
+#define STEPDEBUG   0 // set to zero for release
+
 // Constructor creates an unnamed instance of the nasolver class.
 template <class nr_type_t>
 nasolver<nr_type_t>::nasolver () : analysis ()
@@ -409,7 +411,6 @@ int nasolver<nr_type_t>::solve_nonlinear_continuation_Source (void)
     // fetch simulation properties
     MaxIterations = getPropertyInteger ("MaxIter") / 4 + 1;
     updateMatrix = 1;
-    fixpoint = 0;
 
     // initialize the stepper
     prev[SRCSTEP] = helper[SRCSTEP] = 1;
@@ -593,19 +594,22 @@ int nasolver<nr_type_t>::solve_nonlinear (void)
             convergence = (run > 0) ? checkConvergence () : 0;
             savePreviousIteration ();
             run++;
-            // control fixpoint iterations
-            if (fixpoint)
-            {
-                if (convergence > 0 && !updateMatrix)
-                {
-                    updateMatrix = 1;
-                    convergence = 0;
-                }
-                else
-                {
-                    updateMatrix = 0;
-                }
-            }
+
+	    if (fixpoint && convergence == 0)
+	    {
+                updateMatrix = 0;
+#if STEPDEBUG
+		logprint (LOG_STATUS, "DEBUG: not updating matrix\n");
+#endif
+	    }
+	    else if (convergence < 0 && updateMatrix == 0)
+	    {
+	        convergence = 0;
+	        updateMatrix = 1;
+#if STEPDEBUG
+		logprint (LOG_STATUS, "DEBUG: reenabling decomposition\n");
+#endif
+	    }
         }
         else
         {
@@ -636,8 +640,19 @@ int nasolver<nr_type_t>::solve_nonlinear (void)
 template <class nr_type_t>
 int nasolver<nr_type_t>::solve_linear (void)
 {
-    updateMatrix = 1;
-    return solve_once ();
+    int error = 0;
+
+    if (dx != NULL) delete dx;
+    dx = new tvector<nr_type_t> (countVoltageSources () + countNodes ());
+    if (dmx != NULL) delete dmx;
+    dmx = new tvector<nr_type_t> (getSysSize ());
+    
+    error += solve_once ();
+    *x = *dx;
+
+    // What about a post-iteration?
+
+    return error;
 }
 
 /* Applying the MNA (Modified Nodal Analysis) to a circuit with
@@ -654,15 +669,12 @@ void nasolver<nr_type_t>::createMatrix (void)
                                 | C D |
     		      +-   -+.
        Each of these minor matrices is going to be generated here. */
-    if (updateMatrix)
-    {
-        createGMatrix ();
-        createBMatrix ();
-        createCMatrix ();
-        createDMatrix ();
-	createMGMatrix ();
-	createMDMatrix ();
-    }
+    createGMatrix ();
+    createBMatrix ();
+    createCMatrix ();
+    createDMatrix ();
+    createMGMatrix ();
+    createMDMatrix ();
 
     /* Adjust G matrix if requested. */
     if (gMin > 0)
@@ -1204,11 +1216,7 @@ void nasolver<nr_type_t>::runMNA (void)
     // just solve the equation system here
     eqns->setAlgo (eqnAlgo);
     eqns->passEquationSys (updateMatrix ? MA : NULL, dmx, mz);
-
-    if (chop_thres > 0)
-	eqns->solve_svd (chop_thres);
-    else
-	eqns->solve ();
+    eqns->solve ();
 
     update_mx ();
 
