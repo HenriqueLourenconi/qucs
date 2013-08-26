@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "states.h"
 
@@ -43,6 +44,7 @@ states<state_type_t>::states ()
 {
     nstates = 0;
     currentstate = 0;
+    activeStates = 1;
     stateval = NULL;
 }
 
@@ -53,6 +55,7 @@ states<state_type_t>::states (const states & c)
 {
     nstates = c.nstates;
     currentstate = c.currentstate;
+    activeStates = c.activeStates;
 
     // copy state variables if necessary
     if (nstates && c.stateval)
@@ -94,13 +97,19 @@ void states<state_type_t>::clearStates (void)
     currentstate = 0;
 }
 
+template <class state_type_t>
+int states<state_type_t>::getIndex (int n)
+{
+    return (n + currentstate) & STATE_MASK;
+}
+
 /* The function returns a save-state variable at the given position.
    Higher positions mean earlier states.  By default the function
    returns the current state of the save-state variable. */
 template <class state_type_t>
 state_type_t states<state_type_t>::getState (int state, int n)
 {
-    int i = (n + currentstate) & STATE_MASK;
+    int i = getIndex (n);
     return stateval[(state << STATE_SHIFT) + i];
 }
 
@@ -119,6 +128,7 @@ template <class state_type_t>
 void states<state_type_t>::nextState (void)
 {
     if (--currentstate < 0) currentstate = STATE_NUM - 1;
+    if (activeStates < STATE_NUM) activeStates++;
 }
 
 // Shifts one state backward.
@@ -126,6 +136,8 @@ template <class state_type_t>
 void states<state_type_t>::prevState (void)
 {
     currentstate = (currentstate + 1) & STATE_MASK;
+    activeStates--;
+    assert (activeStates >= 0);
 }
 
 /* This function applies the given value to a save-state variable through

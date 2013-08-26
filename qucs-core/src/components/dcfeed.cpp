@@ -52,23 +52,14 @@ void dcfeed::initAC (void) {
   allocMatrixMNA ();
 }
 
-#define fState 0 // flux state
-#define vState 1 // voltage state
-
 void dcfeed::initTR (void) {
   initDC ();
-  setStates (2);
 }
 
 void dcfeed::calcTR (nr_double_t) {
   nr_double_t l = getPropertyDouble ("L");
-  nr_double_t r, v;
-  nr_double_t i = real (getJ (VSRC_1));
 
-  setState (fState, i * l);
-  integrate (fState, l, r, v);
-  setD (VSRC_1, VSRC_1, -r);
-  setE (VSRC_1, v);
+  setMD (VSRC_1, VSRC_1, -l);
 }
 
 // properties
