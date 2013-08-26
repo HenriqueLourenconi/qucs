@@ -42,6 +42,7 @@ public:
     int  solve (void);
     int  predictor (void);
     int  corrector (void);
+    virtual void combineMatrices (void);
     void nextStates (void);
     void fillStates (void);
     void setMode (int);
@@ -64,6 +65,10 @@ public:
     void predictBashford (void);
     void predictEuler (void);
     void predictGear (void);
+    void combineEuler (void);
+    void combineBilinear (void);
+    void combineGear (void);
+    void combineMoulton (void);
     void initCircuitTR (circuit *);
     void fillSolution (tvector<nr_double_t> *);
     int  dcAnalysis (void);
@@ -89,6 +94,8 @@ protected:
     int rejected;
     int converged;
     tvector<nr_double_t> * solution[8];
+    tvector<nr_double_t> * update[8];
+    tvector<nr_double_t> * rhs[8];
     nr_double_t current;
     int statSteps;
     int statRejected;

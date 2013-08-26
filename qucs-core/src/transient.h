@@ -53,7 +53,7 @@ namespace transient {
   void setIntegrationMethod (circuit *, int);
   int  correctorType (char *, int&);
   int  correctorType (int, int);
-  int  predictorType (int, int, int&);
+  int  predictorType (int, int);
   nr_double_t getCorrectorError (int, int);
   nr_double_t getPredictorError (int, int);
 

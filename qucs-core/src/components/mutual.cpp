@@ -101,43 +101,16 @@ void mutual::initDC (void) {
 
 void mutual::initTR (void) {
   initDC ();
-  setStates (8);
 }
-
-#define fState11 0 // flux state
-#define vState11 1 // voltage state
-#define fState22 2
-#define vState22 3
-#define fState12 4
-#define vState12 5
-#define fState21 6
-#define vState21 7
 
 void mutual::calcTR (nr_double_t) {
   nr_double_t k  = getPropertyDouble ("k");
   nr_double_t l1 = getPropertyDouble ("L1");
   nr_double_t l2 = getPropertyDouble ("L2");
-  nr_double_t i1 = real (getJ (VSRC_1));
-  nr_double_t i2 = real (getJ (VSRC_2));
-  nr_double_t r11, r12, r21, r22, v11, v22, v12, v21;
   nr_double_t M12 = k * sqrt (l1 * l2);
 
-  // self inductances
-  setState  (fState11, i1 * l1);
-  integrate (fState11, l1, r11, v11);
-  setState  (fState22, i2 * l2);
-  integrate (fState22, l2, r22, v22);
-
-  // mutual inductances
-  setState  (fState12, i2 * M12);
-  integrate (fState12, M12, r12, v12);
-  setState  (fState21, i1 * M12);
-  integrate (fState21, M12, r21, v21);
-
-  setD (VSRC_1, VSRC_1, -r11); setD (VSRC_1, VSRC_2, -r12);
-  setD (VSRC_2, VSRC_2, -r22); setD (VSRC_2, VSRC_1, -r21);
-  setE (VSRC_1, v11 + v12);
-  setE (VSRC_2, v22 + v21);
+  setMD (VSRC_1, VSRC_1, -l1); setMD (VSRC_1, VSRC_2, -M12);
+  setMD (VSRC_2, VSRC_2, -l2); setMD (VSRC_2, VSRC_1, -M12);
 }
 
 // properties

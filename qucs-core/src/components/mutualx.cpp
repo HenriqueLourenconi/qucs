@@ -123,33 +123,26 @@ void mutualx::calcTR (nr_double_t) {
   ::vector * L = getPropertyVector ("L");
   ::vector * C = getPropertyVector ("k");
 
-  nr_double_t * veq = new nr_double_t[inductors * inductors];
-  nr_double_t * req = new nr_double_t[inductors * inductors];
+  nr_double_t * leq = new nr_double_t[inductors * inductors];
 
   // integration for self and mutual inductances
   for (state = 0, r = 0; r < inductors; r++) {
     for (c = 0; c < inductors; c++, state++) {
       nr_double_t l1 = real (L->get (r));
       nr_double_t l2 = real (L->get (c));
-      nr_double_t i = real (getJ (VSRC_1 + c));
       nr_double_t k = real (C->get (state)) * sqrt (l1 * l2);
-      setState  (2 * state, i * k);
-      integrate (2 * state, k, req[state], veq[state]);
+      leq[state] = k;
     }
   }
 
   // fill D-Matrix entries and extended RHS
   for (state = 0, r = 0; r < inductors; r++) {
-    nr_double_t v = 0;
     for (c = 0; c < inductors; c++, state++) {
-      setD (VSRC_1 + r, VSRC_1 + c, -req[state]);
-      v += veq[state];
+      setMD (VSRC_1 + r, VSRC_1 + c, -leq[state]);
     }
-    setE (VSRC_1 + r, v);
   }
 
-  delete[] veq;
-  delete[] req;
+  delete[] leq;
 }
 
 // properties

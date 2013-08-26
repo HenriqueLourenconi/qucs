@@ -85,7 +85,7 @@ class tvector
   void drop (int);
   void exchangeRows (int, int);
   int  isFinite (void);
-  void print (void);
+  void print (bool realonly = false);
   void reorder (int *);
   int  contains (nr_type_t, nr_double_t eps = NR_EPSI);
 

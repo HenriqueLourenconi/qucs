@@ -242,6 +242,29 @@ tmatrix<nr_type_t> inverse (tmatrix<nr_type_t> a) {
   return e;
 }
 
+// Return the infinity norm
+template <class nr_type_t>
+nr_double_t infnorm (tmatrix<nr_type_t> a) {
+  int i, j, m = a.getRows (), n = a.getCols ();
+  nr_double_t retval = 0;
+
+  for (i = 0; i < m; i++) {
+    nr_double_t rowsum = 0;
+    for (j = 0; j < n; j++)
+      rowsum += sqrt (norm (a.get (i, j)));
+    if (rowsum > retval)
+      retval = rowsum;
+  }
+
+  return retval;
+}
+
+// For debugging purposes only
+template <class nr_type_t>
+nr_double_t condition (tmatrix<nr_type_t> a) {
+  return infnorm (a) * infnorm (inverse (a));
+}
+
 // Create identity matrix with specified number of rows and columns.
 template <class nr_type_t>
 tmatrix<nr_type_t> teye (int n) {
@@ -282,6 +305,19 @@ tmatrix<nr_type_t> operator * (tmatrix<nr_type_t> a, tmatrix<nr_type_t> b) {
       for (i = 0, z = 0; i < n; i++) z += a.get (r, i) * b.get (i, c);
       res.set (r, c, z);
     }
+  }
+  return res;
+}
+
+// Multiplication of scalar and matrix.
+template <class nr_type_t>
+tmatrix<nr_type_t> operator * (nr_type_t a, tmatrix<nr_type_t> b) {
+  int r, c, n = b.getCols ();
+  tmatrix<nr_type_t> res (n);
+
+  for (r = 0; r < n; r++) {
+    for (c = 0; c < n; c++)
+      res.set (r, c, a*b.get (r, c));
   }
   return res;
 }
@@ -352,5 +388,7 @@ void tmatrix<nr_type_t>::print (bool realonly) {
     }
     fprintf (stderr, ";\n");
   }
+  fprintf (stderr, ";;;\n");
+  fflush (stderr);
 }
 #endif /* DEBUG */

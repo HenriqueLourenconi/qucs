@@ -97,25 +97,6 @@ void mutual2::initTR (void) {
   setStates (18);
 }
 
-#define fState11  0 // flux state
-#define vState11  1 // voltage state
-#define fState12  2
-#define vState12  3
-#define fState13  4
-#define vState13  5
-#define fState21  6
-#define vState21  7
-#define fState22  8
-#define vState22  9
-#define fState23 10
-#define vState23 11
-#define fState31 12
-#define vState31 13
-#define fState32 14
-#define vState32 15
-#define fState33 16
-#define vState33 17
-
 void mutual2::calcTR (nr_double_t) {
   nr_double_t k12 = getPropertyDouble ("k12");
   nr_double_t k13 = getPropertyDouble ("k13");
@@ -126,44 +107,16 @@ void mutual2::calcTR (nr_double_t) {
   nr_double_t M12 = k12 * sqrt (l1 * l2);
   nr_double_t M13 = k13 * sqrt (l1 * l3);
   nr_double_t M23 = k23 * sqrt (l2 * l3);
-  nr_double_t r11, r12, r13, r21, r22, r23, r31, r32, r33;
-  nr_double_t v11, v12, v13, v21, v22, v23, v31, v32, v33;
-  nr_double_t i1 = real (getJ (VSRC_1));
-  nr_double_t i2 = real (getJ (VSRC_2));
-  nr_double_t i3 = real (getJ (VSRC_3));
 
-  setState  (fState11, i1 * l1);
-  integrate (fState11, l1, r11, v11);
-  setState  (fState22, i2 * l2);
-  integrate (fState22, l2, r22, v22);
-  setState  (fState33, i3 * l3);
-  integrate (fState33, l3, r33, v33);
-
-  setState  (fState12, i2 * M12);
-  integrate (fState12, M12, r12, v12);
-  setState  (fState13, i3 * M13);
-  integrate (fState13, M13, r13, v13);
-  setState  (fState21, i1 * M12);
-  integrate (fState21, M12, r21, v21);
-  setState  (fState23, i3 * M23);
-  integrate (fState23, M23, r23, v23);
-  setState  (fState31, i1 * M13);
-  integrate (fState31, M13, r31, v31);
-  setState  (fState32, i2 * M23);
-  integrate (fState32, M23, r32, v32);
-
-  setD (VSRC_1, VSRC_1, -r11);
-  setD (VSRC_1, VSRC_2, -r12);
-  setD (VSRC_1, VSRC_3, -r13);
-  setD (VSRC_2, VSRC_1, -r21);
-  setD (VSRC_2, VSRC_2, -r22);
-  setD (VSRC_2, VSRC_3, -r23);
-  setD (VSRC_3, VSRC_1, -r31);
-  setD (VSRC_3, VSRC_2, -r32);
-  setD (VSRC_3, VSRC_3, -r33);
-  setE (VSRC_1, v11 + v12 + v13);
-  setE (VSRC_2, v21 + v22 + v23);
-  setE (VSRC_3, v31 + v32 + v33);
+  setMD (VSRC_1, VSRC_1, -l1);
+  setMD (VSRC_1, VSRC_2, -M12);
+  setMD (VSRC_1, VSRC_3, -M13);
+  setMD (VSRC_2, VSRC_1, -M12);
+  setMD (VSRC_2, VSRC_2, -l2);
+  setMD (VSRC_2, VSRC_3, -M23);
+  setMD (VSRC_3, VSRC_1, -M13);
+  setMD (VSRC_3, VSRC_2, -M23);
+  setMD (VSRC_3, VSRC_3, -l3);
 }
 
 // properties

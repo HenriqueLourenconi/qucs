@@ -108,20 +108,14 @@ void capacitor::calcTR (nr_double_t) {
   if (hasProperty ("Controlled")) return;
 
   nr_double_t c = getPropertyDouble ("C");
-  nr_double_t g, i;
-  nr_double_t v = real (getV (NODE_1) - getV (NODE_2));
 
-  /* apply initial condition if requested */
-  if (getMode () == MODE_INIT && isPropertyGiven ("V")) {
-    v = getPropertyDouble ("V");
-  }
+//  /* apply initial condition if requested */
+//  if (getMode () == MODE_INIT && isPropertyGiven ("V")) {
+//    v = getPropertyDouble ("V");
+//  }
 
-  setState (qState, c * v);
-  integrate (qState, c, g, i);
-  setY (NODE_1, NODE_1, +g); setY (NODE_2, NODE_2, +g);
-  setY (NODE_1, NODE_2, -g); setY (NODE_2, NODE_1, -g);
-  setI (NODE_1 , -i);
-  setI (NODE_2 , +i);
+  setMY (NODE_1, NODE_1, +c); setMY (NODE_2, NODE_2, +c);
+  setMY (NODE_1, NODE_2, -c); setMY (NODE_2, NODE_1, -c);
 }
 
 void capacitor::initHB (void) {

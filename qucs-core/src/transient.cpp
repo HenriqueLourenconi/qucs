@@ -356,8 +356,11 @@ int transient::correctorType (char * Method, int& MaxOrder) {
 /* The function returns the appropriate predictor integration method
    for the given corrector method and adjusts the order of the
    predictor as well based on the given corrector method. */
-int transient::predictorType (int corrMethod, int corrOrder, int& predOrder) {
+int transient::predictorType (int corrMethod, int predOrder) {
   int predMethod = INTEGRATOR_UNKNOWN;
+
+  return INTEGRATOR_GEAR;
+
   switch (corrMethod) {
   case INTEGRATOR_GEAR:
     predMethod = INTEGRATOR_GEAR;
@@ -372,7 +375,7 @@ int transient::predictorType (int corrMethod, int corrOrder, int& predOrder) {
     predMethod = INTEGRATOR_EULER;
     break;
   }
-  predOrder = corrOrder;
+
   return predMethod;
 }
 
