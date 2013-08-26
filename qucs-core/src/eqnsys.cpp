@@ -1230,21 +1230,21 @@ void eqnsys<nr_type_t>::householder_apply_right_extern (int r, nr_type_t t) {
 /* This function solves the equation system AX = B using the singular
    value decomposition (Golub-Reinsch-SVD). */
 template <class nr_type_t>
-void eqnsys<nr_type_t>::solve_svd (void) {
+void eqnsys<nr_type_t>::solve_svd (nr_double_t thres) {
   factorize_svd ();
-  chop_svd ();
+  chop_svd (thres);
   substitute_svd ();
 }
 
 // Annihilates near-zero singular values.
 template <class nr_type_t>
-void eqnsys<nr_type_t>::chop_svd (void) {
+void eqnsys<nr_type_t>::chop_svd (nr_double_t thres) {
   int c;
   nr_double_t Max, Min;
   Max = 0.0;
   for (c = 0; c < N; c++) if (fabs (S_(c)) > Max) Max = fabs (S_(c));
-  Min = Max * NR_EPSI;
-  for (c = 0; c < N; c++) if (fabs (S_(c)) < Min) S_(c) = 0.0;
+  Min = Max * thres;
+  for (c = 0; c < N; c++) if (fabs (S_(c)) < Min) S_(c) = Min;
 }
 
 /* The function uses the singular value decomposition A = USV' to

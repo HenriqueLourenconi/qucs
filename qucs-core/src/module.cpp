@@ -288,7 +288,7 @@ void module::registerModules (void) {
   REGISTER_ANALYSIS (trsolver);
   REGISTER_ANALYSIS (hbsolver);
   REGISTER_ANALYSIS (parasweep);
-  REGISTER_ANALYSIS (e_trsolver);
+  //  REGISTER_ANALYSIS (e_trsolver);
 }
 
 // Global module unregistration.

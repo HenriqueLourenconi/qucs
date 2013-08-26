@@ -70,9 +70,27 @@ public:
     }
     const char * getHelperDescription (void);
 
+    virtual int getSysSize (void)
+    { return countVoltageSources () + countNodes (); }
+    virtual void combineMatrices (void)
+    { combineMA (); combineZ (); }
+    virtual void combineMA (void)
+    { *MA = *A; }
+    virtual void combineZ (void)
+    { *mz = *z - *A * *mx; }
+    virtual void setInit (void)
+    { if (mxprev != NULL) delete mxprev;
+      mxprev = new tvector<nr_type_t> (*x);
+      if (dmxsumprev != NULL) delete dmxsumprev;
+      dmxsumprev = new tvector<nr_type_t> (*dmxsum);
+      *mx = *x; }
+    virtual void extractSol (void)
+    { *x = *mx; *dx = *dmxsum; }
+
 protected:
     void restartNR (void);
     void savePreviousIteration (void);
+    void update_mx (void);
     void restorePreviousIteration (void);
     int  countNodes (void);
     int  getNodeNr (char *);
@@ -94,6 +112,8 @@ private:
     void createBMatrix (void);
     void createCMatrix (void);
     void createDMatrix (void);
+    void createMGMatrix (void);
+    void createMDMatrix (void);
     void createIVector (void);
     void createEVector (void);
     void createZVector (void);
@@ -111,16 +131,26 @@ private:
 protected:
     tvector<nr_type_t> * z;
     tvector<nr_type_t> * x;
-    tvector<nr_type_t> * xprev;
-    tvector<nr_type_t> * zprev;
+    tvector<nr_type_t> * dx;
+    tvector<nr_type_t> * mz;
+    tvector<nr_type_t> * mx;
+    tvector<nr_type_t> * dmx;
+    tvector<nr_type_t> * dmxsum;
+    tvector<nr_type_t> * mxprev;
+    tvector<nr_type_t> * dmxprev;
+    tvector<nr_type_t> * dmxsumprev;    
+    tvector<nr_type_t> * mzprev;
     tmatrix<nr_type_t> * A;
+    tmatrix<nr_type_t> * F;
     tmatrix<nr_type_t> * C;
+    tmatrix<nr_type_t> * MA;
     int iterations;
     int convHelper;
     int fixpoint;
     int eqnAlgo;
     int updateMatrix;
-    nr_double_t gMin, srcFactor;
+    nr_double_t gMin;
+    nr_double_t told;
     const char * desc;
 
 private:
@@ -130,6 +160,7 @@ private:
     nr_double_t abstol;
     nr_double_t vntol;
     nasolution<nr_type_t> solution;
+    nr_double_t chop_thres;
 
 private:
 

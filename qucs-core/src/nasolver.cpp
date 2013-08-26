@@ -63,14 +63,18 @@ nasolver<nr_type_t>::nasolver () : analysis ()
 {
     nlist = NULL;
     A = C = NULL;
-    z = x = xprev = zprev = NULL;
+    z = x = dx = mxprev = mzprev = NULL;
+    dmx = dmxsum = NULL;
+    dmxprev = dmxsumprev = NULL;
     reltol = abstol = vntol = 0;
     desc = NULL;
     calculate_func = NULL;
     convHelper = fixpoint = 0;
     eqnAlgo = ALGO_LU_DECOMPOSITION;
     updateMatrix = 1;
-    gMin = srcFactor = 0;
+    gMin = 0;
+    chop_thres = 0;
+    told = 1;
     eqns = new eqnsys<nr_type_t> ();
 }
 
@@ -80,14 +84,16 @@ nasolver<nr_type_t>::nasolver (char * n) : analysis (n)
 {
     nlist = NULL;
     A = C = NULL;
-    z = x = xprev = zprev = NULL;
+    z = x = dx = mxprev = mzprev = NULL;
     reltol = abstol = vntol = 0;
     desc = NULL;
     calculate_func = NULL;
     convHelper = fixpoint = 0;
     eqnAlgo = ALGO_LU_DECOMPOSITION;
     updateMatrix = 1;
-    gMin = srcFactor = 0;
+    gMin = 0;
+    chop_thres = 0;
+    told = 1;
     eqns = new eqnsys<nr_type_t> ();
 }
 
@@ -97,11 +103,16 @@ nasolver<nr_type_t>::~nasolver ()
 {
     if (nlist) delete nlist;
     if (C) delete C;
+    if (F) delete F;
     delete A;
     delete z;
     delete x;
-    delete xprev;
-    delete zprev;
+    if (dx) delete dx;
+    if (dmx) delete dmx;
+    if (dmxsum) delete dmxsum;
+    delete dmxsumprev;
+    delete mxprev;
+    delete mzprev;
     delete eqns;
 }
 
@@ -112,10 +123,12 @@ nasolver<nr_type_t>::nasolver (nasolver & o) : analysis (o)
 {
     nlist = o.nlist ? new nodelist (*(o.nlist)) : NULL;
     A = o.A ? new tmatrix<nr_type_t> (*(o.A)) : NULL;
+    F = o.F ? new tmatrix<nr_type_t> (*(o.F)) : NULL;
     C = o.C ? new tmatrix<nr_type_t> (*(o.C)) : NULL;
     z = o.z ? new tvector<nr_type_t> (*(o.z)) : NULL;
     x = o.x ? new tvector<nr_type_t> (*(o.x)) : NULL;
-    xprev = zprev = NULL;
+    dx = mxprev = mzprev = NULL;
+    dmx = dmxsum = dmxprev = dmxsumprev = NULL;
     reltol = o.reltol;
     abstol = o.abstol;
     vntol = o.vntol;
@@ -126,7 +139,8 @@ nasolver<nr_type_t>::nasolver (nasolver & o) : analysis (o)
     updateMatrix = o.updateMatrix;
     fixpoint = o.fixpoint;
     gMin = o.gMin;
-    srcFactor = o.srcFactor;
+    chop_thres = o.chop_thres;
+    told = o.told;
     eqns = new eqnsys<nr_type_t> (*(o.eqns));
     solution = nasolution<nr_type_t> (o.solution);
 }
@@ -144,6 +158,9 @@ int nasolver<nr_type_t>::solve_once (void)
 
     // generate A matrix and z vector
     createMatrix ();
+
+    //F->print(true);
+    //A->print(true);
 
     // solve equation system
     try_running ()
@@ -188,6 +205,10 @@ int nasolver<nr_type_t>::solve_once (void)
         while (top_exception() != NULL &&
                 top_exception()->getCode () == EXCEPTION_SINGULAR);
         break;
+    case EXCEPTION_NO_CONVERGENCE:
+	pop_exception ();
+	error++;
+	break;
     default:
         estack.print ();
         break;
@@ -228,10 +249,22 @@ void nasolver<nr_type_t>::solve_pre (void)
     int N = countNodes ();
     if (A != NULL) delete A;
     A = new tmatrix<nr_type_t> (M + N);
+    if (F != NULL) delete F;
+    F = new tmatrix<nr_type_t> (M + N);
     if (z != NULL) delete z;
     z = new tvector<nr_type_t> (N + M);
     if (x != NULL) delete x;
     x = new tvector<nr_type_t> (N + M);
+
+    int sysSize = getSysSize ();
+    if (MA != NULL) delete MA;
+    MA = new tmatrix<nr_type_t> (sysSize);
+    if (mz != NULL) delete mz;
+    mz = new tvector<nr_type_t> (sysSize);
+    if (mx != NULL) delete mx;
+    mx = new tvector<nr_type_t> (sysSize);
+    if (dmxsum != NULL) delete dmxsum;
+    dmxsum = new tvector<nr_type_t> (sysSize);
 
 #if DEBUG
     logprint (LOG_STATUS, "NOTIFY: %s: solving %s netlist\n", getName (), desc);
@@ -264,7 +297,7 @@ void nasolver<nr_type_t>::applyNodeset (bool nokeep)
                       "initialize node\n", getName (), n->getName ());
         }
     }
-    if (xprev != NULL) *xprev = *x;
+    setInit ();
     saveSolution ();
 }
 
@@ -283,7 +316,7 @@ int nasolver<nr_type_t>::solve_nonlinear_continuation_gMin (void)
     fixpoint = 0;
 
     // initialize the stepper
-    gPrev = gMin = 0.01;
+    gPrev = gMin = 1;
     gStep = gMin / 100;
     gMin -= gStep;
 
@@ -291,6 +324,20 @@ int nasolver<nr_type_t>::solve_nonlinear_continuation_gMin (void)
     {
         // run solving loop until convergence is reached
         run = 0;
+
+	if (mzprev != NULL) delete mzprev;
+	mzprev = NULL;
+	if (dmxprev != NULL) delete dmxprev;
+	dmxprev = NULL;
+
+	tvector<nr_type_t> mxorig = *mxprev;
+	tvector<nr_type_t> dmxsumorig = *dmxsumprev;
+
+#if STEPDEBUG
+	logprint (LOG_STATUS, "DEBUG: gmin: %g, step: %g\n",
+		  gPrev, gStep);
+#endif
+
         do
         {
             error = solve_once ();
@@ -303,13 +350,17 @@ int nasolver<nr_type_t>::solve_nonlinear_continuation_gMin (void)
             }
             else break;
         }
-        while (!convergence && run < MaxIterations);
+        while (convergence == 0 && run < MaxIterations);
         iterations += run;
 
         // not yet converged, so decreased the gMin-step
-        if (run >= MaxIterations || error)
+        if (run >= MaxIterations || convergence < 0 || error)
         {
             gStep /= 2;
+// 	    *mxprev = mxorig;
+//	    *dmxsumprev = dmxsumorig;
+	    restorePreviousIteration ();
+            saveSolution ();
             // here the absolute minimum step checker
             if (gStep < NR_EPSI)
             {
@@ -325,9 +376,12 @@ int nasolver<nr_type_t>::solve_nonlinear_continuation_gMin (void)
         // converged, increased the gMin-step
         else
         {
+#if STEPDEBUG
+	    logprint (LOG_STATUS, "DEBUG: accepted after %d iterations\n", run);
+#endif
             gPrev = gMin;
             gMin = MAX (gMin - gStep, 0);
-            gStep *= 2;
+            gStep *= 1.5;
         }
     }
     // continue until no additional resistances is necessary
@@ -343,7 +397,11 @@ int nasolver<nr_type_t>::solve_nonlinear_continuation_Source (void)
 {
     qucs::exception * e;
     int convergence, run = 0, MaxIterations, error = 0;
-    nr_double_t sStep, sPrev;
+    nr_double_t step[2], helper[2], prev[2];
+    int hm = 0; const int SRCSTEP = 0; const int GMINSTEP = 1;
+    nr_double_t chop_thres_old = chop_thres;
+
+    chop_thres = 0;
 
     // fetch simulation properties
     MaxIterations = getPropertyInteger ("MaxIter") / 4 + 1;
@@ -351,41 +409,71 @@ int nasolver<nr_type_t>::solve_nonlinear_continuation_Source (void)
     fixpoint = 0;
 
     // initialize the stepper
-    sPrev = srcFactor = 0;
-    sStep = 0.01;
-    srcFactor += sStep;
+    prev[SRCSTEP] = helper[SRCSTEP] = 1;
+    step[SRCSTEP] = 0.01;
+
+    prev[GMINSTEP] = helper[GMINSTEP] = 0.;
+    step[GMINSTEP] = helper[GMINSTEP] / 100;
 
     do
     {
         // run solving loop until convergence is reached
+	helper[hm] = MAX (prev[hm] - step[hm], 0);
+
         run = 0;
+
+	if (mzprev != NULL) delete mzprev;
+	mzprev = NULL;
+	if (dmxprev != NULL) delete dmxprev;
+	dmxprev = NULL;
+
+	//logprint (LOG_STATUS, "mx update: %g\n", norm (mx
+
+	tvector<nr_type_t> mxorig = *mxprev;
+	tvector<nr_type_t> dmxsumorig = *dmxsumprev;
+
+#if STEPDEBUG
+	logprint (LOG_STATUS, "DEBUG: factor: %g, step: %g\n",
+		  prev[SRCSTEP], step[SRCSTEP]);
+	logprint (LOG_STATUS, "DEBUG: gmin: %g, step: %g\n",
+		  prev[GMINSTEP], step[GMINSTEP]);
+	logprint (LOG_STATUS, "DEBUG: threshold: %g\n", chop_thres);
+#endif
+
         do
         {
-            subnet->setSrcFactor (srcFactor);
+            subnet->setSrcFactor (1-helper[SRCSTEP]);
+	    gMin = helper[GMINSTEP];
+
+	    //	    chop_thres = 1e-4;
+
             error = solve_once ();
             if (!error)
             {
                 // convergence check
                 convergence = (run > 0) ? checkConvergence () : 0;
-                savePreviousIteration ();
+		savePreviousIteration ();
                 run++;
             }
             else break;
         }
-        while (!convergence && run < MaxIterations);
+        while (convergence <= 0 && run < MaxIterations);
         iterations += run;
 
         // not yet converged, so decreased the source-step
         if (run >= MaxIterations || error)
         {
-            if (error)
-                sStep *= 0.1;
-            else
-                sStep *= 0.5;
+	    chop_thres = MIN (1e-3, chop_thres * 2);
+
+            //prev[hm] = helper[hm];
+	    step[hm] /= 1.5;
+	    //step[hm] += 1e-2;
+	    //*mxprev = mxorig;
+	    //*dmxsumprev = dmxsumorig;
             restorePreviousIteration ();
             saveSolution ();
             // here the absolute minimum step checker
-            if (sStep < NR_EPSI)
+            if (step[hm] < NR_EPSI)
             {
                 error = 1;
                 e = new qucs::exception (EXCEPTION_NO_CONVERGENCE);
@@ -394,24 +482,29 @@ int nasolver<nr_type_t>::solve_nonlinear_continuation_Source (void)
                 throw_exception (e);
                 break;
             }
-            srcFactor = MIN (sPrev + sStep, 1);
+
+	    if (prev[hm ^ 1] > 0)
+		hm ^= 1;
         }
         // converged, increased the source-step
-        else if (run < MaxIterations / 4)
-        {
-            sPrev = srcFactor;
-            srcFactor = MIN (srcFactor + sStep, 1);
-            sStep *= 1.5;
-        }
         else
         {
-            srcFactor = MIN (srcFactor + sStep, 1);
-        }
+#if STEPDEBUG
+	    logprint (LOG_STATUS, "DEBUG: accepted after %d iterations\n", run);
+#endif
+            prev[hm] = helper[hm];
+	    step[hm] *= 1.5;
+	    chop_thres /= 2;
+
+	    if (prev[hm] == 0)
+		hm ^= 1;
+	}
     }
     // continue until no source factor is necessary
-    while (sPrev < 1);
+    while (prev[0] > 0 || prev[1] > 0);
 
     subnet->setSrcFactor (1);
+    chop_thres = chop_thres_old;
     return error;
 }
 
@@ -450,12 +543,25 @@ int nasolver<nr_type_t>::solve_nonlinear (void)
     qucs::exception * e;
     int convergence, run = 0, MaxIterations, error = 0;
 
+    //fprintf (stderr, "new Newton\n");
+
     // fetch simulation properties
     MaxIterations = getPropertyInteger ("MaxIter");
     reltol = getPropertyDouble ("reltol");
     abstol = getPropertyDouble ("abstol");
     vntol = getPropertyDouble ("vntol");
     updateMatrix = 1;
+
+    setInit();
+
+    if (mzprev != NULL) delete mzprev;
+    mzprev = NULL;
+    if (dmxprev != NULL) delete dmxprev;
+    dmxprev = NULL;
+    if (dx != NULL) delete dx;
+    dx = new tvector<nr_type_t> (countVoltageSources () + countNodes ());
+    if (dmx != NULL) delete dmx;
+    dmx = new tvector<nr_type_t> (getSysSize ());
 
     if (convHelper == CONV_GMinStepping)
     {
@@ -487,7 +593,7 @@ int nasolver<nr_type_t>::solve_nonlinear (void)
             // control fixpoint iterations
             if (fixpoint)
             {
-                if (convergence && !updateMatrix)
+                if (convergence > 0 && !updateMatrix)
                 {
                     updateMatrix = 1;
                     convergence = 0;
@@ -503,13 +609,17 @@ int nasolver<nr_type_t>::solve_nonlinear (void)
             break;
         }
     }
-    while (!convergence &&
+    while (convergence == 0 &&
             run < MaxIterations * (1 + convHelper ? 1 : 0));
 
-    if (run >= MaxIterations || error)
+    //fprintf(stderr, "convergence after %d iterations\n", run);
+
+    if (run >= MaxIterations || convergence < 0 || error)
     {
         e = new qucs::exception (EXCEPTION_NO_CONVERGENCE);
         e->setText ("no convergence in %s analysis after %d iterations",
+                    desc, run);
+	fprintf(stderr, "no convergence in %s analysis after %d iterations\n",
                     desc, run);
         throw_exception (e);
         error++;
@@ -547,10 +657,12 @@ void nasolver<nr_type_t>::createMatrix (void)
         createBMatrix ();
         createCMatrix ();
         createDMatrix ();
+	createMGMatrix ();
+	createMDMatrix ();
     }
 
     /* Adjust G matrix if requested. */
-    if (convHelper == CONV_GMinStepping)
+    if (gMin > 0)
     {
         int N = countNodes ();
         int M = countVoltageSources ();
@@ -559,6 +671,13 @@ void nasolver<nr_type_t>::createMatrix (void)
             A->set (n, n, A->get (n, n) + gMin);
         }
     }
+
+//    int N = countNodes ();
+//    int M = countVoltageSources ();
+//    for (int n = 0; n < N + M; n++)
+//    {
+//	F->set (n, n, F->get (n, n) + 1e0);
+//    }
 
     /* Generate the z Matrix.  The z Matrix consists of two (2) minor
        matrices in the form     +- -+
@@ -692,6 +811,29 @@ void nasolver<nr_type_t>::createDMatrix (void)
     }
 }
 
+template <class nr_type_t>
+void nasolver<nr_type_t>::createMDMatrix (void)
+{
+    int M = countVoltageSources ();
+    int N = countNodes ();
+    circuit * vsr, * vsc;
+    nr_type_t val;
+    for (int r = 0; r < M; r++)
+    {
+        vsr = findVoltageSource (r);
+        for (int c = 0; c < M; c++)
+        {
+            vsc = findVoltageSource (c);
+            val = 0.0;
+            if (vsr == vsc)
+            {
+                val = MatVal (vsr->getMD (r, c));
+            }
+            F->set (r + N, c + N, val);
+        }
+    }
+}
+
 /* The G matrix is an NxN matrix formed in two steps.
    1. Each element in the diagonal matrix is equal to the sum of the
    conductance of each element connected to the corresponding node.
@@ -730,6 +872,39 @@ void nasolver<nr_type_t>::createGMatrix (void)
                     }
             // put value into G matrix
             A->set (r, c, g);
+        }
+    }
+}
+
+template <class nr_type_t>
+void nasolver<nr_type_t>::createMGMatrix (void)
+{
+    int pr, pc, N = countNodes ();
+    nr_type_t g;
+    struct nodelist_t * nr, * nc;
+    circuit * ct;
+
+    // go through each column of the MG matrix
+    for (int c = 0; c < N; c++)
+    {
+        nc = nlist->getNode (c);
+        // go through each row of the MG matrix
+        for (int r = 0; r < N; r++)
+        {
+            nr = nlist->getNode (r);
+            g = 0.0;
+            // sum up the capacitance of each connected circuit
+            for (int a = 0; a < nc->nNodes; a++)
+                for (int b = 0; b < nr->nNodes; b++)
+                    if (nc->nodes[a]->getCircuit () == nr->nodes[b]->getCircuit ())
+                    {
+                        ct = nc->nodes[a]->getCircuit ();
+                        pc = nc->nodes[a]->getPort ();
+                        pr = nr->nodes[b]->getPort ();
+                        g += MatVal (ct->getMY (pr, pc));
+                    }
+            // put value into MG matrix
+            F->set (r, c, g);
         }
     }
 }
@@ -980,19 +1155,70 @@ void nasolver<nr_type_t>::assignVoltageSources (void)
     subnet->setVoltageSources (nSources);
 }
 
+template <class nr_type_t>
+void nasolver<nr_type_t>::update_mx ()
+{
+    if (mxprev != NULL)
+	*mx = *mxprev + *dmx;
+    else
+	*mx += *dmx;
+
+    if (dmxsumprev != NULL)
+	*dmxsum = *dmxsumprev + *dmx;
+    else
+	*dmxsum += *dmx;
+}
+
 /* The matrix equation Ax = z is solved by x = A^-1*z.  The function
    applies the operation to the previously generated matrices. */
 template <class nr_type_t>
 void nasolver<nr_type_t>::runMNA (void)
 {
+    combineMatrices ();
+
+#if STEPDEBUG
+    logprint (LOG_STATUS, "DEBUG: condition: %g\n", condition (*MA));
+
+    if (mzprev != NULL)
+    {
+	logprint (LOG_STATUS, "DEBUG: RHS ratio: %g/%g = %g\n",
+		  norm(*mz), norm (*mzprev), norm(*mz) / norm (*mzprev));
+    }
+    else
+	logprint (LOG_STATUS, "DEBUG: RHS: %g\n", norm(*mz));
+#endif
+
+
+//    if (mzprev != NULL && norm(*mz) > norm (*mzprev))
+//    {
+//	qucs::exception * e = new qucs::exception (EXCEPTION_NO_CONVERGENCE);
+//	e->setText ("growing RHS in %s analysis", desc);
+//	throw_exception (e);
+//    }
+
+//    MA->print(); fprintf(stderr, "\n");
 
     // just solve the equation system here
     eqns->setAlgo (eqnAlgo);
-    eqns->passEquationSys (updateMatrix ? A : NULL, x, z);
-    eqns->solve ();
+    eqns->passEquationSys (updateMatrix ? MA : NULL, dmx, mz);
+
+    if (chop_thres > 0)
+	eqns->solve_svd (chop_thres);
+    else
+	eqns->solve ();
+
+    update_mx ();
+
+//    if (mzprev == NULL)
+//	fprintf(stderr, "RHS norm: %g\tupdate: %g\n",
+//		sqrt(norm(*mz)), sqrt(norm(*dmx)));
+//    else
+//	fprintf(stderr, "RHS norm: %g\tupdate: %g\tdirection:%g\n",
+//		sqrt(norm(*mz)), sqrt(norm(*dmx)),
+//		(sqrt(norm(*mzprev))-sqrt(norm(*mz)))/sqrt(norm(*mz-*mzprev)));
 
     // if damped Newton-Raphson is requested
-    if (xprev != NULL && top_exception () == NULL)
+    if (false && mxprev != NULL && top_exception () == NULL)
     {
         if (convHelper == CONV_Attenuation)
         {
@@ -1007,6 +1233,8 @@ void nasolver<nr_type_t>::runMNA (void)
             steepestDescent ();
         }
     }
+
+    extractSol ();
 }
 
 /* This function applies a damped Newton-Raphson (limiting scheme) to
@@ -1018,8 +1246,7 @@ void nasolver<nr_type_t>::applyAttenuation (void)
     nr_double_t alpha = 1.0, nMax;
 
     // create solution difference vector and find maximum deviation
-    tvector<nr_type_t> dx = *x - *xprev;
-    nMax = maxnorm (dx);
+    nMax = maxnorm (*dmx);
 
     // compute appropriate damping factor
     if (nMax > 0.0)
@@ -1030,7 +1257,8 @@ void nasolver<nr_type_t>::applyAttenuation (void)
     }
 
     // apply damped solution vector
-    *x = *xprev + alpha * dx;
+    *dmx *= alpha;
+    update_mx ();
 }
 
 /* This is damped Newton-Raphson using nested iterations in order to
@@ -1045,14 +1273,12 @@ void nasolver<nr_type_t>::lineSearch (void)
     nr_double_t alpha = 0.5, n, nMin, aprev = 1.0, astep = 0.5, adiff;
     int dir = -1;
 
-    // compute solution deviation vector
-    tvector<nr_type_t> dx = *x - *xprev;
     nMin = NR_MAX;
 
     do
     {
         // apply current damping factor and see what happens
-        *x = *xprev + alpha * dx;
+        *mx = *mxprev + alpha * *dmx;
 
         // recalculate Jacobian and right hand side
         saveSolution ();
@@ -1085,7 +1311,7 @@ void nasolver<nr_type_t>::lineSearch (void)
 
     // apply final damping factor
     assert (alpha > 0 && alpha <= 1);
-    *x = *xprev + alpha * dx;
+    *mx = *mxprev + alpha * *dmx;
 }
 
 /* The function looks for the optimal gradient for the right hand side
@@ -1098,35 +1324,39 @@ void nasolver<nr_type_t>::steepestDescent (void)
     nr_double_t alpha = 1.0, sl, n;
 
     // compute solution deviation vector
-    tvector<nr_type_t> dx = *x - *xprev;
-    tvector<nr_type_t> dz = *z - *zprev;
-    n = norm (*zprev);
+    tvector<nr_type_t> dmz = *mz - *mzprev;
+    tvector<nr_type_t> dmxorig = *dmx;
+    n = norm (*mzprev);
 
     do
     {
         // apply current damping factor and see what happens
-        *x = *xprev + alpha * dx;
+        *dmx = alpha * dmxorig;
+	update_mx ();
 
         // recalculate Jacobian and right hand side
         saveSolution ();
         calculate ();
         createZVector ();
+	combineMatrices ();
 
         // check gradient criteria, ThinkME: Is this correct?
-        dz = *z - *zprev;
-        sl = real (sum (dz * -dz));
-        if (norm (*z) < n + alpha * sl) break;
+        dmz = *mz - *mzprev;
+        sl = real (sum (dmz * -dmz));
+        if (norm (*mz) < n + alpha * sl) break;
         alpha *= 0.7;
     }
     while (alpha > 0.001);
 
     // apply final damping factor
-    *x = *xprev + alpha * dx;
+    *dmx = alpha * dmxorig;
+    update_mx ();
 }
 
 /* The function checks whether the iterative algorithm for linearizing
    the non-linear components in the network shows convergence.  It
-   returns non-zero if it converges and zero otherwise. */
+   returns positive if it converges, zero if it hasn't yet converged, and
+   negative if the iteration should be aborted. */
 template <class nr_type_t>
 int nasolver<nr_type_t>::checkConvergence (void)
 {
@@ -1136,34 +1366,50 @@ int nasolver<nr_type_t>::checkConvergence (void)
     nr_double_t v_abs, v_rel, i_abs, i_rel;
     int r;
 
+#if STEPDEBUG
+    if (dmxprev == NULL)
+	logprint (LOG_STATUS, "DEBUG: no previous update\n");
+    else
+	logprint (LOG_STATUS, "DEBUG: ratio: %g/%g = %g\n",
+		  norm (*dmx), norm (*dmxprev), norm (*dmx) / norm (*dmxprev));
+
+    logprint (LOG_STATUS, "DEBUG: covariant norm: %g\n", norm (*mx));
+
+    logprint (LOG_STATUS, "DEBUG: tolerance divisor: %g\n", told);
+#endif
+
     // check the nodal voltage changes against the allowed absolute
     // and relative tolerance values
     for (r = 0; r < N; r++)
     {
-        v_abs = abs (x->get (r) - xprev->get (r));
-        v_rel = abs (x->get (r));
-        if (v_abs >= vntol + reltol * v_rel) return 0;
+        v_abs = abs (dmx->get (r));
+        v_rel = abs (mx->get (r));
+        if (told * v_abs >= vntol + reltol * v_rel) goto noconv;
         if (!convHelper)
         {
-            i_abs = abs (z->get (r) - zprev->get (r));
-            i_rel = abs (z->get (r));
-            if (i_abs >= abstol + reltol * i_rel) return 0;
+            i_abs = abs (mz->get (r));
+            if (told * i_abs >= abstol) goto noconv;
         }
     }
 
     for (r = 0; r < M; r++)
     {
-        i_abs = abs (x->get (r + N) - xprev->get (r + N));
-        i_rel = abs (x->get (r + N));
-        if (i_abs >= abstol + reltol * i_rel) return 0;
+        i_abs = abs (dmx->get (r + N));
+        i_rel = abs (mx->get (r + N));
+        if (told * i_abs >= abstol + reltol * i_rel) goto noconv;
         if (!convHelper)
         {
-            v_abs = abs (z->get (r + N) - zprev->get (r + N));
-            v_rel = abs (z->get (r + N));
-            if (v_abs >= vntol + reltol * v_rel) return 0;
+            v_abs = abs (mz->get (r + N));
+            if (told * v_abs >= vntol) goto noconv;
         }
     }
     return 1;
+    
+ noconv:
+    if (dmxprev == NULL || norm (*dmx) < norm (*dmxprev))
+	return 0;
+    else
+	return -1;
 }
 
 /* The function saves the solution and right hand vector of the previous
@@ -1171,14 +1417,19 @@ int nasolver<nr_type_t>::checkConvergence (void)
 template <class nr_type_t>
 void nasolver<nr_type_t>::savePreviousIteration (void)
 {
-    if (xprev != NULL)
-        *xprev = *x;
+    *mxprev = *mx;
+
+    if (dmxprev != NULL)
+	*dmxprev = *dmx;
     else
-        xprev = new tvector<nr_type_t> (*x);
-    if (zprev != NULL)
-        *zprev = *z;
+	dmxprev = new tvector<nr_type_t> (*dmx);
+
+    *dmxsumprev = *dmxsum;
+
+    if (mzprev != NULL)
+        *mzprev = *mz;
     else
-        zprev = new tvector<nr_type_t> (*z);
+        mzprev = new tvector<nr_type_t> (*mz);
 }
 
 /* The function restores the solution and right hand vector of the
@@ -1186,8 +1437,12 @@ void nasolver<nr_type_t>::savePreviousIteration (void)
 template <class nr_type_t>
 void nasolver<nr_type_t>::restorePreviousIteration (void)
 {
-    if (xprev != NULL) *x = *xprev;
-    if (zprev != NULL) *z = *zprev;
+    if (mxprev != NULL) *mx = *mxprev;
+    if (dmxprev != NULL) *dmx = *dmxprev;
+    if (dmxsumprev != NULL) *dmxsum = *dmxsumprev;
+    if (mzprev != NULL) *mz = *mzprev;
+
+    extractSol ();
 }
 
 /* The function restarts the NR iteration for each non-linear

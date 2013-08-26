@@ -54,26 +54,16 @@ void dcblock::initAC (void) {
   voltageSource (VSRC_1, NODE_1, NODE_2);
 }
 
-#define qState 0 // charge state
-#define cState 1 // current state
-
 void dcblock::initTR (void) {
-  setStates (2);
   initDC ();
   setISource (true);
 }
 
 void dcblock::calcTR (nr_double_t) {
   nr_double_t c = getPropertyDouble ("C");
-  nr_double_t g, i;
-  nr_double_t v = real (getV (NODE_1) - getV (NODE_2));
 
-  setState (qState, c * v);
-  integrate (qState, c, g, i);
-  setY (NODE_1, NODE_1, +g); setY (NODE_2, NODE_2, +g);
-  setY (NODE_1, NODE_2, -g); setY (NODE_2, NODE_1, -g);
-  setI (NODE_1 , -i);
-  setI (NODE_2 , +i);
+  setMY (NODE_1, NODE_1, +c); setMY (NODE_2, NODE_2, +c);
+  setMY (NODE_1, NODE_2, -c); setMY (NODE_2, NODE_1, -c);
 }
 
 // properties

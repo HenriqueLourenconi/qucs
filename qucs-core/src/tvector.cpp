@@ -412,10 +412,14 @@ void tvector<nr_type_t>::reorder (int * idx) {
 #ifdef DEBUG
 // Debug function: Prints the vector object.
 template <class nr_type_t>
-void tvector<nr_type_t>::print (void) {
+void tvector<nr_type_t>::print (bool realonly) {
   for (int r = 0; r < size; r++) {
-    fprintf (stderr, "%+.2e%+.2ei\n", (double) real (get (r)),
-	     (double) imag (get (r)));
+    if (realonly)
+      fprintf (stderr, "%+.2e\n", (double) real (get (r)));
+    else
+      fprintf (stderr, "%+.2e%+.2ei\n", (double) real (get (r)),
+	       (double) imag (get (r)));
   }
+  fprintf (stderr, ";;;\n"); 
 }
 #endif /* DEBUG */

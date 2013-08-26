@@ -70,6 +70,8 @@ class eqnsys
 			tvector<nr_type_t> *);
   void solve (void);
 
+  void solve_svd (nr_double_t thres = NR_EPSI);
+
  private:
   int update;
   int algo;
@@ -116,8 +118,7 @@ class eqnsys
   nr_double_t euclidian_r (int, int c = 1);
   void givens_apply_u (int, int, nr_double_t, nr_double_t);
   void givens_apply_v (int, int, nr_double_t, nr_double_t);
-  void solve_svd (void);
-  void chop_svd (void);
+  void chop_svd (nr_double_t);
   void factorize_svd (void);
   void substitute_svd (void);
   void diagonalize_svd (void);

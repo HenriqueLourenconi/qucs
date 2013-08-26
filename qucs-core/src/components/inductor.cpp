@@ -82,26 +82,12 @@ void inductor::calcAC (nr_double_t frequency) {
 void inductor::initTR (void) {
   initDC ();
   clearY ();
-  setStates (2);
 }
-
-#define fState 0 // flux state
-#define vState 1 // voltage state
 
 void inductor::calcTR (nr_double_t) {
   nr_double_t l = getPropertyDouble ("L");
-  nr_double_t r, v;
-  nr_double_t i = real (getJ (VSRC_1));
 
-  /* apply initial condition if requested */
-  if (getMode () == MODE_INIT && isPropertyGiven ("I")) {
-    i = getPropertyDouble ("I");
-  }
-
-  setState (fState, i * l);
-  integrate (fState, l, r, v);
-  setD (VSRC_1, VSRC_1, -r);
-  setE (VSRC_1, v);
+  setMD (VSRC_1, VSRC_1, -l);
 }
 
 void inductor::initHB (void) {

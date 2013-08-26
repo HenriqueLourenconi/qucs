@@ -54,6 +54,7 @@ circuit::circuit () : object (), integrator () {
   size = 0;
   MatrixN = MatrixS = MatrixY = NULL;
   MatrixB = MatrixC = MatrixD = NULL;
+  MatrixMY = MatrixMD = NULL;
   VectorQ = VectorE = VectorI = VectorV = VectorJ = NULL;
   MatrixQV = NULL;
   VectorCV = VectorGV = NULL;
@@ -82,6 +83,7 @@ circuit::circuit (int s) : object (), integrator () {
   if (size > 0) nodes = new node[s];
   MatrixN = MatrixS = MatrixY = NULL;
   MatrixB = MatrixC = MatrixD = NULL;
+  MatrixMY = MatrixMD = NULL;
   VectorQ = VectorE = VectorI = VectorV = VectorJ = NULL;
   MatrixQV = NULL;
   VectorCV = VectorGV = NULL;
@@ -150,12 +152,14 @@ circuit::circuit (const circuit & c) : object (c), integrator (c) {
     if (c.MatrixY) {
       allocMatrixMNA ();
       memcpy (MatrixY, c.MatrixY, size * size * sizeof (nr_complex_t));
+      memcpy (MatrixMY, c.MatrixMY, size * size * sizeof (nr_complex_t));
       memcpy (VectorI, c.VectorI, size * sizeof (nr_complex_t));
       memcpy (VectorV, c.VectorV, size * sizeof (nr_complex_t));
       if (vsources > 0) {
 	memcpy (MatrixB, c.MatrixB, vsources * size * sizeof (nr_complex_t));
 	memcpy (MatrixC, c.MatrixC, vsources * size * sizeof (nr_complex_t));
 	memcpy (MatrixD, c.MatrixD, vsources * vsources * sizeof (nr_complex_t));
+	memcpy (MatrixMD, c.MatrixMD, vsources * vsources * sizeof (nr_complex_t));
 	memcpy (VectorE, c.VectorE, vsources * sizeof (nr_complex_t));
 	memcpy (VectorJ, c.VectorJ, vsources * sizeof (nr_complex_t));
       }
@@ -165,6 +169,7 @@ circuit::circuit (const circuit & c) : object (c), integrator (c) {
     nodes = NULL;
     MatrixS = MatrixN = MatrixY = NULL;
     MatrixB = MatrixC = MatrixD = NULL;
+    MatrixMY = MatrixMD = NULL;
     VectorQ = VectorE = VectorI = VectorV = VectorJ = NULL;
     MatrixQV = NULL;
     VectorCV = VectorGV = NULL;
@@ -266,12 +271,14 @@ void circuit::allocMatrixMNA (void) {
   freeMatrixMNA ();
   if (size > 0) {
     MatrixY = new nr_complex_t[size * size];
+    MatrixMY = new nr_complex_t[size * size];
     VectorI = new nr_complex_t[size];
     VectorV = new nr_complex_t[size];
     if (vsources > 0) {
       MatrixB = new nr_complex_t[vsources * size];
       MatrixC = new nr_complex_t[vsources * size];
       MatrixD = new nr_complex_t[vsources * vsources];
+      MatrixMD = new nr_complex_t[vsources * vsources];
       VectorE = new nr_complex_t[vsources];
       VectorJ = new nr_complex_t[vsources];
     }
@@ -281,9 +288,11 @@ void circuit::allocMatrixMNA (void) {
 /* Free()'s all memory used by the MNA matrices. */
 void circuit::freeMatrixMNA (void) {
   if (MatrixY) { delete[] MatrixY; MatrixY = NULL; }
+  if (MatrixMY) { delete[] MatrixMY; MatrixMY = NULL; }
   if (MatrixB) { delete[] MatrixB; MatrixB = NULL; }
   if (MatrixC) { delete[] MatrixC; MatrixC = NULL; }
   if (MatrixD) { delete[] MatrixD; MatrixD = NULL; }
+  if (MatrixMD) { delete[] MatrixMD; MatrixMD = NULL; }
   if (VectorE) { delete[] VectorE; VectorE = NULL; }
   if (VectorI) { delete[] VectorI; VectorI = NULL; }
   if (VectorV) { delete[] VectorV; VectorV = NULL; }
@@ -366,10 +375,22 @@ nr_complex_t circuit::getD (int r, int c) {
   return MatrixD[(r - vsource) * vsources + c - vsource];
 }
 
+/* Returns the circuits MD matrix value of the given voltage source
+   built in the circuit. */
+nr_complex_t circuit::getMD (int r, int c) {
+  return MatrixMD[(r - vsource) * vsources + c - vsource];
+}
+
 /* Sets the circuits D-MNA matrix value of the given voltage source
    built in the circuit. */
 void circuit::setD (int r, int c, nr_complex_t z) {
   MatrixD[r * vsources + c] = z;
+}
+
+/* Sets the circuits MD matrix value of the given voltage source
+   built in the circuit. */
+void circuit::setMD (int r, int c, nr_complex_t z) {
+  MatrixMD[r * vsources + c] = z;
 }
 
 /* Returns the circuits E-MNA matrix value of the given voltage source
@@ -445,10 +466,22 @@ nr_complex_t circuit::getY (int r, int c) {
   return MatrixY[r * size + c];
 }
 
+/* Returns the circuits MG matrix value depending on the port
+   numbers. */
+nr_complex_t circuit::getMY (int r, int c) {
+  return MatrixMY[r * size + c];
+}
+
 /* Sets the circuits G-MNA matrix value depending on the port
    numbers. */
 void circuit::setY (int r, int c, nr_complex_t y) {
   MatrixY[r * size + c] = y;
+}
+
+/* Sets the circuits MG matrix value depending on the port
+   numbers. */
+void circuit::setMY (int r, int c, nr_complex_t y) {
+  MatrixMY[r * size + c] = y;
 }
 
 /* Modifies the circuits G-MNA matrix value depending on the port

@@ -64,35 +64,19 @@ void biastee::initAC (void) {
   voltageSource (VSRC_1, NODE_2, NODE_1);
 }
 
-#define fState 0 // flux state
-#define vState 1 // voltage state
-#define qState 2 // charge state
-#define cState 3 // current state
-
 void biastee::initTR (void) {
   initDC ();
-  setStates (4);
   setISource (true);
 }
 
 void biastee::calcTR (nr_double_t) {
   nr_double_t l = getPropertyDouble ("L");
   nr_double_t c = getPropertyDouble ("C");
-  nr_double_t g, r, v;
-  nr_double_t i = real (getJ (VSRC_1));
 
-  setState (fState, i * l);
-  integrate (fState, l, r, v);
-  setD (VSRC_1, VSRC_1, -r);
-  setE (VSRC_1, v);
+  setMD (VSRC_1, VSRC_1, -l);
 
-  v = real (getV (NODE_1) - getV (NODE_2));
-  setState (qState, c * v);
-  integrate (qState, c, g, i);
-  setY (NODE_1, NODE_1, +g); setY (NODE_2, NODE_2, +g);
-  setY (NODE_1, NODE_2, -g); setY (NODE_2, NODE_1, -g);
-  setI (NODE_1 , -i);
-  setI (NODE_2 , +i);
+  setMY (NODE_1, NODE_1, +c); setMY (NODE_2, NODE_2, +c);
+  setMY (NODE_1, NODE_2, -c); setMY (NODE_2, NODE_1, -c);
 }
 
 // properties

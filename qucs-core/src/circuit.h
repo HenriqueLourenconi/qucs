@@ -185,6 +185,8 @@ class circuit : public object, public integrator
   nr_complex_t getB (int, int);
   nr_complex_t getC (int, int);
   nr_complex_t getD (int, int);
+  nr_complex_t getMY (int, int);
+  nr_complex_t getMD (int, int);
   nr_complex_t getQV (int, int);
   nr_complex_t getGV (int);
   nr_complex_t getCV (int);
@@ -200,6 +202,8 @@ class circuit : public object, public integrator
   void setB (int, int, nr_complex_t);
   void setC (int, int, nr_complex_t);
   void setD (int, int, nr_complex_t);
+  void setMY (int, int, nr_complex_t);
+  void setMD (int, int, nr_complex_t);
   void setQV (int, int, nr_complex_t);
   void setGV (int, nr_complex_t);
   void setCV (int, nr_complex_t);
@@ -279,6 +283,8 @@ class circuit : public object, public integrator
   nr_complex_t * MatrixB;
   nr_complex_t * MatrixC;
   nr_complex_t * MatrixD;
+  nr_complex_t * MatrixMY;
+  nr_complex_t * MatrixMD;
   nr_complex_t * VectorE;
   nr_complex_t * VectorI;
   nr_complex_t * VectorV;

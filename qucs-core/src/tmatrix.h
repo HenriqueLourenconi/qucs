@@ -34,9 +34,15 @@ class tmatrix;
 template <class nr_type_t>
 tmatrix<nr_type_t> inverse (tmatrix<nr_type_t>);
 template <class nr_type_t>
+nr_double_t infnorm (tmatrix<nr_type_t> a);
+template <class nr_type_t>
+nr_double_t condition (tmatrix<nr_type_t> a);
+template <class nr_type_t>
 tmatrix<nr_type_t> teye (int);
 template <class nr_type_t>
 tmatrix<nr_type_t> operator * (tmatrix<nr_type_t>, tmatrix<nr_type_t>);
+template <class nr_type_t>
+tmatrix<nr_type_t> operator * (nr_type_t, tmatrix<nr_type_t>);
 template <class nr_type_t>
 tvector<nr_type_t> operator * (tmatrix<nr_type_t>, tvector<nr_type_t>);
 template <class nr_type_t>
@@ -71,8 +77,11 @@ class tmatrix
   // some basic matrix operations
 #ifndef _MSC_VER
   friend tmatrix inverse<> (tmatrix);
+  friend nr_double_t infnorm<> (tmatrix);
+  friend nr_double_t condition<> (tmatrix);
   friend tmatrix teye<nr_type_t> (int);
   friend tmatrix operator *<> (tmatrix, tmatrix);
+  friend tmatrix operator *<> (nr_type_t, tmatrix);
   friend tvector<nr_type_t> operator *<> (tmatrix, tvector<nr_type_t>);
   friend tvector<nr_type_t> operator *<> (tvector<nr_type_t>, tmatrix);
 #endif

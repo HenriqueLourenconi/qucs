@@ -30,6 +30,8 @@
 #include <string.h>
 #include <math.h>
 #include <float.h>
+#include <unistd.h>
+#include <iostream>
 
 #include "compat.h"
 #include "object.h"
@@ -51,11 +53,11 @@
 #define BREAKPOINTS 0 // exact breakpoint calculation
 
 #define dState 0 // delta T state
-#define sState 1 // solution state
 
 // Macro for the n-th state of the solution vector history.
-#define SOL(state) (solution[(int) getState (sState, (state))])
-
+#define SOL(state) (solution[getIndex (state)])
+#define UPD(state) (update[getIndex (state)])
+#define RHS(state) (rhs[getIndex (state)])
 
 using namespace transient;
 
@@ -67,6 +69,8 @@ trsolver::trsolver ()
     type = ANALYSIS_TRANSIENT;
     setDescription ("transient");
     for (int i = 0; i < 8; i++) solution[i] = NULL;
+    for (int i = 0; i < 8; i++) update[i] = NULL;
+    for (int i = 0; i < 8; i++) rhs[i] = NULL;
     tHistory = NULL;
     relaxTSR = false;
     initialDC = true;
@@ -80,6 +84,8 @@ trsolver::trsolver (char * n)
     type = ANALYSIS_TRANSIENT;
     setDescription ("transient");
     for (int i = 0; i < 8; i++) solution[i] = NULL;
+    for (int i = 0; i < 8; i++) update[i] = NULL;
+    for (int i = 0; i < 8; i++) rhs[i] = NULL;
     tHistory = NULL;
     relaxTSR = false;
     initialDC = true;
@@ -92,9 +98,11 @@ trsolver::~trsolver ()
     for (int i = 0; i < 8; i++)
     {
         if (solution[i] != NULL)
-        {
             delete solution[i];
-        }
+        if (update[i] != NULL)
+            delete update[i];
+        if (rhs[i] != NULL)
+            delete rhs[i];
     }
     if (tHistory) delete tHistory;
 }
@@ -106,6 +114,8 @@ trsolver::trsolver (trsolver & o)
 {
     swp = o.swp ? new sweep (*o.swp) : NULL;
     for (int i = 0; i < 8; i++) solution[i] = NULL;
+    for (int i = 0; i < 8; i++) update[i] = NULL;
+    for (int i = 0; i < 8; i++) rhs[i] = NULL;
     tHistory = o.tHistory ? new history (*o.tHistory) : NULL;
     relaxTSR = o.relaxTSR;
     initialDC = o.initialDC;
@@ -133,6 +143,7 @@ int trsolver::dcAnalysis (void)
     // Run the DC solver once.
     try_running ()
     {
+        told = 1;
         error = solve_nonlinear ();
     }
     // Appropriate exception handling.
@@ -140,11 +151,15 @@ int trsolver::dcAnalysis (void)
     {
     case EXCEPTION_NO_CONVERGENCE:
         pop_exception ();
-        convHelper = CONV_LineSearch;
-        logprint (LOG_ERROR, "WARNING: %s: %s analysis failed, using line search "
-                  "fallback\n", getName (), getDescription ());
+	convHelper = CONV_SourceStepping;
+	//        convHelper = CONV_GMinStepping;
+        logprint (LOG_ERROR, "WARNING: %s: %s analysis failed, using source"
+                  " stepping fallback\n", getName (), getDescription ());
+	for (int i = 0; i < x->getSize (); i++)
+	    x->set (i, 0);
         applyNodeset ();
         restart ();
+	//        applyNodeset ();
         error = solve_nonlinear ();
         break;
     default:
@@ -205,6 +220,8 @@ int trsolver::solve (void)
         if (error)
             return -1;
     }
+
+    convHelper = CONV_None;
 
     // Initialize transient analysis.
     setDescription ("transient");
@@ -350,6 +367,11 @@ int trsolver::solve (void)
                 rejected = 0;
             }
 
+#if STEPDEBUG
+	    logprint (LOG_STATUS, "DEBUG: order: %d, %d, %d\n", predOrder, corrOrder,
+		      activeStates);
+#endif
+
             saveCurrent = current;
             current += delta;
             running++;
@@ -390,7 +412,7 @@ int trsolver::solve (void)
     logprint (LOG_STATUS, "NOTIFY: %s: average NR-iterations %g, "
               "%d non-convergences\n", getName (),
               (double) statIterations / statSteps, statConvergence);
-
+    //sleep(10);
     // cleanup
     deinitTR ();
     return 0;
@@ -475,6 +497,7 @@ void trsolver::saveHistory (circuit * c)
 int trsolver::predictor (void)
 {
     int error = 0;
+    //predType = INTEGRATOR_UNKNOWN;
     switch (predType)
     {
     case INTEGRATOR_GEAR: // explicit GEAR
@@ -490,15 +513,22 @@ int trsolver::predictor (void)
         *x = *SOL (1);  // This is too a simple predictor...
         break;
     }
+
+    predictGear ();
+
     saveSolution ();
     *SOL (0) = *x;
+    *dmxsum = *x - *SOL (1);
     return error;
 }
 
 // Stores the given vector into all the solution vectors.
 void trsolver::fillSolution (tvector<nr_double_t> * s)
 {
-    for (int i = 0; i < 8; i++) *SOL (i) = *s;
+    for (int i = 0; i < 8; i++)
+    {
+        *SOL (i) = *s;
+    }
 }
 
 /* The function predicts the successive solution vector using the
@@ -535,11 +565,77 @@ void trsolver::predictEuler (void)
 
     for (int r = 0; r < N + M; r++)
     {
-        xn = predCoeff[0] * SOL(1)->get (r);
+      //      printf("r=%i\n", r);
         hn = getState (dState, 1);
         dd = (SOL(1)->get (r) - SOL(2)->get (r)) / hn;
+//	printf("(%g-%g)/%g\n", SOL(1)->get (r), SOL(2)->get (r), hn);
+//	printf("%g vs. %g\n", dd, CHFL(1)->get(r));
+
+        xn = predCoeff[0] * SOL(1)->get (r);
         xn += predCoeff[1] * dd;
         x->set (r, xn);
+    }
+}
+
+void trsolver::combineMatrices (void)
+{
+    switch (corrType) {
+    case INTEGRATOR_GEAR:
+	combineGear ();
+	break;
+    case INTEGRATOR_TRAPEZOIDAL:
+	combineBilinear ();
+	break;
+    case INTEGRATOR_EULER:
+	combineEuler ();
+	break;
+    case INTEGRATOR_ADAMSMOULTON:
+	combineMoulton ();
+	break;
+    default:
+	logprint (LOG_ERROR, "ERROR: no corrector method specified");
+	exit (1);
+    }
+
+//    MA->print (true);
+//    mz->print (true);
+}
+
+void trsolver::combineEuler (void)
+{
+    *MA = *A; *MA += corrCoeff[0] * *F;
+    *mz = *z - *A * *mx;
+    *mz += corrCoeff[1] * (*F * *dmxsum);
+}
+
+void trsolver::combineBilinear (void)
+{
+    *MA = *A; *MA += corrCoeff[0] * *F;
+    *mz = *z - *A * *mx + *RHS(1);
+    *mz += corrCoeff[1] * (*F * *dmxsum);
+}
+
+void trsolver::combineGear (void)
+{
+    nr_double_t dc = 0;
+
+    *MA = *A; *MA += corrCoeff[0] * *F;
+    *mz = *z - *A * *mx;
+    for (int i = corrOrder; i > 1; i--) {
+	dc += corrCoeff[i];
+	*mz += dc * (*F * *UPD(i-1));
+    }
+    dc += corrCoeff[1];
+    *mz += dc * (*F * *dmxsum);
+}
+
+void trsolver::combineMoulton (void)
+{
+    *MA = *A; *MA += corrCoeff[0] * *F;
+    *mz = *z - *A * *mx;
+    *mz += corrCoeff[1] * (*F * *dmxsum);
+    for (int i = 1; i < corrOrder; i++) {
+	*mz -= corrCoeff[i+1] * *RHS(i);
     }
 }
 
@@ -569,6 +665,8 @@ void trsolver::predictGear (void)
 int trsolver::corrector (void)
 {
     int error = 0;
+    //told = 1;
+    told = delta;
     error += solve_nonlinear ();
     return error;
 }
@@ -583,7 +681,10 @@ void trsolver::nextStates (void)
         c->nextState ();
     }
 
-    *SOL (0) = *x; // save current solution
+    *SOL (0) = *x;              // save current solution
+    *UPD (0) = *dx;             // save update
+    *RHS (0) = *z - *A * *x;    // save resistive current
+
     nextState ();
     statSteps++;
 }
@@ -692,20 +793,21 @@ void trsolver::adjustDelta (nr_double_t t)
    integration method or to reduce it. */
 void trsolver::adjustOrder (int reduce)
 {
-    if ((corrOrder < corrMaxOrder && !rejected) || reduce)
+    if (corrOrder < corrMaxOrder || predOrder < predMaxOrder)
     {
         if (reduce)
         {
             corrOrder = 1;
         }
-        else if (!rejected)
+        else if (!rejected && corrOrder < corrMaxOrder)
         {
             corrOrder++;
         }
 
         // adjust type and order of corrector and predictor
         corrType = correctorType (CMethod, corrOrder);
-        predType = predictorType (corrType, corrOrder, predOrder);
+	predOrder = min (corrOrder, max (1, activeStates - 1));
+        predType = predictorType (corrType, predOrder);
 
         // apply new corrector method and order to each circuit
         circuit * root = subnet->getRoot ();
@@ -773,9 +875,10 @@ void trsolver::initTR (void)
     // fetch corrector integration method and determine predicor method
     corrMaxOrder = getPropertyInteger ("Order");
     corrType = CMethod = correctorType (IMethod, corrMaxOrder);
-    predType = PMethod = predictorType (CMethod, corrMaxOrder, predMaxOrder);
+    predMaxOrder = corrMaxOrder;
+    predOrder = min (predMaxOrder, max (1, activeStates - 1));
+    predType = PMethod = predictorType (CMethod, predOrder);
     corrOrder = corrMaxOrder;
-    predOrder = predMaxOrder;
 
     // initialize step values
     delta = getPropertyDouble ("InitialStep");
@@ -791,7 +894,7 @@ void trsolver::initTR (void)
     if (delta > deltaMax) delta = deltaMax;
 
     // initialize step history
-    setStates (2);
+    setStates (1);
     initStates ();
     // initialise the history of states, setting them all to 'delta'
     fillState (dState, delta);
@@ -809,11 +912,9 @@ void trsolver::initTR (void)
     {
         // solution contains the last sets of node voltages and branch
         // currents at each of the last 8 'deltas'.
-        // Note for convenience the definition:
-        //   #define SOL(state) (solution[(int) getState (sState, (state))])
-        // is provided and used elsewhere to update the solutions
         solution[i] = new tvector<nr_double_t>;
-        setState (sState, (nr_double_t) i, i);
+        update[i] = new tvector<nr_double_t>;
+        rhs[i] = new tvector<nr_double_t>;
     }
 
     // tell circuits about the transient analysis
@@ -833,6 +934,10 @@ void trsolver::deinitTR (void)
     {
         delete solution[i];
         solution[i] = NULL;
+        delete update[i];
+        update[i] = NULL;
+        delete rhs[i];
+        rhs[i] = NULL;
     }
     // cleanup history
     if (tHistory)

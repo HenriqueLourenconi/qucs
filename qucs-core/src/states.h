@@ -35,6 +35,7 @@ class states
   ~states ();
 
   // save-state variables for transient analysis
+  int getIndex (int n = 0);
   state_type_t getState (int, int n = 0);
   void setState (int, state_type_t, int n = 0);
   void initStates (void);
@@ -45,6 +46,7 @@ class states
   void prevState (void);
   void fillState (int, state_type_t);
   void saveState (int, state_type_t *);
+  int activeStates;
 
  private:
   state_type_t * stateval;
