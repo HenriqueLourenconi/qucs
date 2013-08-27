@@ -99,6 +99,7 @@ tvector<nr_type_t>::~tvector () {
 
 // Returns the tvector element at the given position.
 template <class nr_type_t>
+inline
 nr_type_t tvector<nr_type_t>::get (int i) {
   assert (i >= 0 && i < size);
   return data[i];
@@ -106,6 +107,7 @@ nr_type_t tvector<nr_type_t>::get (int i) {
 
 // Sets the tvector element at the given position.
 template <class nr_type_t>
+inline
 void tvector<nr_type_t>::set (int i, nr_type_t z) {
   assert (i >= 0 && i < size);
   data[i] = z;
