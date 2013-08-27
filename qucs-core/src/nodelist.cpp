@@ -277,11 +277,15 @@ void nodelist::assignNodes (void) {
   for (struct nodelist_t * n = root; n != NULL; n = n->next) {
     // ground node gets a zero counter
     if (!strcmp (n->name, "gnd")) {
+      for (int j = 0; j < n->nNodes; j++)
+	n->nodes[j]->setNode (0);
       n->n = 0;
       narray[0] = n;
     }
     // others get a unique number greater than zero
     else {
+      for (int j = 0; j < n->nNodes; j++)
+	n->nodes[j]->setNode (i);
       narray[i] = n;
       n->n = i++;
     }

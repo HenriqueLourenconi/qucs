@@ -604,24 +604,26 @@ void trsolver::combineMatrices (void)
 //    mz->print (true);
 }
 
-void trsolver::combineEuler (void)
+void trsolver::combineMAMulti (void)
 {
     if (updateMatrix)
     {
-        *MA = *A;
-	*MA += corrCoeff[0] * *F;
+	*MA = *F;
+	*MA *= corrCoeff[0];
+        *MA += *A;
     }
+}
+
+void trsolver::combineEuler (void)
+{
+    combineMAMulti ();
     *mz = *z - *A * *mx;
     *mz += corrCoeff[1] * (*F * *dmxsum);
 }
 
 void trsolver::combineBilinear (void)
 {
-    if (updateMatrix)
-    {
-        *MA = *A;
-	*MA += corrCoeff[0] * *F;
-    }
+    combineMAMulti ();
     *mz = *z - *A * *mx + *RHS(1);
     *mz += corrCoeff[1] * (*F * *dmxsum);
 }
@@ -630,11 +632,7 @@ void trsolver::combineGear (void)
 {
     nr_double_t dc = 0;
 
-    if (updateMatrix)
-    {
-        *MA = *A;
-	*MA += corrCoeff[0] * *F;
-    }
+    combineMAMulti ();
     *mz = *z - *A * *mx;
     for (int i = corrOrder; i > 1; i--) {
 	dc += corrCoeff[i];
@@ -646,11 +644,7 @@ void trsolver::combineGear (void)
 
 void trsolver::combineMoulton (void)
 {
-    if (updateMatrix)
-    {
-        *MA = *A;
-	*MA += corrCoeff[0] * *F;
-    }
+    combineMAMulti ();
     *mz = *z - *A * *mx;
     *mz += corrCoeff[1] * (*F * *dmxsum);
     for (int i = 1; i < corrOrder; i++) {

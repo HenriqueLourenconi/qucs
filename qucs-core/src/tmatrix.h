@@ -89,6 +89,7 @@ class tmatrix
   // intrinsic operators
   tmatrix operator += (tmatrix);
   tmatrix operator -= (tmatrix);
+  tmatrix operator *= (nr_type_t);
 
   // easy accessor operators
   nr_type_t  operator () (int r, int c) const {

@@ -65,6 +65,7 @@ public:
     void predictBashford (void);
     void predictEuler (void);
     void predictGear (void);
+    void combineMAMulti (void);
     void combineEuler (void);
     void combineBilinear (void);
     void combineGear (void);

@@ -110,6 +110,7 @@ tmatrix<nr_type_t>::~tmatrix () {
 
 // Returns the tmatrix element at the given row and column.
 template <class nr_type_t>
+inline
 nr_type_t tmatrix<nr_type_t>::get (int r, int c) {
   assert (r >= 0 && r < rows && c >= 0 && c < cols);
   return data[r * cols + c];
@@ -117,6 +118,7 @@ nr_type_t tmatrix<nr_type_t>::get (int r, int c) {
 
 // Sets the tmatrix element at the given row and column.
 template <class nr_type_t>
+inline
 void tmatrix<nr_type_t>::set (int r, int c, nr_type_t z) {
   assert (r >= 0 && r < rows && c >= 0 && c < cols);
   data[r * cols + c] = z;
@@ -320,6 +322,14 @@ tmatrix<nr_type_t> operator * (nr_type_t a, tmatrix<nr_type_t> b) {
       res.set (r, c, a*b.get (r, c));
   }
   return res;
+}
+
+// Intrinsic multiplication of scalar and matrix.
+template <class nr_type_t>
+tmatrix<nr_type_t> tmatrix<nr_type_t>::operator *= (nr_type_t a) {
+  nr_type_t * dst = data;
+  for (int i = 0; i < rows * cols; i++) *dst++ *= a;
+  return *this;
 }
 
 // Multiplication of matrix and vector.
