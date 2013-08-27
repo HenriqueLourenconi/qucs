@@ -861,66 +861,62 @@ void nasolver<nr_type_t>::createMDMatrix (void)
 template <class nr_type_t>
 void nasolver<nr_type_t>::createGMatrix (void)
 {
-    int pr, pc, N = countNodes ();
-    nr_type_t g;
-    struct nodelist_t * nr, * nc;
-    circuit * ct;
+    A->set (0);
 
-    // go through each column of the G matrix
-    for (int c = 0; c < N; c++)
+    circuit * root = subnet->getRoot ();
+    for (circuit * c = root; c != NULL; c = (circuit *) c->getNext ())
     {
-        nc = nlist->getNode (c);
-        // go through each row of the G matrix
-        for (int r = 0; r < N; r++)
-        {
-            nr = nlist->getNode (r);
-            g = 0.0;
-            // sum up the conductance of each connected circuit
-            for (int a = 0; a < nc->nNodes; a++)
-                for (int b = 0; b < nr->nNodes; b++)
-                    if (nc->nodes[a]->getCircuit () == nr->nodes[b]->getCircuit ())
-                    {
-                        ct = nc->nodes[a]->getCircuit ();
-                        pc = nc->nodes[a]->getPort ();
-                        pr = nr->nodes[b]->getPort ();
-                        g += MatVal (ct->getY (pr, pc));
-                    }
-            // put value into G matrix
-            A->set (r, c, g);
-        }
+	int s = c->getSize ();
+	for (int a = 0; a < s; a++)
+	{
+	    for (int b = 0; b < s; b++)
+	    {
+		int pr, pc;
+
+		pr = c->getNode (a)->getNode ();
+		pc = c->getNode (b)->getNode ();
+
+		if (pr-- == 0 || pc-- == 0)
+		    continue;
+
+//		fprintf (stderr, "entry: %i, %i, %g\n",
+//			 pr, pc,
+//			 MatVal (c->getY (a, b)));
+
+		nr_type_t g = A->get (pr, pc) + MatVal (c->getY (a, b));
+		A->set (pr, pc, g);
+	    }
+	}
     }
+
+//    A->print (1);
 }
 
 template <class nr_type_t>
 void nasolver<nr_type_t>::createMGMatrix (void)
 {
-    int pr, pc, N = countNodes ();
-    nr_type_t g;
-    struct nodelist_t * nr, * nc;
-    circuit * ct;
+    F->set (0);
 
-    // go through each column of the MG matrix
-    for (int c = 0; c < N; c++)
+    circuit * root = subnet->getRoot ();
+    for (circuit * c = root; c != NULL; c = (circuit *) c->getNext ())
     {
-        nc = nlist->getNode (c);
-        // go through each row of the MG matrix
-        for (int r = 0; r < N; r++)
-        {
-            nr = nlist->getNode (r);
-            g = 0.0;
-            // sum up the capacitance of each connected circuit
-            for (int a = 0; a < nc->nNodes; a++)
-                for (int b = 0; b < nr->nNodes; b++)
-                    if (nc->nodes[a]->getCircuit () == nr->nodes[b]->getCircuit ())
-                    {
-                        ct = nc->nodes[a]->getCircuit ();
-                        pc = nc->nodes[a]->getPort ();
-                        pr = nr->nodes[b]->getPort ();
-                        g += MatVal (ct->getMY (pr, pc));
-                    }
-            // put value into MG matrix
-            F->set (r, c, g);
-        }
+	int s = c->getSize ();
+	for (int a = 0; a < s; a++)
+	{
+	    for (int b = 0; b < s; b++)
+	    {
+		int pr, pc;
+
+		pr = c->getNode (a)->getNode ();
+		pc = c->getNode (b)->getNode ();
+
+		if (pr-- == 0 || pc-- == 0)
+		    continue;
+
+		nr_type_t g = F->get (pr, pc) + MatVal (c->getMY (a, b));
+		F->set (pr, pc, g);
+	    }
+	}
     }
 }
 
