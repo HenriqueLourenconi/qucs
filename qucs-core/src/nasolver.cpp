@@ -1392,11 +1392,6 @@ int nasolver<nr_type_t>::checkConvergence (void)
         v_abs = abs (dmx->get (r));
         v_rel = abs (mx->get (r));
         if (told * v_abs >= vntol + reltol * v_rel) goto noconv;
-        if (!convHelper)
-        {
-            i_abs = abs (mz->get (r));
-            if (told * i_abs >= abstol) goto noconv;
-        }
     }
 
     for (r = 0; r < M; r++)
@@ -1404,11 +1399,6 @@ int nasolver<nr_type_t>::checkConvergence (void)
         i_abs = abs (dmx->get (r + N));
         i_rel = abs (mx->get (r + N));
         if (told * i_abs >= abstol + reltol * i_rel) goto noconv;
-        if (!convHelper)
-        {
-            v_abs = abs (mz->get (r + N));
-            if (told * v_abs >= vntol) goto noconv;
-        }
     }
     return 1;
     
