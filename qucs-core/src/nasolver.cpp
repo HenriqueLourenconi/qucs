@@ -67,8 +67,8 @@ template <class nr_type_t>
 nasolver<nr_type_t>::nasolver () : analysis ()
 {
     nlist = NULL;
-    A = C = NULL;
-    z = x = dx = mxprev = mzprev = NULL;
+    A = C = F = MA = NULL;
+    z = x = dx = mx = mz = mxprev = mzprev = NULL;
     dmx = dmxsum = NULL;
     dmxprev = dmxsumprev = NULL;
     reltol = abstol = vntol = 0;
@@ -88,8 +88,8 @@ template <class nr_type_t>
 nasolver<nr_type_t>::nasolver (char * n) : analysis (n)
 {
     nlist = NULL;
-    A = C = NULL;
-    z = x = dx = mxprev = mzprev = NULL;
+    A = C = F = MA = NULL;
+    z = x = dx = mx = mz = mxprev = mzprev = NULL;
     reltol = abstol = vntol = 0;
     desc = NULL;
     calculate_func = NULL;
@@ -110,11 +110,15 @@ nasolver<nr_type_t>::~nasolver ()
     if (C) delete C;
     if (F) delete F;
     delete A;
+    delete MA;
     delete z;
     delete x;
+    delete mz;
+    delete mx;
     if (dx) delete dx;
     if (dmx) delete dmx;
     if (dmxsum) delete dmxsum;
+    if (dmxprev) delete dmxprev;
     delete dmxsumprev;
     delete mxprev;
     delete mzprev;
