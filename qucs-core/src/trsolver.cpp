@@ -74,6 +74,7 @@ trsolver::trsolver ()
     tHistory = NULL;
     relaxTSR = false;
     initialDC = true;
+    corrType = INTEGRATOR_UNKNOWN;
 }
 
 // Constructor creates a named instance of the trsolver class.
@@ -89,6 +90,7 @@ trsolver::trsolver (char * n)
     tHistory = NULL;
     relaxTSR = false;
     initialDC = true;
+    corrType = INTEGRATOR_UNKNOWN;
 }
 
 // Destructor deletes the trsolver class object.
@@ -415,7 +417,7 @@ int trsolver::solve (void)
     logprint (LOG_STATUS, "NOTIFY: %s: average NR-iterations %g, "
               "%d non-convergences\n", getName (),
               (double) statIterations / statSteps, statConvergence);
-    //sleep(10);
+
     // cleanup
     deinitTR ();
     return 0;
@@ -596,8 +598,7 @@ void trsolver::combineMatrices (void)
 	combineMoulton ();
 	break;
     default:
-	logprint (LOG_ERROR, "ERROR: no corrector method specified");
-	exit (1);
+        nasolver::combineMatrices ();
     }
 
 //    MA->print (true);
