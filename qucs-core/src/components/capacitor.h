@@ -32,6 +32,7 @@ class capacitor : public circuit
   CREATOR (capacitor);
   void calcSP (nr_double_t);
   void initDC (void);
+  void calcDC (void);
   void calcAC (nr_double_t);
   void initAC (void);
   void calcTR (nr_double_t);

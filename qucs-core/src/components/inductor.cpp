@@ -44,13 +44,34 @@ void inductor::calcSP (nr_double_t frequency) {
 }
 
 void inductor::initDC (void) {
+  if (isPropertyGiven ("I"))
+    initDC_isrc ();
+  else
+    initDC_short ();
+}
+
+void inductor::initDC_short (void) {
   setVoltageSources (1);  
   allocMatrixMNA ();
   voltageSource (VSRC_1, NODE_1, NODE_2);
 }
 
+void inductor::initDC_isrc (void) {
+  nr_double_t i = getPropertyDouble ("I");
+  setVoltageSources (1);
+  allocMatrixMNA ();
+  setI (NODE_1, +i); setI (NODE_2, -i);
+  setD (VSRC_1, VSRC_1, 1.0);
+  setE (VSRC_1, i);
+}
+
 void inductor::calcDC (void) {
   clearY ();
+  if (isPropertyGiven ("I")) {
+    nr_double_t i = getPropertyDouble ("I");
+    nr_double_t f = getNet()->getSrcFactor ();
+    setI (NODE_1, +i * f); setI (NODE_2, -i * f);
+  }
 }
 
 void inductor::initAC (void) {
@@ -63,8 +84,8 @@ void inductor::initAC (void) {
   }
   // for zero inductance create a zero voltage source
   else {
-    initDC ();
-    calcDC ();
+    initDC_short ();
+    clearY ();
   }
 }
 
@@ -80,7 +101,7 @@ void inductor::calcAC (nr_double_t frequency) {
 }
 
 void inductor::initTR (void) {
-  initDC ();
+  initDC_short ();
   clearY ();
 }
 

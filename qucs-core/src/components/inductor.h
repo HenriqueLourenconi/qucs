@@ -38,6 +38,10 @@ class inductor : public circuit
   void calcTR (nr_double_t);
   void initHB (void);
   void calcHB (nr_double_t);
+
+ private:
+  void initDC_short (void);
+  void initDC_isrc (void);
 };
 
 #endif /* __INDUCTOR_H__ */
