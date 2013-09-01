@@ -60,7 +60,7 @@ void inductor::initDC_isrc (void) {
   nr_double_t i = getPropertyDouble ("I");
   setVoltageSources (1);
   allocMatrixMNA ();
-  setI (NODE_1, +i); setI (NODE_2, -i);
+  setI (NODE_1, -i); setI (NODE_2, +i);
   setD (VSRC_1, VSRC_1, 1.0);
   setE (VSRC_1, i);
 }
@@ -70,7 +70,7 @@ void inductor::calcDC (void) {
   if (isPropertyGiven ("I")) {
     nr_double_t i = getPropertyDouble ("I");
     nr_double_t f = getNet()->getSrcFactor ();
-    setI (NODE_1, +i * f); setI (NODE_2, -i * f);
+    setI (NODE_1, -i * f); setI (NODE_2, +i * f);
   }
 }
 
