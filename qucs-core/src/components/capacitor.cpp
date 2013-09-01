@@ -66,7 +66,22 @@ void capacitor::calcSP (nr_double_t frequency) {
 
 /*\brief Init DC simulation of capacitor */
 void capacitor::initDC (void) {
+  bool vsource = isPropertyGiven ("V");
+
+  if (vsource)
+    setVoltageSources (1);  
+
   allocMatrixMNA ();
+
+  if (vsource) {
+    voltageSource (VSRC_1, NODE_1, NODE_2);
+    setE (VSRC_1, getPropertyDouble ("V"));
+  }
+}
+
+void capacitor::calcDC (void) {
+  nr_double_t f = getNet()->getSrcFactor ();
+  setE (VSRC_1, f * getPropertyDouble ("V"));
 }
 
 /*!\brief AC model 
@@ -94,12 +109,9 @@ void capacitor::initAC (void) {
   allocMatrixMNA ();
 }
 
-#define qState 0 // charge state
-#define cState 1 // current state
-
 void capacitor::initTR (void) {
-  setStates (2);
-  initDC ();
+  setVoltageSources (0);
+  allocMatrixMNA ();
 }
 
 void capacitor::calcTR (nr_double_t) {
@@ -108,11 +120,6 @@ void capacitor::calcTR (nr_double_t) {
   if (hasProperty ("Controlled")) return;
 
   nr_double_t c = getPropertyDouble ("C");
-
-//  /* apply initial condition if requested */
-//  if (getMode () == MODE_INIT && isPropertyGiven ("V")) {
-//    v = getPropertyDouble ("V");
-//  }
 
   setMY (NODE_1, NODE_1, +c); setMY (NODE_2, NODE_2, +c);
   setMY (NODE_1, NODE_2, -c); setMY (NODE_2, NODE_1, -c);
