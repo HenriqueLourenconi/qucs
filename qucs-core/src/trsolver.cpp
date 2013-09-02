@@ -254,6 +254,8 @@ int trsolver::solve (void)
     fillState (dState, delta);
     adjustOrder (1);
 
+    current = delta;
+
     // Start to sweep through time.
     for (int i = 0; i < swp->getSize (); i++)
     {
@@ -502,7 +504,9 @@ void trsolver::saveHistory (circuit * c)
 int trsolver::predictor (void)
 {
     int error = 0;
-    //predType = INTEGRATOR_UNKNOWN;
+
+    assert (predType == INTEGRATOR_GEAR);
+
     switch (predType)
     {
     case INTEGRATOR_GEAR: // explicit GEAR
@@ -519,11 +523,19 @@ int trsolver::predictor (void)
         break;
     }
 
-    predictGear ();
-
     saveSolution ();
     *SOL (0) = *x;
-    *dmxsum = *x - *SOL (1);
+
+    if (corrType == INTEGRATOR_RADAU5)
+    {
+	int n = countNodes () + countVoltageSources ();
+	for (int i = 0; i < 3; i++)
+	    for (int k = 0; k < n; k++)
+		dmxsum->set (i*n + k, x->get (k) - SOL (1)->get (k));
+    }
+    else
+	*dmxsum = *x - *SOL (1);
+
     return error;
 }
 
@@ -582,31 +594,34 @@ void trsolver::predictEuler (void)
     }
 }
 
-void trsolver::combineMatrices (void)
+void trsolver::calcMatrices (void)
 {
     switch (corrType) {
     case INTEGRATOR_GEAR:
-	combineGear ();
+	calcGear ();
 	break;
     case INTEGRATOR_TRAPEZOIDAL:
-	combineBilinear ();
+	calcBilinear ();
 	break;
     case INTEGRATOR_EULER:
-	combineEuler ();
+	calcEuler ();
 	break;
     case INTEGRATOR_ADAMSMOULTON:
-	combineMoulton ();
+	calcMoulton ();
+	break;
+    case INTEGRATOR_RADAU5:
+	calcRadau5 ();
 	break;
     default:
-        nasolver::combineMatrices ();
+        nasolver::calcMatrices ();
     }
-
-//    MA->print (true);
-//    mz->print (true);
 }
 
-void trsolver::combineMAMulti (void)
+void trsolver::calcMAMulti (void)
 {
+    calculate ();
+    createMatrix ();
+
     if (updateMatrix)
     {
 	*MA = *F;
@@ -615,25 +630,25 @@ void trsolver::combineMAMulti (void)
     }
 }
 
-void trsolver::combineEuler (void)
+void trsolver::calcEuler (void)
 {
-    combineMAMulti ();
+    calcMAMulti ();
     *mz = *z - *A * *mx;
     *mz += corrCoeff[1] * (*F * *dmxsum);
 }
 
-void trsolver::combineBilinear (void)
+void trsolver::calcBilinear (void)
 {
-    combineMAMulti ();
+    calcMAMulti ();
     *mz = *z - *A * *mx + *RHS(1);
     *mz += corrCoeff[1] * (*F * *dmxsum);
 }
 
-void trsolver::combineGear (void)
+void trsolver::calcGear (void)
 {
     nr_double_t dc = 0;
 
-    combineMAMulti ();
+    calcMAMulti ();
     *mz = *z - *A * *mx;
     for (int i = corrOrder; i > 1; i--) {
 	dc += corrCoeff[i];
@@ -643,15 +658,137 @@ void trsolver::combineGear (void)
     *mz += dc * (*F * *dmxsum);
 }
 
-void trsolver::combineMoulton (void)
+void trsolver::calcMoulton (void)
 {
-    combineMAMulti ();
+    calcMAMulti ();
     *mz = *z - *A * *mx;
     *mz += corrCoeff[1] * (*F * *dmxsum);
     for (int i = 1; i < corrOrder; i++) {
 	*mz -= corrCoeff[i+1] * *RHS(i);
     }
 }
+
+void trsolver::calcRadau5 (void)
+{
+    const nr_double_t radau_A[3][3] =
+	{{(88-7*sqrt(6))/360, (296-169*sqrt(6))/1800, (-2+3*sqrt(6))/225},
+	 {(296+169*sqrt(6))/1800, (88+7*sqrt(6))/360, (-2-3*sqrt(6))/225},
+	 {(16-sqrt(6))/36, (16+sqrt(6))/36, 1./9}};
+    //const nr_double_t radau_b[3] =
+    //	{(16-sqrt(6))/36, (16+sqrt(6))/36, 1./9};
+    const nr_double_t radau_c[3] =
+	{(4-sqrt(6))/10, (4+sqrt(6))/10, 1};
+
+    nr_double_t saveCurrent = current - delta;
+    int n = countNodes () + countVoltageSources ();
+
+    if (updateMatrix)
+    {
+	current = saveCurrent;
+	// Is this necessary?
+	for (int k = 0; k < n; k++)
+	    x->set(k, SOL (0)->get(k));
+	calculate ();
+	createMatrix ();
+
+	// Compute the (naive) Jacobian for the RadauIIA method
+	for (int i = 0; i < 3; i++)
+	    for (int j = 0; j < 3; j++)
+		for (int k = 0; k < n; k++)
+		    for (int l = 0; l < n; l++)
+		    {
+			nr_double_t g = radau_A[i][j] * A->get(k, l);
+
+			if (i == j)
+			    g += F->get(k, l) / delta;
+
+			MA->set(i*n + k, j*n + l, g);
+		    }
+	//MA->print (1);
+    }
+    
+    // Evaluate the circuit
+    tvector<nr_double_t> fsave[3];
+
+    for (int i = 0; i < 3; i++)
+    {
+	current = saveCurrent + radau_c[i] * delta;
+	for (int k = 0; k < n; k++)
+	    x->set(k, mx->get(i*n + k));
+	saveSolution ();
+	calculate ();
+	createMatrix ();
+
+	fsave[i] = *z - *A * *x;
+
+	for (int k = 0; k < n; k++)
+	{
+	    nr_double_t mzk = 0;
+	    for (int l = 0; l < n; l++)
+		mzk -= F->get(k, l) * dmxsum->get(l) / delta;
+	    mz->set(i*n + k, mzk);
+	}
+    }
+
+    // Combine
+    for (int i = 0; i < 3; i++)
+	for (int k = 0; k < n; k++)
+        {
+	    nr_double_t mzk = mz->get(i*n + k);
+	    for (int j = 0; j < 3; j++)
+		mzk += radau_A[i][j] * fsave[j].get(k);
+	    
+	    mz->set(i*n + k, mzk);
+	}
+
+    // We should already be there:
+    // current = saveCurrent + delta;
+}
+
+void trsolver::setInitX (void)
+{
+    int n = countNodes () + countVoltageSources ();
+
+    switch (corrType)
+    {
+    case INTEGRATOR_RADAU5:
+	for (int i = 0; i < 3; i++)
+	    for (int k = 0; k < n; k++)
+		mx->set (i*n + k, x->get (k));
+	break;
+    default:
+	nasolver::setInitX ();
+    }
+}
+
+void trsolver::extractSol (void)
+{
+    int n = countNodes () + countVoltageSources ();
+
+    switch (corrType)
+    {
+    case INTEGRATOR_RADAU5:
+	for (int k = 0; k < n; k++)
+	{
+	    x->set (k, mx->get(2*n + k));
+	    dx->set (k, dmxsum->get(2*n + k));
+	}
+	break;
+    default:
+	nasolver::extractSol ();
+    }
+}
+
+int trsolver::getSysSize (void)
+{
+    int n = countVoltageSources () + countNodes ();
+
+    if (corrType == INTEGRATOR_RADAU5)
+	return n * 3;
+    else
+	return n;
+}
+
 
 /* The function predicts the successive solution vector using the
    explicit Gear integration formula. */
@@ -679,7 +816,6 @@ void trsolver::predictGear (void)
 int trsolver::corrector (void)
 {
     int error = 0;
-    //told = 1;
     told = delta;
     error += solve_nonlinear ();
     return error;
@@ -820,7 +956,7 @@ void trsolver::adjustOrder (int reduce)
 
         // adjust type and order of corrector and predictor
         corrType = correctorType (CMethod, corrOrder);
-	predOrder = min (corrOrder, max (1, activeStates - 1));
+	predOrder = corrOrder;
         predType = predictorType (corrType, predOrder);
 
         // apply new corrector method and order to each circuit
@@ -1058,7 +1194,7 @@ PROP_OPT [] =
 {
     {
         "IntegrationMethod", PROP_STR, { PROP_NO_VAL, "Trapezoidal" },
-        PROP_RNG_STR4 ("Euler", "Trapezoidal", "Gear", "AdamsMoulton")
+        PROP_RNG_STR5 ("Euler", "Trapezoidal", "Gear", "AdamsMoulton", "Radau5")
     },
     { "Order", PROP_INT, { 2, PROP_NO_STR }, PROP_RNGII (1, 6) },
     { "InitialStep", PROP_REAL, { 1e-9, PROP_NO_STR }, PROP_POS_RANGE },

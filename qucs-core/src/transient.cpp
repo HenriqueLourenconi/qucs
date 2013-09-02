@@ -350,6 +350,11 @@ int transient::correctorType (char * Method, int& MaxOrder) {
     if (MaxOrder < 1) MaxOrder = 1;
     return INTEGRATOR_ADAMSBASHFORD;
   }
+  else if (!strcmp (Method, "Radau5")) {
+    if (MaxOrder > 6) MaxOrder = 6;
+    if (MaxOrder < 1) MaxOrder = 1;
+    return INTEGRATOR_RADAU5;
+  }
   return INTEGRATOR_UNKNOWN;
 }
 
@@ -417,6 +422,13 @@ static struct integration_types_t integration_types[] = {
       INTEGRATOR_ADAMSBASHFORD, INTEGRATOR_ADAMSBASHFORD },
     { -1.0/2, -5.0/12, -3.0/8, -251.0/720, -95.0/288, -19087.0/60480 },
     { +1.0/2, +5.0/12, +3.0/8, +251.0/720, +95.0/288, +19087.0/60480 }
+  },
+  { INTEGRATOR_RADAU5,
+    { INTEGRATOR_RADAU5, INTEGRATOR_RADAU5,
+      INTEGRATOR_RADAU5, INTEGRATOR_RADAU5,
+      INTEGRATOR_RADAU5, INTEGRATOR_RADAU5 },
+    { -1.0, -1.0, -1.0, -1.0, -1.0, -1.0 },
+    { +1.0, +1.0, +1.0, +1.0, +1.0, +1.0 }
   }
 };
 
