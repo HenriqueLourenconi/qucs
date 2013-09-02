@@ -50,7 +50,7 @@ TR_Sim::TR_Sim()
 	QObject::tr("number of simulation time steps")));
   Props.append(new Property("IntegrationMethod", "Trapezoidal", false,
 	QObject::tr("integration method")+
-	" [Euler, Trapezoidal, Gear, AdamsMoulton]"));
+	" [Euler, Trapezoidal, Gear, AdamsMoulton, Radau5]"));
   Props.append(new Property("Order", "2", false,
 	QObject::tr("order of integration method")+" (1-6)"));
   Props.append(new Property("InitialStep", "1 ns", false,
