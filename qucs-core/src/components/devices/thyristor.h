@@ -50,6 +50,7 @@ class thyristor : public circuit, public devstates
 
  private:
   matrix calcMatrixY (nr_double_t);
+  void calcCap (void);
 };
 
 #endif /* __THYRISTOR_H__ */

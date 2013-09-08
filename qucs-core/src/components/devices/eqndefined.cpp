@@ -62,6 +62,7 @@ eqndefined::~eqndefined () {
 
 // Callback for initializing the DC analysis.
 void eqndefined::initDC (void) {
+  setVoltageSources (getSize () / 2);
   allocMatrixMNA ();
   if (ieqn == NULL) initModel ();
   doHB = false;
@@ -387,6 +388,8 @@ void eqndefined::initTR (void) {
 void eqndefined::calcTR (nr_double_t) {
   int state, i, j, k, branches = getSize () / 2;
 
+  clearE ();
+
   // run usual DC iteration, then save operating points
   calcDC ();
 
@@ -397,7 +400,7 @@ void eqndefined::calcTR (nr_double_t) {
   for (i = 0; i < branches; i++) {
     int r = i * 2;
     state = 2 * i;
-    transientCapacitanceQ (state, r + 0, r + 1, _charges[i]);
+    transientCapacitanceQI (i, r + 0, r + 1, _charges[i]);
   }
 
   // charge: 2-node, voltage: 2-node
@@ -406,7 +409,7 @@ void eqndefined::calcTR (nr_double_t) {
       int r = i * 2;
       int c = j * 2;
       nr_double_t v = BP (j);
-      transientCapacitanceC (r + 0, r + 1, c + 0, c + 1, _jdyna[k], v);
+      transientCapacitanceCI (r, c + 0, c + 1, _jdyna[k], v);
     }
   }
 }

@@ -48,6 +48,7 @@ triac::triac () : circuit (4) {
 void triac::initDC (void) {
   Ud_last = 0.0;
   // allocate MNA matrices
+  setVoltageSources (1);
   allocMatrixMNA ();
   // create internal node
   setInternalNode (NODE_IN, "int");
@@ -56,6 +57,7 @@ void triac::initDC (void) {
 // Callback for DC analysis.
 void triac::calcDC (void) {
   calcTheModel (false);
+  calcCap ();
 }
 
 void triac::calcTheModel (bool last) {
@@ -191,12 +193,8 @@ void triac::calcSP (nr_double_t frequency) {
   setMatrixS (ytos (calcMatrixY (frequency)));
 }
 
-#define qState 0 // charge state
-#define cState 1 // current state
-
 // Callback for initializing the TR analysis.
 void triac::initTR (void) {
-  setStates (2);
   initDC ();
   time_prev = -1.0;
 }
@@ -208,13 +206,16 @@ void triac::calcTR (nr_double_t time) {
     Ud_last = fabs (real (getV (NODE_IN) - getV (NODE_A2)));
   }
   calcTheModel (true);
+  calcCap ();
+}
 
+void triac::calcCap (void) {
   saveOperatingPoints ();
   loadOperatingPoints ();
   calcOperatingPoints ();
 
   nr_double_t Ci = getOperatingPoint ("Ci");
-  transientCapacitance (qState, NODE_A1, NODE_IN, Ci, Ui, Qi);
+  transientCapacitanceI (VSRC_1, NODE_A1, NODE_IN, Ci, Ui, Qi);
 }
 
 // properties

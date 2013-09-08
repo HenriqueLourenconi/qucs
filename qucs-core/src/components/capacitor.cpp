@@ -68,8 +68,10 @@ void capacitor::calcSP (nr_double_t frequency) {
 void capacitor::initDC (void) {
   bool vsource = isPropertyGiven ("V");
 
-  if (vsource)
-    setVoltageSources (1);  
+  if (vsource || hasProperty ("Controlled"))
+    setVoltageSources (1);
+  else
+    setVoltageSources (0);
 
   allocMatrixMNA ();
 
@@ -80,6 +82,8 @@ void capacitor::initDC (void) {
 }
 
 void capacitor::calcDC (void) {
+  if (hasProperty ("Controlled")) return;
+
   nr_double_t f = getNet()->getSrcFactor ();
   setE (VSRC_1, f * getPropertyDouble ("V"));
 }
@@ -110,7 +114,10 @@ void capacitor::initAC (void) {
 }
 
 void capacitor::initTR (void) {
-  setVoltageSources (0);
+  if (hasProperty ("Controlled"))
+    setVoltageSources (1);
+  else
+    setVoltageSources (0);
   allocMatrixMNA ();
 }
 
