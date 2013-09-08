@@ -167,8 +167,8 @@ void jfet::restartDC (void) {
 }
 
 void jfet::initDC (void) {
-
   // allocate MNA matrices
+  setVoltageSources (2);
   allocMatrixMNA ();
 
   // initialize scalability
@@ -326,6 +326,17 @@ void jfet::calcDC (void) {
   setY (NODE_S, NODE_G, -ggs - gm);
   setY (NODE_S, NODE_D, -gds);
   setY (NODE_S, NODE_S, ggs + gds + gm);
+
+  saveOperatingPoints ();
+  loadOperatingPoints ();
+  calcOperatingPoints ();
+
+  nr_double_t Cgs = getOperatingPoint ("Cgs");
+  nr_double_t Cgd = getOperatingPoint ("Cgd");
+
+  clearE ();
+  transientCapacitanceI (VSRC_1, NODE_G, NODE_S, Cgs, Ugs, Qgs);
+  transientCapacitanceI (VSRC_2, NODE_G, NODE_D, Cgd, Ugd, Qgd);
 }
 
 void jfet::loadOperatingPoints (void) {
@@ -385,27 +396,12 @@ void jfet::calcNoiseAC (nr_double_t frequency) {
   setMatrixN (calcMatrixCy (frequency));
 }
 
-#define qgdState 0 // gate-drain charge state
-#define cgdState 1 // gate-drain current state
-#define qgsState 2 // gate-source charge state
-#define cgsState 3 // gate-source current state
-
 void jfet::initTR (void) {
-  setStates (4);
   initDC ();
 }
 
 void jfet::calcTR (nr_double_t) {
   calcDC ();
-  saveOperatingPoints ();
-  loadOperatingPoints ();
-  calcOperatingPoints ();
-
-  nr_double_t Cgs = getOperatingPoint ("Cgs");
-  nr_double_t Cgd = getOperatingPoint ("Cgd");
-
-  transientCapacitance (qgsState, NODE_G, NODE_S, Cgs, Ugs, Qgs);
-  transientCapacitance (qgdState, NODE_G, NODE_D, Cgd, Ugd, Qgd);
 }
 
 // properties

@@ -254,6 +254,7 @@ void diode::prepareDC (void) {
 
 // Callback for initializing the DC analysis.
 void diode::initDC (void) {
+  setVoltageSources (1);
   deviceStates (StateVars, 1);
   doHB = false;
   prepareDC ();
@@ -340,6 +341,14 @@ void diode::calcDC (void) {
   // fill in G-Matrix
   setY (NODE_C, NODE_C, +gd); setY (NODE_A, NODE_A, +gd);
   setY (NODE_C, NODE_A, -gd); setY (NODE_A, NODE_C, -gd);
+
+  saveOperatingPoints ();
+  calcOperatingPoints ();
+
+  nr_double_t Cd = getOperatingPoint ("Cd");
+
+  clearE ();
+  transientCapacitanceI (VSRC_1, NODE_A, NODE_C, Cd, Ud, Qd);
 }
 
 // Saves operating points (voltages).
@@ -397,24 +406,14 @@ void diode::calcNoiseAC (nr_double_t frequency) {
   setMatrixN (calcMatrixCy (frequency));
 }
 
-#define qState 0 // charge state
-#define cState 1 // current state
-
 // Callback for initializing the TR analysis.
 void diode::initTR (void) {
-  setStates (2);
   initDC ();
 }
 
 // Callback for the TR analysis.
 void diode::calcTR (nr_double_t) {
   calcDC ();
-  saveOperatingPoints ();
-  calcOperatingPoints ();
-
-  nr_double_t Cd = getOperatingPoint ("Cd");
-
-  transientCapacitance (qState, NODE_A, NODE_C, Cd, Ud, Qd);
 }
 
 // Callback for initializing the HB analysis.

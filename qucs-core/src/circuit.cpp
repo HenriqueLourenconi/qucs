@@ -54,7 +54,7 @@ circuit::circuit () : object (), integrator () {
   size = 0;
   MatrixN = MatrixS = MatrixY = NULL;
   MatrixB = MatrixC = MatrixD = NULL;
-  MatrixMY = MatrixMD = NULL;
+  MatrixMY = MatrixMB = MatrixMD = NULL;
   VectorQ = VectorE = VectorI = VectorV = VectorJ = NULL;
   MatrixQV = NULL;
   VectorCV = VectorGV = NULL;
@@ -83,7 +83,7 @@ circuit::circuit (int s) : object (), integrator () {
   if (size > 0) nodes = new node[s];
   MatrixN = MatrixS = MatrixY = NULL;
   MatrixB = MatrixC = MatrixD = NULL;
-  MatrixMY = MatrixMD = NULL;
+  MatrixMY = MatrixMB = MatrixMD = NULL;
   VectorQ = VectorE = VectorI = VectorV = VectorJ = NULL;
   MatrixQV = NULL;
   VectorCV = VectorGV = NULL;
@@ -157,6 +157,7 @@ circuit::circuit (const circuit & c) : object (c), integrator (c) {
       memcpy (VectorV, c.VectorV, size * sizeof (nr_complex_t));
       if (vsources > 0) {
 	memcpy (MatrixB, c.MatrixB, vsources * size * sizeof (nr_complex_t));
+	memcpy (MatrixMB, c.MatrixMB, vsources * size * sizeof (nr_complex_t));
 	memcpy (MatrixC, c.MatrixC, vsources * size * sizeof (nr_complex_t));
 	memcpy (MatrixD, c.MatrixD, vsources * vsources * sizeof (nr_complex_t));
 	memcpy (MatrixMD, c.MatrixMD, vsources * vsources * sizeof (nr_complex_t));
@@ -169,7 +170,7 @@ circuit::circuit (const circuit & c) : object (c), integrator (c) {
     nodes = NULL;
     MatrixS = MatrixN = MatrixY = NULL;
     MatrixB = MatrixC = MatrixD = NULL;
-    MatrixMY = MatrixMD = NULL;
+    MatrixMY = MatrixMB = MatrixMD = NULL;
     VectorQ = VectorE = VectorI = VectorV = VectorJ = NULL;
     MatrixQV = NULL;
     VectorCV = VectorGV = NULL;
@@ -275,6 +276,7 @@ void circuit::allocMatrixMNA (void) {
     VectorI = new nr_complex_t[size];
     VectorV = new nr_complex_t[size];
     if (vsources > 0) {
+      MatrixMB = new nr_complex_t[vsources * size];
       MatrixB = new nr_complex_t[vsources * size];
       MatrixC = new nr_complex_t[vsources * size];
       MatrixD = new nr_complex_t[vsources * vsources];
@@ -290,6 +292,7 @@ void circuit::freeMatrixMNA (void) {
   if (MatrixY) { delete[] MatrixY; MatrixY = NULL; }
   if (MatrixMY) { delete[] MatrixMY; MatrixMY = NULL; }
   if (MatrixB) { delete[] MatrixB; MatrixB = NULL; }
+  if (MatrixMB) { delete[] MatrixMB; MatrixMB = NULL; }
   if (MatrixC) { delete[] MatrixC; MatrixC = NULL; }
   if (MatrixD) { delete[] MatrixD; MatrixD = NULL; }
   if (MatrixMD) { delete[] MatrixMD; MatrixMD = NULL; }
@@ -351,6 +354,10 @@ nr_complex_t circuit::getB (int port, int nr) {
   return MatrixB[(nr - vsource) * size + port];
 }
 
+nr_complex_t circuit::getMB (int port, int nr) {
+  return MatrixMB[(nr - vsource) * size + port];
+}
+
 /* Sets the circuits B-MNA matrix value of the given voltage source
    built in the circuit depending on the port number. */
 void circuit::setB (int port, int nr, nr_complex_t z) {
@@ -367,6 +374,14 @@ nr_complex_t circuit::getC (int nr, int port) {
    built in the circuit depending on the port number. */
 void circuit::setC (int nr, int port, nr_complex_t z) {
   MatrixC[nr * size + port] = z;
+}
+
+void circuit::addC (int nr, int port, nr_complex_t z) {
+  MatrixC[nr * size + port] += z;
+}
+
+void circuit::addC (int nr, int port, nr_double_t z) {
+  MatrixC[nr * size + port] += z;
 }
 
 /* Returns the circuits D-MNA matrix value of the given voltage source
@@ -404,6 +419,15 @@ nr_complex_t circuit::getE (int nr) {
 void circuit::setE (int nr, nr_complex_t z) {
   VectorE[nr] = z;
 }
+
+void circuit::addE (int nr, nr_complex_t z) {
+  VectorE[nr] += z;
+}
+
+void circuit::addE (int nr, nr_double_t z) {
+  VectorE[nr] += z;
+}
+
 
 /* Returns the circuits I-MNA matrix value of the current source built
    in the circuit. */
@@ -493,6 +517,26 @@ void circuit::addY (int r, int c, nr_complex_t y) {
 /* Same as above with different argument type. */
 void circuit::addY (int r, int c, nr_double_t y) {
   MatrixY[r * size + c] += y;
+}
+
+void circuit::addMY (int r, int c, nr_complex_t y) {
+  MatrixMY[r * size + c] += y;
+}
+
+void circuit::addMY (int r, int c, nr_double_t y) {
+  MatrixMY[r * size + c] += y;
+}
+
+void circuit::setMB (int port, int nr, nr_complex_t z) {
+  MatrixMB[nr * size + port] = z;
+}
+
+void circuit::addMB (int port, int nr, nr_complex_t z) {
+  MatrixMB[nr * size + port] += z;
+}
+
+void circuit::addMB (int port, int nr, nr_double_t z) {
+  MatrixMB[nr * size + port] += z;
 }
 
 /* Returns the circuits G-MNA matrix value depending on the port
@@ -737,6 +781,10 @@ void circuit::clearB (void) {
   memset (MatrixB, 0, sizeof (nr_complex_t) * size * vsources);
 }
 
+void circuit::clearMB (void) {
+  memset (MatrixMB, 0, sizeof (nr_complex_t) * size * vsources);
+}
+
 // The function cleans up the C-MNA matrix entries.
 void circuit::clearC (void) {
   memset (MatrixC, 0, sizeof (nr_complex_t) * size * vsources);
@@ -772,6 +820,10 @@ void circuit::clearY (void) {
   memset (MatrixY, 0, sizeof (nr_complex_t) * size * size);
 }
 
+void circuit::clearMY (void) {
+  memset (MatrixMY, 0, sizeof (nr_complex_t) * size * size);
+}
+
 /* This function can be used by several components in order to place
    the n-th voltage source between node 'pos' and node 'neg' with the
    given value.  Remember to indicate this voltage source using the
@@ -801,6 +853,17 @@ void circuit::transientCapacitance (int qstate, int pos, int neg,
   addI (neg , +i);
 }
 
+void circuit::transientCapacitanceI (int qsrc, int pos, int neg,
+				    nr_double_t cap, nr_double_t voltage,
+				    nr_double_t charge) {
+  setD (qsrc, qsrc, +1.0);
+  setC (qsrc, pos, -cap);
+  setC (qsrc, neg, +cap);
+  addE (qsrc, pol * (charge - cap * voltage));
+  setMB (pos, qsrc, +1.0);
+  setMB (neg, qsrc, -1.0);
+}
+
 /* This is the one-node variant of the above function.  It performs
    the same steps for a single node related to ground. */
 void circuit::transientCapacitance (int qstate, int node, nr_double_t cap,
@@ -812,6 +875,15 @@ void circuit::transientCapacitance (int qstate, int node, nr_double_t cap,
   addY (node, node, +g);
   i = pol * (getState (cstate) - g * voltage);
   addI (node , -i);
+}
+
+void circuit::transientCapacitanceI (int qsrc, int node,
+				    nr_double_t cap, nr_double_t voltage,
+				    nr_double_t charge) {
+  setD (qsrc, qsrc, +1.0);
+  setC (qsrc, node, -cap);
+  addE (qsrc, pol * (charge - cap * voltage));
+  setMB (node, qsrc, +1.0);
 }
 
 /* The function performs a single integration step of the given charge
@@ -829,6 +901,14 @@ void circuit::transientCapacitanceQ (int qstate, int qpos, int qneg,
   addI (qneg , +i);
 }
 
+void circuit::transientCapacitanceQI (int qsrc, int qpos, int qneg,
+				     nr_double_t charge) {
+  setD (qsrc, qsrc, +1.0);
+  addE (qsrc, pol * charge);
+  setMB (qpos, qsrc, +1.0);
+  setMB (qneg, qsrc, -1.0);
+}
+
 /* This is the one-node variant of the above function.  It performs
    the same steps for a single node related to ground. */
 void circuit::transientCapacitanceQ (int qstate, int qpos,
@@ -839,6 +919,13 @@ void circuit::transientCapacitanceQ (int qstate, int qpos,
   integrate (qstate, 0, unused, unused);
   i = pol * getState (cstate);
   addI (qpos , -i);
+}
+
+void circuit::transientCapacitanceQI (int qsrc, int qpos,
+				     nr_double_t charge) {
+  setD (qsrc, qsrc, +1.0);
+  addE (qsrc, pol * charge);
+  setMB (qpos, qsrc, +1.0);
 }
 
 /* This function stores the Jacobian entries due to the C = dQ/dV
@@ -856,6 +943,13 @@ void circuit::transientCapacitanceC (int qpos, int qneg, int vpos, int vneg,
   i = pol * (g * voltage);
   addI (qpos , +i);
   addI (qneg , -i);
+}
+
+void circuit::transientCapacitanceCI (int qsrc, int vpos, int vneg,
+				      nr_double_t cap, nr_double_t voltage) {
+  setC (qsrc, vpos, -cap);
+  setC (qsrc, vneg, +cap);
+  addE (qsrc, - pol * cap * voltage);
 }
 
 /* This is the one-node variant of the transientCapacitanceC()
@@ -894,6 +988,12 @@ void circuit::transientCapacitanceC (int qpos, int vpos,
   addY (qpos, vpos, +g);
   i = pol * (g * voltage);
   addI (qpos , +i);
+}
+
+void circuit::transientCapacitanceCI (int qsrc, int vpos, nr_double_t cap,
+				      nr_double_t voltage) {
+  setC (qsrc, vpos, -cap);
+  addE (qsrc, - pol * cap * voltage);
 }
 
 // The function initializes the histories of a circuit having the given age.

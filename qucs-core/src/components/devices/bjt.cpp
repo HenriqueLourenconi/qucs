@@ -270,6 +270,8 @@ void bjt::initDC (void) {
   // no transient analysis
   doTR = false;
 
+  setVoltageSources (4);
+
   // allocate MNA matrices
   allocMatrixMNA ();
 
@@ -285,11 +287,6 @@ void bjt::initDC (void) {
 
   // initialize starting values
   restartDC ();
-
-  // disable additional base-collector capacitance
-  if (deviceEnabled (cbcx)) {
-    disableCapacitor (this, cbcx);
-  }
 
   // possibly insert series resistance at emitter
   nr_double_t Re = getScaledProperty ("Re");
@@ -341,6 +338,13 @@ void bjt::initDC (void) {
     Rbb = 0.0;                 // set this operating point
     setProperty ("Xcjc", 1.0); // other than 1 is senseless here
   }
+
+  // process additional base-collector capacitance
+  processCbcx ();
+  if (deviceEnabled (cbcx)) {
+    cbcx->setProperty ("Controlled", getName ());
+    cbcx->initDC ();
+  }
 }
 
 void bjt::restartDC (void) {
@@ -350,6 +354,10 @@ void bjt::restartDC (void) {
 }
 
 #define cexState 6 // extra excess phase state
+
+#define QSRC_BE 0 // base-emitter charge
+#define QSRC_BC 1 // base-collector charge
+#define QSRC_CS 2 // collector-substrate charge
 
 void bjt::calcDC (void) {
 
@@ -537,6 +545,34 @@ void bjt::calcDC (void) {
   setY (NODE_S, NODE_E, 0);
   setY (NODE_S, NODE_S, 0);
 #endif
+
+  saveOperatingPoints ();
+  loadOperatingPoints ();
+  calcOperatingPoints ();
+
+  nr_double_t Cbe  = getOperatingPoint ("Cbe");
+  nr_double_t Ccs  = getOperatingPoint ("Ccs");
+  nr_double_t Cbci = getOperatingPoint ("Cbci");
+
+  clearE ();
+  // usual capacitances
+  transientCapacitanceI (QSRC_BE, NODE_B, NODE_E, Cbe, Ube, Qbe);
+  transientCapacitanceI (QSRC_BC, NODE_B, NODE_C, Cbci, Ubc, Qbci);
+  transientCapacitanceI (QSRC_CS, NODE_S, NODE_C, Ccs, Ucs, Qcs);
+
+  nr_double_t Cbcx = getOperatingPoint ("Cbcx");
+
+  // handle Rbb and Cbcx appropriately
+  if (Rbb != 0.0) {
+    rb->setScaledProperty ("R", Rbb);
+    rb->calcDC ();
+    if (deviceEnabled (cbcx)) {
+      cbcx->clearI ();
+      cbcx->clearY ();
+      cbcx->clearE ();
+      cbcx->transientCapacitanceI (VSRC_1, NODE_1, NODE_2, Cbcx, Ubx, Qbcx);
+    }
+  }
 }
 
 void bjt::saveOperatingPoints (void) {
@@ -674,16 +710,6 @@ void bjt::calcNoiseAC (nr_double_t frequency) {
   setMatrixN (calcMatrixCy (frequency));
 }
 
-#define qbeState 0 // base-emitter charge state
-#define cbeState 1 // base-emitter current state
-#define qbcState 2 // base-collector charge state
-#define cbcState 3 // base-collector current state
-#define qcsState 4 // collector-substrate charge state
-#define ccsState 5 // collector-substrate current state
-
-#define qbxState 0 // external base-collector charge state
-#define cbxState 1 // external base-collector current state
-
 void bjt::initTR (void) {
   setStates (7);
   initDC ();
@@ -692,37 +718,13 @@ void bjt::initTR (void) {
   // handle external base-collector capacitance appropriately
   processCbcx ();
   if (deviceEnabled (cbcx)) {
-    cbcx->initTR ();
     cbcx->setProperty ("Controlled", getName ());
+    cbcx->initTR ();
   }
 }
 
 void bjt::calcTR (nr_double_t t) {
   calcDC ();
-  saveOperatingPoints ();
-  loadOperatingPoints ();
-  calcOperatingPoints ();
-
-  nr_double_t Cbe  = getOperatingPoint ("Cbe");
-  nr_double_t Ccs  = getOperatingPoint ("Ccs");
-  nr_double_t Cbci = getOperatingPoint ("Cbci");
-  nr_double_t Cbcx = getOperatingPoint ("Cbcx");
-
-  // handle Rbb and Cbcx appropriately
-  if (Rbb != 0.0) {
-    rb->setScaledProperty ("R", Rbb);
-    rb->calcTR (t);
-    if (deviceEnabled (cbcx)) {
-      cbcx->clearI ();
-      cbcx->clearY ();
-      cbcx->transientCapacitance (qbxState, NODE_1, NODE_2, Cbcx, Ubx, Qbcx);
-    }
-  }
-
-  // usual capacitances
-  transientCapacitance (qbeState, NODE_B, NODE_E, Cbe, Ube, Qbe);
-  transientCapacitance (qbcState, NODE_B, NODE_C, Cbci, Ubc, Qbci);
-  transientCapacitance (qcsState, NODE_S, NODE_C, Ccs, Ucs, Qcs);
 
   // trans-capacitances
   transientCapacitanceC (NODE_B, NODE_E, NODE_B, NODE_C, dQbedUbc, Ubc);

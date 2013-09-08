@@ -146,10 +146,17 @@ class circuit : public object, public integrator
   void transientCapacitance (int, int, int, nr_double_t, nr_double_t,
 			     nr_double_t);
   void transientCapacitance (int, int, nr_double_t, nr_double_t, nr_double_t);
+  void transientCapacitanceI (int, int, int, nr_double_t, nr_double_t,
+			      nr_double_t);
+  void transientCapacitanceI (int, int, nr_double_t, nr_double_t, nr_double_t);
   void transientCapacitanceQ (int, int, int, nr_double_t);
   void transientCapacitanceQ (int, int, nr_double_t);
+  void transientCapacitanceQI (int, int, int, nr_double_t);
+  void transientCapacitanceQI (int, int, nr_double_t);
   void transientCapacitanceC (int, int, int, int, nr_double_t, nr_double_t);
   void transientCapacitanceC (int, int, nr_double_t, nr_double_t);
+  void transientCapacitanceCI (int, int, int, nr_double_t, nr_double_t);
+  void transientCapacitanceCI (int, int, nr_double_t, nr_double_t);
   void transientCapacitanceC2V (int, int, int, nr_double_t, nr_double_t);
   void transientCapacitanceC2Q (int, int, int, nr_double_t, nr_double_t);
   void setDelta (nr_double_t * d) { deltas = d; }
@@ -186,6 +193,7 @@ class circuit : public object, public integrator
   nr_complex_t getC (int, int);
   nr_complex_t getD (int, int);
   nr_complex_t getMY (int, int);
+  nr_complex_t getMB (int, int);
   nr_complex_t getMD (int, int);
   nr_complex_t getQV (int, int);
   nr_complex_t getGV (int);
@@ -203,6 +211,7 @@ class circuit : public object, public integrator
   void setC (int, int, nr_complex_t);
   void setD (int, int, nr_complex_t);
   void setMY (int, int, nr_complex_t);
+  void setMB (int, int, nr_complex_t);
   void setMD (int, int, nr_complex_t);
   void setQV (int, int, nr_complex_t);
   void setGV (int, nr_complex_t);
@@ -214,6 +223,7 @@ class circuit : public object, public integrator
   void setQ (int, nr_complex_t);
   void setG (int, int, nr_double_t);
   void clearB (void);
+  void clearMB (void);
   void clearC (void);
   void clearD (void);
   void clearE (void);
@@ -221,10 +231,19 @@ class circuit : public object, public integrator
   void clearJ (void);
   void clearV (void);
   void clearY (void);
+  void clearMY (void);
   void addY (int, int, nr_complex_t);
   void addY (int, int, nr_double_t);
+  void addC (int, int, nr_complex_t);
+  void addC (int, int, nr_double_t);
+  void addMB (int, int, nr_complex_t);
+  void addMB (int, int, nr_double_t);
+  void addMY (int, int, nr_complex_t);
+  void addMY (int, int, nr_double_t);
   void addI (int, nr_complex_t);
   void addI (int, nr_double_t);
+  void addE (int, nr_complex_t);
+  void addE (int, nr_double_t);
 
   // operating point functionality
   void        addOperatingPoint (const char *, nr_double_t);
@@ -284,6 +303,7 @@ class circuit : public object, public integrator
   nr_complex_t * MatrixC;
   nr_complex_t * MatrixD;
   nr_complex_t * MatrixMY;
+  nr_complex_t * MatrixMB;
   nr_complex_t * MatrixMD;
   nr_complex_t * VectorE;
   nr_complex_t * VectorI;
