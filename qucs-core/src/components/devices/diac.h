@@ -48,6 +48,7 @@ class diac : public circuit, public devstates
  private:
   void calcTheModel (bool);
   matrix calcMatrixY (nr_double_t);
+  void calcCap (void);
 };
 
 #endif /* __DIAC_H__ */

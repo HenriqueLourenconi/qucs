@@ -47,6 +47,7 @@ class triac : public circuit, public devstates
 
   nr_double_t time_prev, Ud_last;
   void calcTheModel (bool);
+  void calcCap (void);
 
  private:
   matrix calcMatrixY (nr_double_t);

@@ -162,8 +162,15 @@ int nasolver<nr_type_t>::solve_once (void)
     qucs::exception * e;
     int error = 0, d;
 
-    //F->print(true);
+    // run the calculation function for each circuit
+    calculate ();
+
+    // generate A matrix and z vector
+    createMatrix ();
+
     //A->print(true);
+    //F->print(true);
+    //z->print(true);
 
     // solve equation system
     try_running ()
@@ -672,6 +679,7 @@ void nasolver<nr_type_t>::createMatrix (void)
     createCMatrix ();
     createDMatrix ();
     createMGMatrix ();
+    createMBMatrix ();
     createMDMatrix ();
 
     /* Adjust G matrix if requested. */
@@ -748,6 +756,38 @@ void nasolver<nr_type_t>::createBMatrix (void)
             }
             // put value into B matrix
             A->set (r, c + N, val);
+        }
+    }
+}
+
+template <class nr_type_t>
+void nasolver<nr_type_t>::createMBMatrix (void)
+{
+    int N = countNodes ();
+    int M = countVoltageSources ();
+    circuit * vs;
+    struct nodelist_t * n;
+    nr_type_t val;
+
+    // go through each voltage sources (first dimension)
+    for (int c = 0; c < M; c++)
+    {
+        vs = findVoltageSource (c);
+        // go through each node (second dimension)
+        for (int r = 0; r < N; r++)
+        {
+            val = 0.0;
+            n = nlist->getNode (r);
+            for (int i = 0; i < n->nNodes; i++)
+            {
+                // is voltage source connected to node ?
+                if (n->nodes[i]->getCircuit () == vs)
+                {
+                    val += MatVal (vs->getMB (n->nodes[i]->getPort (), c));
+                }
+            }
+            // put value into B matrix
+            F->set (r, c + N, val);
         }
     }
 }

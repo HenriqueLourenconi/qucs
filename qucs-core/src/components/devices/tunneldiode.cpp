@@ -44,6 +44,7 @@ tunneldiode::tunneldiode () : circuit (2) {
 // Callback for initializing the DC analysis.
 void tunneldiode::initDC (void) {
   // allocate MNA matrices
+  setVoltageSources (1);
   allocMatrixMNA ();
 }
 
@@ -111,6 +112,14 @@ void tunneldiode::calcDC (void) {
   // fill in G-Matrix
   setY (NODE_A1, NODE_A1, +gd); setY (NODE_A2, NODE_A2, +gd);
   setY (NODE_A1, NODE_A2, -gd); setY (NODE_A2, NODE_A1, -gd);
+
+  saveOperatingPoints ();
+  loadOperatingPoints ();
+  calcOperatingPoints ();
+
+  clearE ();
+  nr_double_t Cd = getOperatingPoint ("Cd");
+  transientCapacitanceI (VSRC_1, NODE_A1, NODE_A2, Cd, Ud, Qd);
 }
 
 // Saves operating points (voltages).
@@ -178,25 +187,14 @@ void tunneldiode::calcSP (nr_double_t frequency) {
   setMatrixS (ytos (calcMatrixY (frequency)));
 }
 
-#define qState 0 // charge state
-#define cState 1 // current state
-
 // Callback for initializing the TR analysis.
 void tunneldiode::initTR (void) {
-  setStates (2);
   initDC ();
 }
 
 // Callback for the TR analysis.
 void tunneldiode::calcTR (nr_double_t) {
   calcDC ();
-
-  saveOperatingPoints ();
-  loadOperatingPoints ();
-  calcOperatingPoints ();
-
-  nr_double_t Cd = getOperatingPoint ("Cd");
-  transientCapacitance (qState, NODE_A1, NODE_A2, Cd, Ud, Qd);
 }
 
 // properties

@@ -47,6 +47,7 @@ diac::diac () : circuit (3) {
 void diac::initDC (void) {
   Ud_last = 0.0;
   // allocate MNA matrices
+  setVoltageSources (1);
   allocMatrixMNA ();
   // create internal node
   setInternalNode (NODE_IN, "int");
@@ -55,6 +56,7 @@ void diac::initDC (void) {
 // Callback for DC analysis.
 void diac::calcDC (void) {
   calcTheModel (false);
+  calcCap ();
 }
 
 void diac::calcTheModel (bool last) {
@@ -166,12 +168,8 @@ void diac::calcSP (nr_double_t frequency) {
   setMatrixS (ytos (calcMatrixY (frequency)));
 }
 
-#define qState 0 // charge state
-#define cState 1 // current state
-
 // Callback for initializing the TR analysis.
 void diac::initTR (void) {
-  setStates (2);
   initDC ();
   time_prev = -1.0;
 }
@@ -183,13 +181,16 @@ void diac::calcTR (nr_double_t time) {
     Ud_last = real (getV (NODE_A1) - getV (NODE_IN));
   }
   calcTheModel (true);
+  calcCap ();
+}
 
+void diac::calcCap (void) {
   saveOperatingPoints ();
   loadOperatingPoints ();
   calcOperatingPoints ();
 
   nr_double_t Ci = getOperatingPoint ("Ci");
-  transientCapacitance (qState, NODE_IN, NODE_A2, Ci, Ud, Qi);
+  transientCapacitanceI (VSRC_1, NODE_IN, NODE_A2, Ci, Ud, Qi);
 }
 
 // properties
