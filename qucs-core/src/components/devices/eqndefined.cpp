@@ -333,7 +333,7 @@ void eqndefined::calcDC (void) {
       int r = i * 2;
       int c = j * 2;
       nr_double_t v = BP (j);
-      //transientCapacitanceCI (r, c + 0, c + 1, _jdyna[k], v);
+      transientCapacitanceCI (r, c + 0, c + 1, _jdyna[k], v);
     }
   }
 }
