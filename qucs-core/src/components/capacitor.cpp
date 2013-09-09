@@ -84,8 +84,12 @@ void capacitor::initDC (void) {
 void capacitor::calcDC (void) {
   if (hasProperty ("Controlled")) return;
 
-  nr_double_t f = getNet()->getSrcFactor ();
-  setE (VSRC_1, f * getPropertyDouble ("V"));
+  bool vsource = isPropertyGiven ("V");
+
+  if (vsource) {
+    nr_double_t f = getNet()->getSrcFactor ();
+    setE (VSRC_1, f * getPropertyDouble ("V"));
+  }
 }
 
 /*!\brief AC model 
