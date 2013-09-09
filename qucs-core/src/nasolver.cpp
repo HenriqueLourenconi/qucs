@@ -171,6 +171,7 @@ int nasolver<nr_type_t>::solve_once (void)
     //A->print(true);
     //F->print(true);
     //z->print(true);
+    //x->print(true);
 
     // solve equation system
     try_running ()
@@ -680,6 +681,7 @@ void nasolver<nr_type_t>::createMatrix (void)
     createDMatrix ();
     createMGMatrix ();
     createMBMatrix ();
+    createMCMatrix ();
     createMDMatrix ();
 
     /* Adjust G matrix if requested. */
@@ -828,6 +830,38 @@ void nasolver<nr_type_t>::createCMatrix (void)
             }
             // put value into C matrix
             A->set (r + N, c, val);
+        }
+    }
+}
+
+template <class nr_type_t>
+void nasolver<nr_type_t>::createMCMatrix (void)
+{
+    int N = countNodes ();
+    int M = countVoltageSources ();
+    circuit * vs;
+    struct nodelist_t * n;
+    nr_type_t val;
+
+    // go through each voltage sources (second dimension)
+    for (int r = 0; r < M; r++)
+    {
+        vs = findVoltageSource (r);
+        // go through each node (first dimension)
+        for (int c = 0; c < N; c++)
+        {
+            val = 0.0;
+            n = nlist->getNode (c);
+            for (int i = 0; i < n->nNodes; i++)
+            {
+                // is voltage source connected to node ?
+                if (n->nodes[i]->getCircuit () == vs)
+                {
+                    val += MatVal (vs->getMC (r, n->nodes[i]->getPort ()));
+                }
+            }
+            // put value into C matrix
+            F->set (r + N, c, val);
         }
     }
 }

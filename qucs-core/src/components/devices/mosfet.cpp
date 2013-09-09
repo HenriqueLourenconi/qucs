@@ -129,6 +129,7 @@ void mosfet::restartDC (void) {
 }
 
 void mosfet::initDC (void) {
+  setVoltageSources (5);
 
   // allocate MNA matrices
   allocMatrixMNA ();
@@ -375,6 +376,12 @@ void mosfet::initModel (void) {
 #endif /* DEBUG */
 }
 
+#define VDSRC_GD 0
+#define VDSRC_GS 1
+#define QSRC_BD  2
+#define QSRC_BS  3
+#define VDSRC_GB 4
+
 void mosfet::calcDC (void) {
 
   // fetch device model parameters
@@ -518,26 +525,20 @@ void mosfet::calcDC (void) {
   setY (NODE_B, NODE_D, -gbd);
   setY (NODE_B, NODE_S, -gbs);
   setY (NODE_B, NODE_B, gbs + gbd);
+
+  saveOperatingPoints ();
+  loadOperatingPoints ();
+  calcOperatingPoints ();
+
+  nr_double_t Cbd = getOperatingPoint ("Cbd");
+  nr_double_t Cbs = getOperatingPoint ("Cbs");
+
+  Uds = Ugs - Ugd;
+  Ugb = Ugs - Ubs;
+
+  transientCapacitanceI (QSRC_BD, NODE_B, NODE_D, Cbd, Ubd, Qbd);
+  transientCapacitanceI (QSRC_BS, NODE_B, NODE_S, Cbs, Ubs, Qbs);
 }
-
-/* Usual and additional state definitions. */
-
-#define qgdState  0 // gate-drain charge state
-#define igdState  1 // gate-drain current state
-#define vgdState  2 // gate-drain voltage state
-#define cgdState  3 // gate-drain capacitance state
-#define qgsState  4 // gate-source charge state
-#define igsState  5 // gate-source current state
-#define vgsState  6 // gate-source voltage state
-#define cgsState  7 // gate-source capacitance state
-#define qbdState  8 // bulk-drain charge state
-#define ibdState  9 // bulk-drain current state
-#define qbsState 10 // bulk-source charge state
-#define ibsState 11 // bulk-source current state
-#define qgbState 12 // gate-bulk charge state
-#define igbState 13 // gate-bulk current state
-#define vgbState 14 // gate-bulk voltage state
-#define cgbState 15 // gate-bulk capacitance state
 
 void mosfet::saveOperatingPoints (void) {
   nr_double_t Vgs, Vgd, Vbs, Vbd;
@@ -600,28 +601,14 @@ void mosfet::calcOperatingPoints (void) {
     fetCapacitanceMeyer (Ugd, Ugs, Uon, Udsat, Phi, Cox, Cgd, Cgs, Cgb);
   }
 
+  Cgs += Cgso * W;
+  Cgd += Cgdo * W;
+  Cgb += Cgbo * Leff;
+
   // charge approximation
-  if (transientMode) {
-    if (transientMode == 1) {      // by trapezoidal rule
-      // gate-source charge
-      Qgs = transientChargeTR (qgsState, Cgs, Ugs, Cgso * W);
-      // gate-drain charge
-      Qgd = transientChargeTR (qgdState, Cgd, Ugd, Cgdo * W);
-      // gate-bulk charge
-      Qgb = transientChargeTR (qgbState, Cgb, Ugb, Cgbo * Leff);
-    }
-    else if (transientMode == 2) { // by simpson's rule
-      Qgs = transientChargeSR (qgsState, Cgs, Ugs, Cgso * W);
-      Qgd = transientChargeSR (qgdState, Cgd, Ugd, Cgdo * W);
-      Qgb = transientChargeSR (qgbState, Cgb, Ugb, Cgbo * Leff);
-    }
-  }
-  // usual operating point
-  else {
-    Cgs += Cgso * W;
-    Cgd += Cgdo * W;
-    Cgb += Cgbo * Leff;
-  }
+  transientCapacitanceD (VDSRC_GS, NODE_G, NODE_S, Cgs);
+  transientCapacitanceD (VDSRC_GD, NODE_G, NODE_D, Cgd);
+  transientCapacitanceD (VDSRC_GB, NODE_G, NODE_B, Cgb);
 
   // save operating points
   setOperatingPoint ("Id", Ids);
@@ -652,57 +639,11 @@ void mosfet::calcNoiseAC (nr_double_t frequency) {
 }
 
 void mosfet::initTR (void) {
-  setStates (16);
   initDC ();
 }
 
 void mosfet::calcTR (nr_double_t) {
   calcDC ();
-  transientMode = getPropertyInteger ("capModel");
-  saveOperatingPoints ();
-  loadOperatingPoints ();
-  calcOperatingPoints ();
-  transientMode = 0;
-
-  nr_double_t Cgd = getOperatingPoint ("Cgd");
-  nr_double_t Cgs = getOperatingPoint ("Cgs");
-  nr_double_t Cbd = getOperatingPoint ("Cbd");
-  nr_double_t Cbs = getOperatingPoint ("Cbs");
-  nr_double_t Cgb = getOperatingPoint ("Cgb");
-
-  Uds = Ugs - Ugd;
-  Ugb = Ugs - Ubs;
-
-  transientCapacitance (qbdState, NODE_B, NODE_D, Cbd, Ubd, Qbd);
-  transientCapacitance (qbsState, NODE_B, NODE_S, Cbs, Ubs, Qbs);
-
-  // handle Meyer charges and capacitances
-  transientCapacitance (qgdState, NODE_G, NODE_D, Cgd, Ugd, Qgd);
-  transientCapacitance (qgsState, NODE_G, NODE_S, Cgs, Ugs, Qgs);
-  transientCapacitance (qgbState, NODE_G, NODE_B, Cgb, Ugb, Qgb);
-}
-
-/* The function uses the trapezoidal rule to compute the current
-   capacitance and charge.  The approximation is necessary because the
-   Meyer model is a capacitance model and not a charge model. */
-nr_double_t mosfet::transientChargeTR (int qstate, nr_double_t& cap,
-				       nr_double_t voltage, nr_double_t ccap) {
-  int vstate = qstate + 2, cstate = qstate + 3;
-  setState (cstate, cap);
-  cap = (cap + getState (cstate, 1)) / 2 + ccap;
-  setState (vstate, voltage);
-  return cap * (voltage - getState (vstate, 1)) + getState (qstate, 1);
-}
-
-/* The function uses Simpson's numerical integration rule to compute
-   the current capacitance and charge. */
-nr_double_t mosfet::transientChargeSR (int qstate, nr_double_t& cap,
-				       nr_double_t voltage, nr_double_t ccap) {
-  int vstate = qstate + 2, cstate = qstate + 3;
-  setState (cstate, cap);
-  cap = (cap + 4 * getState (cstate, 1) + getState (cstate, 2)) / 6 + ccap;
-  setState (vstate, voltage);
-  return cap * (voltage - getState (vstate, 1)) + getState (qstate, 1);
 }
 
 // properties
