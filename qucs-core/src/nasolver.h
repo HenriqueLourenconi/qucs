@@ -115,6 +115,7 @@ private:
     void createDMatrix (void);
     void createMGMatrix (void);
     void createMBMatrix (void);
+    void createMCMatrix (void);
     void createMDMatrix (void);
     void createIVector (void);
     void createEVector (void);

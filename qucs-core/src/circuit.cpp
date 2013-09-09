@@ -54,7 +54,7 @@ circuit::circuit () : object (), integrator () {
   size = 0;
   MatrixN = MatrixS = MatrixY = NULL;
   MatrixB = MatrixC = MatrixD = NULL;
-  MatrixMY = MatrixMB = MatrixMD = NULL;
+  MatrixMY = MatrixMB = MatrixMC = MatrixMD = NULL;
   VectorQ = VectorE = VectorI = VectorV = VectorJ = NULL;
   MatrixQV = NULL;
   VectorCV = VectorGV = NULL;
@@ -83,7 +83,7 @@ circuit::circuit (int s) : object (), integrator () {
   if (size > 0) nodes = new node[s];
   MatrixN = MatrixS = MatrixY = NULL;
   MatrixB = MatrixC = MatrixD = NULL;
-  MatrixMY = MatrixMB = MatrixMD = NULL;
+  MatrixMY = MatrixMB = MatrixMC = MatrixMD = NULL;
   VectorQ = VectorE = VectorI = VectorV = VectorJ = NULL;
   MatrixQV = NULL;
   VectorCV = VectorGV = NULL;
@@ -159,6 +159,7 @@ circuit::circuit (const circuit & c) : object (c), integrator (c) {
 	memcpy (MatrixB, c.MatrixB, vsources * size * sizeof (nr_complex_t));
 	memcpy (MatrixMB, c.MatrixMB, vsources * size * sizeof (nr_complex_t));
 	memcpy (MatrixC, c.MatrixC, vsources * size * sizeof (nr_complex_t));
+	memcpy (MatrixMC, c.MatrixMC, vsources * size * sizeof (nr_complex_t));
 	memcpy (MatrixD, c.MatrixD, vsources * vsources * sizeof (nr_complex_t));
 	memcpy (MatrixMD, c.MatrixMD, vsources * vsources * sizeof (nr_complex_t));
 	memcpy (VectorE, c.VectorE, vsources * sizeof (nr_complex_t));
@@ -279,6 +280,7 @@ void circuit::allocMatrixMNA (void) {
       MatrixMB = new nr_complex_t[vsources * size];
       MatrixB = new nr_complex_t[vsources * size];
       MatrixC = new nr_complex_t[vsources * size];
+      MatrixMC = new nr_complex_t[vsources * size];
       MatrixD = new nr_complex_t[vsources * vsources];
       MatrixMD = new nr_complex_t[vsources * vsources];
       VectorE = new nr_complex_t[vsources];
@@ -294,6 +296,7 @@ void circuit::freeMatrixMNA (void) {
   if (MatrixB) { delete[] MatrixB; MatrixB = NULL; }
   if (MatrixMB) { delete[] MatrixMB; MatrixMB = NULL; }
   if (MatrixC) { delete[] MatrixC; MatrixC = NULL; }
+  if (MatrixMC) { delete[] MatrixMC; MatrixMC = NULL; }
   if (MatrixD) { delete[] MatrixD; MatrixD = NULL; }
   if (MatrixMD) { delete[] MatrixMD; MatrixMD = NULL; }
   if (VectorE) { delete[] VectorE; VectorE = NULL; }
@@ -370,6 +373,10 @@ nr_complex_t circuit::getC (int nr, int port) {
   return MatrixC[(nr - vsource) * size + port];
 }
 
+nr_complex_t circuit::getMC (int nr, int port) {
+  return MatrixMC[(nr - vsource) * size + port];
+}
+
 /* Sets the circuits C-MNA matrix value of the given voltage source
    built in the circuit depending on the port number. */
 void circuit::setC (int nr, int port, nr_complex_t z) {
@@ -382,6 +389,10 @@ void circuit::addC (int nr, int port, nr_complex_t z) {
 
 void circuit::addC (int nr, int port, nr_double_t z) {
   MatrixC[nr * size + port] += z;
+}
+
+void circuit::setMC (int nr, int port, nr_complex_t z) {
+  MatrixMC[nr * size + port] = z;
 }
 
 /* Returns the circuits D-MNA matrix value of the given voltage source
@@ -862,6 +873,15 @@ void circuit::transientCapacitanceI (int qsrc, int pos, int neg,
   addE (qsrc, pol * (charge - cap * voltage));
   setMB (pos, qsrc, +1.0);
   setMB (neg, qsrc, -1.0);
+}
+
+void circuit::transientCapacitanceD (int vdsrc, int pos, int neg,
+				    nr_double_t cap) {
+  setB (pos, vdsrc, +cap);
+  setB (neg, vdsrc, -cap);
+  setD (vdsrc, vdsrc, +1.0);
+  setMC (vdsrc, pos, -1.0);
+  setMC (vdsrc, neg, +1.0);
 }
 
 /* This is the one-node variant of the above function.  It performs
