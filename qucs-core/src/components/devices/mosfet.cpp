@@ -376,11 +376,11 @@ void mosfet::initModel (void) {
 #endif /* DEBUG */
 }
 
-#define VDSRC_GD 0
-#define VDSRC_GS 1
+#define ISRC_GD 0
+#define ISRC_GS 1
 #define QSRC_BD  2
 #define QSRC_BS  3
-#define VDSRC_GB 4
+#define ISRC_GB 4
 
 void mosfet::calcDC (void) {
 
@@ -606,9 +606,9 @@ void mosfet::calcOperatingPoints (void) {
   Cgb += Cgbo * Leff;
 
   // charge approximation
-  transientCapacitanceD (VDSRC_GS, NODE_G, NODE_S, Cgs);
-  transientCapacitanceD (VDSRC_GD, NODE_G, NODE_D, Cgd);
-  transientCapacitanceD (VDSRC_GB, NODE_G, NODE_B, Cgb);
+  transientCapacitanceD (ISRC_GS, NODE_G, NODE_S, Cgs);
+  transientCapacitanceD (ISRC_GD, NODE_G, NODE_D, Cgd);
+  transientCapacitanceD (ISRC_GB, NODE_G, NODE_B, Cgb);
 
   // save operating points
   setOperatingPoint ("Id", Ids);
