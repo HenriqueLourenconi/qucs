@@ -877,11 +877,17 @@ void circuit::transientCapacitanceI (int qsrc, int pos, int neg,
 
 void circuit::transientCapacitanceD (int vdsrc, int pos, int neg,
 				    nr_double_t cap) {
-  setB (pos, vdsrc, +cap);
-  setB (neg, vdsrc, -cap);
-  setD (vdsrc, vdsrc, +1.0);
-  setMC (vdsrc, pos, -1.0);
-  setMC (vdsrc, neg, +1.0);
+  setB (pos, vdsrc, +1.0);
+  setB (neg, vdsrc, -1.0);
+  if (cap != 0.0) {
+    setD (vdsrc, vdsrc, +1.0/cap);
+    setMC (vdsrc, pos, -1.0);
+    setMC (vdsrc, neg, +1.0);
+  } else {
+    setD (vdsrc, vdsrc, +1.0);
+    setMC (vdsrc, pos, 0.0);
+    setMC (vdsrc, neg, 0.0);
+  }
 }
 
 /* This is the one-node variant of the above function.  It performs
