@@ -45,8 +45,6 @@ class mosfet : public circuit
   void calcTR (nr_double_t);
 
  private:
-  nr_double_t transientChargeTR (int, nr_double_t&, nr_double_t, nr_double_t);
-  nr_double_t transientChargeSR (int, nr_double_t&, nr_double_t, nr_double_t);
   matrix calcMatrixY (nr_double_t);
   matrix calcMatrixCy (nr_double_t);
 
