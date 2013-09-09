@@ -159,12 +159,6 @@ int nasolver<nr_type_t>::solve_once (void)
     qucs::exception * e;
     int error = 0, d;
 
-    // run the calculation function for each circuit
-    calculate ();
-
-    // generate A matrix and z vector
-    createMatrix ();
-
     //A->print(true);
     //F->print(true);
     //z->print(true);
@@ -691,13 +685,6 @@ void nasolver<nr_type_t>::createMatrix (void)
             A->set (n, n, A->get (n, n) + gMin);
         }
     }
-
-//    int N = countNodes ();
-//    int M = countVoltageSources ();
-//    for (int n = 0; n < N + M; n++)
-//    {
-//	F->set (n, n, F->get (n, n) + 1e0);
-//    }
 
     /* Generate the z Matrix.  The z Matrix consists of two (2) minor
        matrices in the form     +- -+
@@ -1249,12 +1236,28 @@ void nasolver<nr_type_t>::update_mx ()
 	*dmxsum += *dmx;
 }
 
+template <class nr_type_t>
+void nasolver<nr_type_t>::calcMatrices (void)
+{
+    // run the calculation function for each circuit
+    calculate ();
+
+    // generate A matrix and z vector
+    createMatrix ();
+
+    if (updateMatrix)
+	*MA = *A;
+
+    *mz = *z - *A * *mx;
+}
+
+
 /* The matrix equation Ax = z is solved by x = A^-1*z.  The function
    applies the operation to the previously generated matrices. */
 template <class nr_type_t>
 void nasolver<nr_type_t>::runMNA (void)
 {
-    combineMatrices ();
+    calcMatrices ();
 
 #if STEPDEBUG
     logprint (LOG_STATUS, "DEBUG: condition: %g\n", condition (*MA));
@@ -1414,7 +1417,7 @@ void nasolver<nr_type_t>::steepestDescent (void)
         saveSolution ();
         calculate ();
         createZVector ();
-	combineMatrices ();
+	calcMatrices ();
 
         // check gradient criteria, ThinkME: Is this correct?
         dmz = *mz - *mzprev;

@@ -31,7 +31,8 @@ enum integrator_type {
   INTEGRATOR_TRAPEZOIDAL   =  1,
   INTEGRATOR_GEAR          =  2,
   INTEGRATOR_ADAMSMOULTON  =  3,
-  INTEGRATOR_ADAMSBASHFORD =  4
+  INTEGRATOR_ADAMSBASHFORD =  4,
+  INTEGRATOR_RADAU5        =  5
 };
 
 class circuit;

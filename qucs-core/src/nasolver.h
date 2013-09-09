@@ -72,19 +72,15 @@ public:
 
     virtual int getSysSize (void)
     { return countVoltageSources () + countNodes (); }
-    virtual void combineMatrices (void)
-    { if (updateMatrix) combineMA ();
-      combineZ (); }
-    virtual void combineMA (void)
-    { *MA = *A; }
-    virtual void combineZ (void)
-    { *mz = *z - *A * *mx; }
-    virtual void setInit (void)
-    { if (mxprev != NULL) delete mxprev;
-      mxprev = new tvector<nr_type_t> (*x);
+    virtual void calcMatrices (void);
+    virtual void setInitX (void)
+    { *mx = *x; }
+    void setInit (void)
+    { setInitX ();
+      if (mxprev != NULL) delete mxprev;
+      mxprev = new tvector<nr_type_t> (*mx);
       if (dmxsumprev != NULL) delete dmxsumprev;
-      dmxsumprev = new tvector<nr_type_t> (*dmxsum);
-      *mx = *x; }
+      dmxsumprev = new tvector<nr_type_t> (*dmxsum); }
     virtual void extractSol (void)
     { *x = *mx; *dx = *dmxsum; }
 
