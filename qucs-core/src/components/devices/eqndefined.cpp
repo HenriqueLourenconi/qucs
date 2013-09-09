@@ -315,6 +315,27 @@ void eqndefined::calcDC (void) {
       addI (i * 2 + 1, -gv);
     }
   }
+
+  clearE ();
+
+  // calculate Q and C
+  evalOperatingPoints ();
+
+  // charge integrations
+  for (i = 0; i < branches; i++) {
+    int r = i * 2;
+    transientCapacitanceQI (i, r + 0, r + 1, _charges[i]);
+  }
+
+  // charge: 2-node, voltage: 2-node
+  for (k = 0, i = 0; i < branches; i++) {
+    for (j = 0; j < branches; j++, k++) {
+      int r = i * 2;
+      int c = j * 2;
+      nr_double_t v = BP (j);
+      //transientCapacitanceCI (r, c + 0, c + 1, _jdyna[k], v);
+    }
+  }
 }
 
 // Evaluate operating points.
@@ -386,32 +407,8 @@ void eqndefined::initTR (void) {
 
 // Callback for the TR analysis.
 void eqndefined::calcTR (nr_double_t) {
-  int state, i, j, k, branches = getSize () / 2;
-
-  clearE ();
-
   // run usual DC iteration, then save operating points
   calcDC ();
-
-  // calculate Q and C
-  evalOperatingPoints ();
-
-  // charge integrations
-  for (i = 0; i < branches; i++) {
-    int r = i * 2;
-    state = 2 * i;
-    transientCapacitanceQI (i, r + 0, r + 1, _charges[i]);
-  }
-
-  // charge: 2-node, voltage: 2-node
-  for (k = 0, i = 0; i < branches; i++) {
-    for (j = 0; j < branches; j++, k++) {
-      int r = i * 2;
-      int c = j * 2;
-      nr_double_t v = BP (j);
-      transientCapacitanceCI (r, c + 0, c + 1, _jdyna[k], v);
-    }
-  }
 }
 
 // Callback for initializing the S-parameter analysis.
