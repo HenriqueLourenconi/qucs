@@ -270,7 +270,7 @@ void bjt::initDC (void) {
   // no transient analysis
   doTR = false;
 
-  setVoltageSources (4);
+  setVoltageSources (3);
 
   // allocate MNA matrices
   allocMatrixMNA ();
@@ -727,7 +727,7 @@ void bjt::calcTR (nr_double_t t) {
   calcDC ();
 
   // trans-capacitances
-  transientCapacitanceC (NODE_B, NODE_E, NODE_B, NODE_C, dQbedUbc, Ubc);
+  //transientCapacitanceC (NODE_B, NODE_E, NODE_B, NODE_C, dQbedUbc, Ubc);
 }
 
 void bjt::excessPhase (int istate, nr_double_t& i, nr_double_t& g) {
