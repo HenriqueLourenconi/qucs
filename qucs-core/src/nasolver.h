@@ -143,6 +143,10 @@ protected:
     tmatrix<nr_type_t> * F;
     tmatrix<nr_type_t> * C;
     tmatrix<nr_type_t> * MA;
+    tmatrix<nr_type_t> * Ut;
+    tmatrix<nr_type_t> * Vt;
+    tvector<nr_type_t> * RS;
+    tvector<nr_type_t> * CS;
     int iterations;
     int convHelper;
     int fixpoint;

@@ -627,7 +627,125 @@ void trsolver::calcMAMulti (void)
 	*MA = *F;
 	*MA *= corrCoeff[0];
         *MA += *A;
+
+	//fprintf (stderr, "performing SVD...\n");
+	//eqnsys<nr_double_t> F_eqns;
+	////tmatrix<nr_double_t> U = *MA;
+	//tmatrix<nr_double_t> U = *F;
+	//if (Ut) delete (Ut);
+	//if (Vt) delete (Vt);
+	//Vt = new tmatrix<nr_double_t> ();
+	//F_eqns.get_svd (&U, NULL, Vt);
+	//
+	//Ut = new tmatrix<nr_double_t> (U);
+	//Ut->transpose ();
+	//tmatrix<nr_double_t> V = *Vt;
+	//V.transpose ();
+	//MA->print (true);
+	//*MA = *Ut * *MA * V;
+	//F->print (true);
+	//(*Ut * *F * V).print (true);
+	//normalizeRows ();
+
+	
+	//fprintf (stderr, "normalizing...\n");
+	//MA->print (true);
+	scaleMatrix ();
+	//MA->print (true);
     }
+}
+
+//void trsolver::normalizeRows (void)
+//{
+//    int n = getSysSize ();
+//    if (Nv != NULL) delete Nv;
+//    Nv = new tvector<nr_double_t> (n);
+//
+//    for (int i = 0; i < n; i++)
+//    {
+//	nr_double_t gmax = 0.0;
+//	for (int j = 0; j < n; j++)
+//	{
+//	    nr_double_t g = fabs (MA->get (i, j));
+//	    if (g > gmax)
+//		gmax = g;
+//	}
+//	assert (gmax > 0.0);
+//	nr_double_t mult = 1.0/gmax;
+//	Nv->set (i, mult);
+//	for (int j = 0; j < n; j++)
+//	{
+//	    nr_double_t g = MA->get (i, j);
+//	    MA->set (i, j, g * mult);
+//	}
+//    }
+//}
+
+void trsolver::scaleMatrix (void)
+{
+    int N = countNodes ();
+    int M = countVoltageSources ();
+    int n = N + M;
+
+    if (RS != NULL) delete RS;
+    RS = new tvector<nr_double_t> (n);
+    if (CS != NULL) delete CS;
+    CS = new tvector<nr_double_t> (n);
+    
+    for (int i = 0; i < N + M; i++)
+    {
+	RS->set (i, 1);
+	CS->set (i, 1);
+    }
+
+    // First, attempt diagonal dominance and normalize
+    for (int i = N; i < N + M; i++)
+    {
+	nr_double_t d;
+
+	if ((*MA)(i, i) == 0)
+	    continue;
+	else
+	    d = fabs ((*MA)(i, i));
+
+	nr_double_t Bmax = 0, Cmax = 0;
+
+	// Check the B part
+	for (int j = 0; j < N; j++)
+	    if (fabs ((*MA)(j, i)) > Bmax)
+		Bmax = fabs ((*MA)(j, i));
+
+	// Check the C part
+	for (int j = 0; j < N; j++)
+	    if (fabs ((*MA)(i, j)) > Cmax)
+		Cmax = fabs ((*MA)(i, j));
+
+	if (Bmax == 0 && Cmax == 0)
+	    continue;
+
+	if (d > Bmax && d > Cmax)
+	    // Just scale the row
+	    RS->set (i, 1 / d);
+	else if (d < Bmax && d < Cmax)
+        { } // Don't do anything
+	else if (Bmax > Cmax)
+	{
+	    // Scale the row, normalize the column
+	    RS->set (i, Bmax / d);
+	    CS->set (i, 1 / Bmax);
+	}
+	else
+	{
+	    // Scale the column, normalize the row
+	    CS->set (i, Cmax / d);
+	    RS->set (i, 1 / Cmax);
+	}
+    }
+
+    // Apply to the matrix
+    for (int i = 0; i < N + M; i++)
+	for (int j = 0; j < N + M; j++)
+	    (*MA)(i, j) *= (*RS)(i) * (*CS)(j);
 }
 
 void trsolver::calcEuler (void)
@@ -725,7 +843,7 @@ void trsolver::calcRadau5 (void)
 	{
 	    nr_double_t mzk = 0;
 	    for (int l = 0; l < n; l++)
-		mzk -= F->get(k, l) * dmxsum->get(l) / delta;
+		mzk -= F->get(k, l) * dmxsum->get(i*n + l) / delta;
 	    mz->set(i*n + k, mzk);
 	}
     }
@@ -743,6 +861,7 @@ void trsolver::calcRadau5 (void)
 
     // We should already be there:
     // current = saveCurrent + delta;
+    assert (current - delta - saveCurrent < 1e-16);
 }
 
 void trsolver::setInitX (void)
