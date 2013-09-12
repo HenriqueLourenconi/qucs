@@ -143,8 +143,7 @@ protected:
     tmatrix<nr_type_t> * F;
     tmatrix<nr_type_t> * C;
     tmatrix<nr_type_t> * MA;
-    tmatrix<nr_type_t> * Ut;
-    tmatrix<nr_type_t> * Vt;
+    tmatrix<nr_type_t> * L;
     tvector<nr_type_t> * RS;
     tvector<nr_type_t> * CS;
     int iterations;
@@ -164,9 +163,8 @@ private:
     nr_double_t vntol;
     nasolution<nr_type_t> solution;
     nr_double_t chop_thres;
-
-private:
-
+    void substituteL (void);
+    void substituteLt (void);
     calculate_func_t calculate_func;
 };
 

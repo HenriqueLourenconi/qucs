@@ -651,7 +651,6 @@ void trsolver::calcMAMulti (void)
 	//fprintf (stderr, "normalizing...\n");
 	//MA->print (true);
 	scaleMatrix ();
-	//MA->print (true);
     }
 }
 
@@ -687,65 +686,142 @@ void trsolver::scaleMatrix (void)
     int M = countVoltageSources ();
     int n = N + M;
 
+    if (L) delete (L);
+    L = new tmatrix<nr_double_t> ();
+
+    //fprintf (stderr, "doing LDLt\n");
+    getLDLt (*L);
+    //tmatrix<nr_double_t> Lt = *L;
+    //Lt.transpose ();
+    //tmatrix<nr_double_t> MA2 = *MA;
+    // Perform the operations on MA
+    for (int a = 0; a < N + M; a++)
+    {
+    	for (int i = a+1; i < N + M; i++)
+	{
+	    nr_double_t l = (*L)(i, a);
+	    if (l == 0) continue;
+    	    for (int j = 0; j < N + M; j++)
+    		(*MA)(i, j) -= (*MA)(a, j) * l;
+	}
+    	for (int i = a+1; i < N + M; i++)
+	{
+	    nr_double_t l = (*L)(i, a);
+	    if (l == 0) continue;
+    	    for (int j = 0; j < N + M; j++)
+    		(*MA)(j, i) -= (*MA)(j, a) * l;
+	}
+    }
+    
+    //fprintf (stderr, "scaling...\n");
     if (RS != NULL) delete RS;
     RS = new tvector<nr_double_t> (n);
     if (CS != NULL) delete CS;
-    CS = new tvector<nr_double_t> (n);
-    
-    for (int i = 0; i < N + M; i++)
-    {
-	RS->set (i, 1);
-	CS->set (i, 1);
-    }
+    CS = new tvector<nr_double_t> (n);    
 
     // First, attempt diagonal dominance and normalize
     for (int i = N; i < N + M; i++)
     {
-	nr_double_t d;
+    	nr_double_t d;
+    
+    	d = fabs ((*MA)(i, i));
+    
+    	nr_double_t Bmax = 0, Cmax = 0;
+    
+    	// Check the B part
+    	for (int j = 0; j < N; j++)
+    	    if (fabs ((*MA)(j, i)) > Bmax)
+    		Bmax = fabs ((*MA)(j, i));
+    
+    	// Check the C part
+    	for (int j = 0; j < N; j++)
+    	    if (fabs ((*MA)(i, j)) > Cmax)
+    		Cmax = fabs ((*MA)(i, j));
+    
+    	if (d > Bmax && d > Cmax)
+    	{
+    	    // Just scale the row
+    	    RS->set (i, 1 / d);
+    	    CS->set (i, 1);
+    	}
+    	else if (d <= Bmax && d <= Cmax)
+    	{
+    	    // Ditto
+    	    RS->set (i, 1 / Cmax);
+    	    CS->set (i, 1);
+    	}
+    	else if (Bmax > Cmax)
+    	{
+    	    // Scale the row, normalize the row and the column
+	    if (Cmax * Bmax > d)
+		RS->set (i, 1 / Cmax);
+	    else
+		RS->set (i, Bmax / d);
+    	    CS->set (i, 1 / Bmax);
+    	}
+    	else
+    	{
+    	    // Scale the column, normalize the row
+    	    CS->set (i, Cmax / d);
+    	    RS->set (i, 1 / Cmax);
+    	}
+    }
+    
+    // Apply to the matrix
+    for (int i = 0; i < N; i++)
+    	for (int j = N; j < N + M; j++)
+    	    (*MA)(i, j) *= (*CS)(j);
+    for (int i = N; i < N + M; i++)
+    	for (int j = 0; j < N; j++)
+    	    (*MA)(i, j) *= (*RS)(i);
+    for (int i = N; i < N + M; i++)
+    	for (int j = N; j < N + M; j++)
+    	    (*MA)(i, j) *= (*RS)(i) * (*CS)(j);
 
-	if ((*MA)(i, i) == 0)
-	    continue;
-	else
-	    d = fabs ((*MA)(i, i));
+    // Scale the first N rows
+    for (int i = 0; i < N; i++)
+    {
+	CS->set (i, 1);
+	//RS->set (i, 1);
+	//continue;
 
-	nr_double_t Bmax = 0, Cmax = 0;
-
-	// Check the B part
-	for (int j = 0; j < N; j++)
-	    if (fabs ((*MA)(j, i)) > Bmax)
-		Bmax = fabs ((*MA)(j, i));
-
-	// Check the C part
-	for (int j = 0; j < N; j++)
-	    if (fabs ((*MA)(i, j)) > Cmax)
-		Cmax = fabs ((*MA)(i, j));
-
-	if (Bmax == 0 && Cmax == 0)
-	    continue;
-
-	if (d > Bmax && d > Cmax)
-	    // Just scale the row
-	    RS->set (i, 1 / d);
-	else if (d < Bmax && d < Cmax)
-        { } // Don't do anything
-	else if (Bmax > Cmax)
+	nr_double_t rmax = 0;
+	for (int j = 0; j < N + M; j++)
 	{
-	    // Scale the row, normalize the column
-	    RS->set (i, Bmax / d);
-	    CS->set (i, 1 / Bmax);
+	    if (fabs ((*MA)(i, j)) > rmax)
+		rmax = fabs ((*MA)(i, j));
 	}
-	else
-	{
-	    // Scale the column, normalize the row
-	    CS->set (i, Cmax / d);
-	    RS->set (i, 1 / Cmax);
-	}
+	assert (rmax > 0);
+	RS->set (i, 1 / rmax);
     }
 
     // Apply to the matrix
-    for (int i = 0; i < N + M; i++)
-	for (int j = 0; j < N + M; j++)
-	    (*MA)(i, j) *= (*RS)(i) * (*CS)(j);
+    for (int i = 0; i < N; i++)
+    	for (int j = 0; j < N + M; j++)
+    	    (*MA)(i, j) *= (*RS)(i);
+
+    //MA->print (1);
+}
+
+// Do an LDLt decomposition on F
+void trsolver::getLDLt (tmatrix<nr_double_t> &L)
+{
+    int N = countNodes ();
+    int M = countVoltageSources ();
+    tmatrix <nr_double_t> D = *F;
+
+    L = teye<nr_double_t> (N + M);
+    for (int a = 0; a < N-1; a++)
+    {
+	if (D(a, a) == 0)
+	    continue;
+	for (int i = a+1; i < N; i++)
+	{
+	    for (int j = a+1; j <= i; j++)
+		D(i, j) -= D(i, a) * D(j, a) / D(a, a);
+	    L(i, a) = D(i, a) / D(a, a);
+	}
+    }
 }
 
 void trsolver::calcEuler (void)
