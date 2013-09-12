@@ -71,6 +71,10 @@ class eqnsys
   void solve (void);
 
   void solve_svd (nr_double_t thres = NR_EPSI);
+  void get_svd (tmatrix<nr_double_t> *retU = NULL,
+		tvector<nr_double_t> *retS = NULL,
+		tmatrix<nr_double_t> *retV = NULL,
+		nr_double_t thres = NR_EPSI);
 
  private:
   int update;
@@ -121,7 +125,7 @@ class eqnsys
   void chop_svd (nr_double_t);
   void factorize_svd (void);
   void substitute_svd (void);
-  void diagonalize_svd (void);
+  void diagonalize_svd ();
   void solve_iterative (void);
   void solve_sor (void);
   nr_double_t convergence_criteria (void);
