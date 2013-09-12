@@ -69,6 +69,8 @@ nasolver<nr_type_t>::nasolver () : analysis ()
     nlist = NULL;
     A = C = F = MA = NULL;
     z = x = dx = mx = mz = mxprev = mzprev = NULL;
+    Ut = Vt = NULL;
+    RS = CS = NULL;
     dmx = dmxsum = NULL;
     dmxprev = dmxsumprev = NULL;
     reltol = abstol = vntol = 0;
@@ -89,6 +91,8 @@ nasolver<nr_type_t>::nasolver (char * n) : analysis (n)
 {
     nlist = NULL;
     A = C = F = MA = NULL;
+    Ut = Vt = NULL;
+    RS = CS = NULL;
     z = x = dx = mx = mz = mxprev = mzprev = NULL;
     reltol = abstol = vntol = 0;
     desc = NULL;
@@ -111,6 +115,10 @@ nasolver<nr_type_t>::~nasolver ()
     if (F) delete F;
     delete A;
     delete MA;
+    if (Ut) delete Ut;
+    if (Vt) delete Vt;
+    if (RS) delete RS;
+    if (CS) delete CS;
     delete z;
     delete x;
     delete mz;
@@ -1268,8 +1276,14 @@ void nasolver<nr_type_t>::runMNA (void)
 {
     calcMatrices ();
 
+    if (Ut)
+	*mz = *Ut * *mz;
+    if (RS)
+	*mz = *RS * *mz;
+
 #if STEPDEBUG
-    logprint (LOG_STATUS, "DEBUG: condition: %g\n", condition (*MA));
+    if (updateMatrix)
+	logprint (LOG_STATUS, "DEBUG: condition: %g\n", condition (*MA));
 
     if (mzprev != NULL)
     {
@@ -1280,20 +1294,15 @@ void nasolver<nr_type_t>::runMNA (void)
 	logprint (LOG_STATUS, "DEBUG: RHS: %g\n", norm(*mz));
 #endif
 
-
-//    if (mzprev != NULL && norm(*mz) > norm (*mzprev))
-//    {
-//	qucs::exception * e = new qucs::exception (EXCEPTION_NO_CONVERGENCE);
-//	e->setText ("growing RHS in %s analysis", desc);
-//	throw_exception (e);
-//    }
-
-//    MA->print(); fprintf(stderr, "\n");
-
     // just solve the equation system here
     eqns->setAlgo (eqnAlgo);
     eqns->passEquationSys (updateMatrix ? MA : NULL, dmx, mz);
     eqns->solve ();
+
+    if (CS)
+	*dmx = *CS * *dmx;
+    if (Vt)
+	*dmx = *Vt * *dmx;
 
     update_mx ();
 

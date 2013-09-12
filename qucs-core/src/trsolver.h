@@ -110,6 +110,8 @@ protected:
     bool relaxTSR;
     bool initialDC;
 
+ private:
+    void scaleMatrix (void);
 };
 
 #endif /* __TRSOLVER_H__ */

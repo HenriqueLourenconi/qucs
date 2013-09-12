@@ -1231,9 +1231,30 @@ void eqnsys<nr_type_t>::householder_apply_right_extern (int r, nr_type_t t) {
    value decomposition (Golub-Reinsch-SVD). */
 template <class nr_type_t>
 void eqnsys<nr_type_t>::solve_svd (nr_double_t thres) {
-  factorize_svd ();
-  chop_svd (thres);
+  if (update) {
+    factorize_svd ();
+    chop_svd (thres);
+  }
   substitute_svd ();
+}
+
+template <class nr_type_t>
+void eqnsys<nr_type_t>::get_svd (tmatrix<nr_double_t> *retU,
+				 tvector<nr_double_t> *retS,
+				 tmatrix<nr_double_t> *retV,
+				 nr_double_t thres) {
+  A = retU;
+  N = A->getCols ();
+
+  factorize_svd ();
+
+  if (retS)
+    chop_svd (thres);
+
+  if (retV != NULL)
+    *retV = *V;
+  if (retS != NULL)
+    *retS = *S;
 }
 
 // Annihilates near-zero singular values.
@@ -1244,7 +1265,7 @@ void eqnsys<nr_type_t>::chop_svd (nr_double_t thres) {
   Max = 0.0;
   for (c = 0; c < N; c++) if (fabs (S_(c)) > Max) Max = fabs (S_(c));
   Min = Max * thres;
-  for (c = 0; c < N; c++) if (fabs (S_(c)) < Min) S_(c) = Min;
+  for (c = 0; c < N; c++) if (fabs (S_(c)) < Min) S_(c) = 0.0;
 }
 
 /* The function uses the singular value decomposition A = USV' to
@@ -1371,7 +1392,7 @@ void eqnsys<nr_type_t>::givens_apply_v (int r1, int r2,
    complex valued equation systems is possible except for the matrix
    updates of U and V'. */
 template <class nr_type_t>
-void eqnsys<nr_type_t>::diagonalize_svd (void) {
+void eqnsys<nr_type_t>::diagonalize_svd () {
   bool split;
   int i, l, j, its, k, n, MaxIters = 30;
   nr_double_t an, f, g, h, d, c, s, b, a;
@@ -1406,7 +1427,7 @@ void eqnsys<nr_type_t>::diagonalize_svd (void) {
 	  E_(i) *= c;
 	  if (fabs (f) + an == an) break;
 	  g = S_(i);
-	  S_(i) = givens (f, g, c, s);
+	  S_(i) = givens (g, f, c, s);
 	  // apply inverse rotation to U
 	  givens_apply_u (n, i, c, s);
 	}
