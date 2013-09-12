@@ -66,7 +66,7 @@ nasolver<nr_type_t>::nasolver () : analysis ()
     nlist = NULL;
     A = C = F = MA = NULL;
     z = x = dx = mx = mz = mxprev = mzprev = NULL;
-    Ut = Vt = NULL;
+    L = NULL;
     RS = CS = NULL;
     dmx = dmxsum = NULL;
     dmxprev = dmxsumprev = NULL;
@@ -88,7 +88,7 @@ nasolver<nr_type_t>::nasolver (char * n) : analysis (n)
 {
     nlist = NULL;
     A = C = F = MA = NULL;
-    Ut = Vt = NULL;
+    L = NULL;
     RS = CS = NULL;
     z = x = dx = mx = mz = mxprev = mzprev = NULL;
     reltol = abstol = vntol = 0;
@@ -112,8 +112,7 @@ nasolver<nr_type_t>::~nasolver ()
     if (F) delete F;
     delete A;
     delete MA;
-    if (Ut) delete Ut;
-    if (Vt) delete Vt;
+    if (L) delete L;
     if (RS) delete RS;
     if (CS) delete CS;
     delete z;
@@ -1237,8 +1236,8 @@ void nasolver<nr_type_t>::runMNA (void)
 {
     calcMatrices ();
 
-    if (Ut)
-	*mz = *Ut * *mz;
+    if (L)
+	substituteL ();
     if (RS)
 	*mz = *RS * *mz;
 
@@ -1255,6 +1254,9 @@ void nasolver<nr_type_t>::runMNA (void)
 	logprint (LOG_STATUS, "DEBUG: RHS: %g\n", norm(*mz));
 #endif
 
+    //MA->print (1);
+    //mz->print (1);
+
     // just solve the equation system here
     eqns->setAlgo (eqnAlgo);
     eqns->passEquationSys (updateMatrix ? MA : NULL, dmx, mz);
@@ -1262,8 +1264,8 @@ void nasolver<nr_type_t>::runMNA (void)
 
     if (CS)
 	*dmx = *CS * *dmx;
-    if (Vt)
-	*dmx = *Vt * *dmx;
+    if (L)
+	substituteLt ();
 
     update_mx ();
 
@@ -1294,6 +1296,55 @@ void nasolver<nr_type_t>::runMNA (void)
 
     extractSol ();
 }
+
+template <class nr_type_t>
+void nasolver<nr_type_t>::substituteL (void)
+{
+    int n = getSysSize ();
+
+//    fprintf (stderr, "subsituteL...\n");
+//    L->print (1);
+//    mz->print (1);
+    for (int i = 1; i < n; i++)
+    {
+	for (int j = 0; j < i; j++)
+	    (*mz)(i) -= (*mz)(j) * (*L)(i, j);
+    }
+    //    mz->print (1);
+}
+
+template <class nr_type_t>
+void nasolver<nr_type_t>::substituteLt (void)
+{
+    int n = getSysSize ();
+
+//    fprintf (stderr, "subsituteLt...\n");
+//    L->print (1);
+//    dmx->print (1);
+    for (int i = n-2; i >= 0; i--)
+    {
+	for (int j = i+1; j < n; j++)
+	    (*dmx)(i) -= (*dmx)(j) * (*L)(j, i);
+    }
+    //    dmx->print (1);
+}
+
+//template <class nr_type_t>
+//void nasolver<nr_type_t>::multiplyLt (void)
+//{
+//    int n = getSysSize ();
+//
+//    fprintf (stderr, "multiplyLt...\n");
+//    L->print (1);
+//    mx->print (1);
+//    for (int i = n-2; i >= 0; i--)
+//    {
+//	for (int j = i+1; j < n; j++)
+//	    (*mx)(i) += (*mx)(j) * (*L)(j, i);
+//    }
+//    mx->print (1);
+//}
+
 
 /* This function applies a damped Newton-Raphson (limiting scheme) to
    the current solution vector in the form x1 = x0 + a * (x1 - x0).  This
