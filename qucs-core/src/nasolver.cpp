@@ -733,31 +733,25 @@ template <class nr_type_t>
 void nasolver<nr_type_t>::createBMatrix (void)
 {
     int N = countNodes ();
-    int M = countVoltageSources ();
-    circuit * vs;
-    struct nodelist_t * n;
-    nr_type_t val;
-
-    // go through each voltage sources (first dimension)
-    for (int c = 0; c < M; c++)
+    circuit * root = subnet->getRoot ();
+    for (circuit * c = root; c != NULL; c = (circuit *) c->getNext ())
     {
-        vs = findVoltageSource (c);
-        // go through each node (second dimension)
-        for (int r = 0; r < N; r++)
-        {
-            val = 0.0;
-            n = nlist->getNode (r);
-            for (int i = 0; i < n->nNodes; i++)
-            {
-                // is voltage source connected to node ?
-                if (n->nodes[i]->getCircuit () == vs)
-                {
-                    val += MatVal (vs->getB (n->nodes[i]->getPort (), c));
-                }
-            }
-            // put value into B matrix
-            A->set (r, c + N, val);
-        }
+	int s1 = c->getSize ();
+	int n = c->getVoltageSource ();
+	int s2 = c->getVoltageSources ();
+
+	for (int a = 0; a < s1; a++)
+	{
+	    for (int b = n; b < n + s2; b++)
+	    {
+		int pr = c->getNode (a)->getNode ();
+
+		if (pr-- == 0)
+		    continue;
+
+		(*A)(pr, N + b) += MatVal (c->getB (a, b));
+	    }
+	}
     }
 }
 
@@ -765,31 +759,25 @@ template <class nr_type_t>
 void nasolver<nr_type_t>::createMBMatrix (void)
 {
     int N = countNodes ();
-    int M = countVoltageSources ();
-    circuit * vs;
-    struct nodelist_t * n;
-    nr_type_t val;
-
-    // go through each voltage sources (first dimension)
-    for (int c = 0; c < M; c++)
+    circuit * root = subnet->getRoot ();
+    for (circuit * c = root; c != NULL; c = (circuit *) c->getNext ())
     {
-        vs = findVoltageSource (c);
-        // go through each node (second dimension)
-        for (int r = 0; r < N; r++)
-        {
-            val = 0.0;
-            n = nlist->getNode (r);
-            for (int i = 0; i < n->nNodes; i++)
-            {
-                // is voltage source connected to node ?
-                if (n->nodes[i]->getCircuit () == vs)
-                {
-                    val += MatVal (vs->getMB (n->nodes[i]->getPort (), c));
-                }
-            }
-            // put value into B matrix
-            F->set (r, c + N, val);
-        }
+	int s1 = c->getSize ();
+	int n = c->getVoltageSource ();
+	int s2 = c->getVoltageSources ();
+
+	for (int a = 0; a < s1; a++)
+	{
+	    for (int b = n; b < n + s2; b++)
+	    {
+		int pr = c->getNode (a)->getNode ();
+
+		if (pr-- == 0)
+		    continue;
+
+		(*F)(pr, N + b) += MatVal (c->getMB (a, b));
+	    }
+	}
     }
 }
 
@@ -805,31 +793,25 @@ template <class nr_type_t>
 void nasolver<nr_type_t>::createCMatrix (void)
 {
     int N = countNodes ();
-    int M = countVoltageSources ();
-    circuit * vs;
-    struct nodelist_t * n;
-    nr_type_t val;
-
-    // go through each voltage sources (second dimension)
-    for (int r = 0; r < M; r++)
+    circuit * root = subnet->getRoot ();
+    for (circuit * c = root; c != NULL; c = (circuit *) c->getNext ())
     {
-        vs = findVoltageSource (r);
-        // go through each node (first dimension)
-        for (int c = 0; c < N; c++)
-        {
-            val = 0.0;
-            n = nlist->getNode (c);
-            for (int i = 0; i < n->nNodes; i++)
-            {
-                // is voltage source connected to node ?
-                if (n->nodes[i]->getCircuit () == vs)
-                {
-                    val += MatVal (vs->getC (r, n->nodes[i]->getPort ()));
-                }
-            }
-            // put value into C matrix
-            A->set (r + N, c, val);
-        }
+	int s1 = c->getSize ();
+	int n = c->getVoltageSource ();
+	int s2 = c->getVoltageSources ();
+
+	for (int a = n; a < n + s2; a++)
+	{
+	    for (int b = 0; b < s1; b++)
+	    {
+		int pc = c->getNode (b)->getNode ();
+
+		if (pc-- == 0)
+		    continue;
+
+		(*A)(N + a, pc) += MatVal (c->getC (a, b));
+	    }
+	}
     }
 }
 
@@ -837,81 +819,69 @@ template <class nr_type_t>
 void nasolver<nr_type_t>::createMCMatrix (void)
 {
     int N = countNodes ();
-    int M = countVoltageSources ();
-    circuit * vs;
-    struct nodelist_t * n;
-    nr_type_t val;
-
-    // go through each voltage sources (second dimension)
-    for (int r = 0; r < M; r++)
+    circuit * root = subnet->getRoot ();
+    for (circuit * c = root; c != NULL; c = (circuit *) c->getNext ())
     {
-        vs = findVoltageSource (r);
-        // go through each node (first dimension)
-        for (int c = 0; c < N; c++)
-        {
-            val = 0.0;
-            n = nlist->getNode (c);
-            for (int i = 0; i < n->nNodes; i++)
-            {
-                // is voltage source connected to node ?
-                if (n->nodes[i]->getCircuit () == vs)
-                {
-                    val += MatVal (vs->getMC (r, n->nodes[i]->getPort ()));
-                }
-            }
-            // put value into C matrix
-            F->set (r + N, c, val);
-        }
+	int s1 = c->getSize ();
+	int n = c->getVoltageSource ();
+	int s2 = c->getVoltageSources ();
+
+	for (int a = n; a < n + s2; a++)
+	{
+	    for (int b = 0; b < s1; b++)
+	    {
+		int pc = c->getNode (b)->getNode ();
+
+		if (pc-- == 0)
+		    continue;
+
+		(*F)(N + a, pc) += MatVal (c->getMC (a, b));
+	    }
+	}
     }
 }
+
 
 /* The D matrix is an MxM matrix that is composed entirely of zeros.
    It can be non-zero if dependent sources are considered. */
 template <class nr_type_t>
 void nasolver<nr_type_t>::createDMatrix (void)
 {
-    int M = countVoltageSources ();
     int N = countNodes ();
-    circuit * vsr, * vsc;
-    nr_type_t val;
-    for (int r = 0; r < M; r++)
+    circuit * root = subnet->getRoot ();
+    for (circuit * c = root; c != NULL; c = (circuit *) c->getNext ())
     {
-        vsr = findVoltageSource (r);
-        for (int c = 0; c < M; c++)
-        {
-            vsc = findVoltageSource (c);
-            val = 0.0;
-            if (vsr == vsc)
-            {
-                val = MatVal (vsr->getD (r, c));
-            }
-            A->set (r + N, c + N, val);
-        }
+	int n = c->getVoltageSource ();
+	int s = c->getVoltageSources ();
+	for (int a = n; a < n + s; a++)
+	{
+	    for (int b = n; b < n + s; b++)
+	    {
+		(*A)(N + a, N + b) = MatVal (c->getD (a, b));
+	    }
+	}
     }
 }
 
 template <class nr_type_t>
 void nasolver<nr_type_t>::createMDMatrix (void)
 {
-    int M = countVoltageSources ();
     int N = countNodes ();
-    circuit * vsr, * vsc;
-    nr_type_t val;
-    for (int r = 0; r < M; r++)
+    circuit * root = subnet->getRoot ();
+    for (circuit * c = root; c != NULL; c = (circuit *) c->getNext ())
     {
-        vsr = findVoltageSource (r);
-        for (int c = 0; c < M; c++)
-        {
-            vsc = findVoltageSource (c);
-            val = 0.0;
-            if (vsr == vsc)
-            {
-                val = MatVal (vsr->getMD (r, c));
-            }
-            F->set (r + N, c + N, val);
-        }
+	int n = c->getVoltageSource ();
+	int s = c->getVoltageSources ();
+	for (int a = n; a < n + s; a++)
+	{
+	    for (int b = n; b < n + s; b++)
+	    {
+		(*F)(N + a, N + b) = MatVal (c->getMD (a, b));
+	    }
+	}
     }
 }
+
 
 /* The G matrix is an NxN matrix formed in two steps.
    1. Each element in the diagonal matrix is equal to the sum of the
@@ -943,12 +913,7 @@ void nasolver<nr_type_t>::createGMatrix (void)
 		if (pr-- == 0 || pc-- == 0)
 		    continue;
 
-//		fprintf (stderr, "entry: %i, %i, %g\n",
-//			 pr, pc,
-//			 MatVal (c->getY (a, b)));
-
-		nr_type_t g = A->get (pr, pc) + MatVal (c->getY (a, b));
-		A->set (pr, pc, g);
+		(*A)(pr, pc) += MatVal (c->getY (a, b));
 	    }
 	}
     }
@@ -977,8 +942,7 @@ void nasolver<nr_type_t>::createMGMatrix (void)
 		if (pr-- == 0 || pc-- == 0)
 		    continue;
 
-		nr_type_t g = F->get (pr, pc) + MatVal (c->getMY (a, b));
-		F->set (pr, pc, g);
+		(*F)(pr, pc) += MatVal (c->getMY (a, b));
 	    }
 	}
     }
