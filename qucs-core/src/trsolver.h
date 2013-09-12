@@ -112,6 +112,7 @@ protected:
 
  private:
     void scaleMatrix (void);
+    void getLDLt (tmatrix<nr_double_t> &);
 };
 
 #endif /* __TRSOLVER_H__ */
