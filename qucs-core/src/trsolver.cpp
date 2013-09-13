@@ -813,13 +813,18 @@ void trsolver::getLDLt (tmatrix<nr_double_t> &L)
     L = teye<nr_double_t> (N + M);
     for (int a = 0; a < N-1; a++)
     {
-	if (D(a, a) == 0)
+	nr_double_t div = D(a, a);
+	if (div == 0)
 	    continue;
+	else
+	    div = 1 / div;
 	for (int i = a+1; i < N; i++)
 	{
+	    nr_double_t d = D(i, a);
+	    if (d == 0) continue;
 	    for (int j = a+1; j <= i; j++)
-		D(i, j) -= D(i, a) * D(j, a) / D(a, a);
-	    L(i, a) = D(i, a) / D(a, a);
+		D(i, j) -= d * D(j, a) * div;
+	    L(i, a) = d * div;
 	}
     }
 }
