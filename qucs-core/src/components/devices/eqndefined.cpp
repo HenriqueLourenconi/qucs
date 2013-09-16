@@ -330,10 +330,9 @@ void eqndefined::calcDC (void) {
   // charge: 2-node, voltage: 2-node
   for (k = 0, i = 0; i < branches; i++) {
     for (j = 0; j < branches; j++, k++) {
-      int r = i * 2;
       int c = j * 2;
       nr_double_t v = BP (j);
-      transientCapacitanceCI (r, c + 0, c + 1, _jdyna[k], v);
+      transientCapacitanceCI (i, c + 0, c + 1, _jdyna[k], v);
     }
   }
 }
