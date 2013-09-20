@@ -254,6 +254,9 @@ int trsolver::solve (void)
     else if (!strcmp (solver, "GolubSVD"))
         eqnAlgo = ALGO_SV_DECOMPOSITION;
 
+    predType = INTEGRATOR_UNKNOWN;
+    corrType = INTEGRATOR_UNKNOWN;
+
     // Perform initial DC analysis.
     if (initialDC)
     {
@@ -1429,6 +1432,8 @@ void trsolver::initTR (void)
     nr_double_t start = getPropertyDouble ("Start");
     nr_double_t stop = getPropertyDouble ("Stop");
     nr_double_t points = getPropertyDouble ("Points");
+
+    activeStates = 1;
 
     // fetch corrector integration method and determine predicor method
     corrMaxOrder = getPropertyInteger ("Order");
