@@ -75,6 +75,14 @@ trsolver::trsolver ()
     relaxTSR = false;
     initialDC = true;
     corrType = INTEGRATOR_UNKNOWN;
+    eqns_c = new eqnsys<nr_complex_t> (); // just in case
+    MA_c = NULL;
+    mx_c = NULL;
+    dmx_c = NULL;
+    dmxsum_c = NULL;
+    mz_c = NULL;
+    mxprev_c = NULL;
+    dmxsumprev_c = NULL;
 }
 
 // Constructor creates a named instance of the trsolver class.
@@ -91,6 +99,14 @@ trsolver::trsolver (char * n)
     relaxTSR = false;
     initialDC = true;
     corrType = INTEGRATOR_UNKNOWN;
+    eqns_c = new eqnsys<nr_complex_t> (); // just in case
+    MA_c = NULL;
+    mx_c = NULL;
+    dmx_c = NULL;
+    dmxsum_c = NULL;
+    mz_c = NULL;
+    mxprev_c = NULL;
+    dmxsumprev_c = NULL;
 }
 
 // Destructor deletes the trsolver class object.
@@ -103,9 +119,27 @@ trsolver::~trsolver ()
             delete solution[i];
         if (update[i] != NULL)
             delete update[i];
-        if (rhs[i] != NULL)
-            delete rhs[i];
+	if (rhs[i] != NULL)
+	    delete rhs[i];
     }
+
+    if (MA_c != NULL)
+	delete MA_c;
+    if (mx_c != NULL)
+	delete mx_c;
+    if (dmx_c != NULL)
+	delete dmx_c;
+    if (dmxsum_c != NULL)
+	delete dmxsum_c;
+    if (mz_c != NULL)
+	delete mz_c;
+    if (mxprev_c != NULL)
+	delete mxprev_c;
+    if (dmxsumprev_c != NULL)
+	delete dmxsumprev_c;
+    if (eqns_c != NULL)
+	delete eqns_c;
+
     if (tHistory) delete tHistory;
 }
 
@@ -121,6 +155,9 @@ trsolver::trsolver (trsolver & o)
     tHistory = o.tHistory ? new history (*o.tHistory) : NULL;
     relaxTSR = o.relaxTSR;
     initialDC = o.initialDC;
+    eqns_c = o.eqns_c;
+    mxprev_c = o.mxprev_c;
+    dmxsumprev_c = o.dmxsumprev_c;
 }
 
 // This function creates the time sweep if necessary.
@@ -269,6 +306,7 @@ int trsolver::solve (void)
 
         do // while (saveCurrent < time), i.e. until a requested breakpoint is hit
         {
+	integrate:
 #if STEPDEBUG
             if (delta == deltaMin)
             {
@@ -346,7 +384,7 @@ int trsolver::solve (void)
             if (error) return -1;
 
             // if the step was rejected, the solution loop is restarted here
-            if (rejected) continue;
+            if (rejected) goto integrate;
 
             // check whether Jacobian matrix is still non-singular
             if (!A->isFinite ())
@@ -529,9 +567,26 @@ int trsolver::predictor (void)
     if (corrType == INTEGRATOR_RADAU5)
     {
 	int n = countNodes () + countVoltageSources ();
-	for (int i = 0; i < 3; i++)
-	    for (int k = 0; k < n; k++)
-		dmxsum->set (i*n + k, x->get (k) - SOL (1)->get (k));
+	for (int k = 0; k < n; k++)
+	{
+	    (*dmxsum)(k) = 0;
+	    (*dmxsum_c)(k) = 0;
+	}
+	*x = *SOL (1);
+	saveSolution ();
+
+	//int n = countNodes () + countVoltageSources ();
+	//for (int k = 0; k < n; k++)
+	//{
+	//    nr_double_t dif = (*x)(k) - (*SOL (1))(k);
+	//    (*dmxsum)(k) = 0;
+	//    (*dmxsum_c)(k) = 0;
+	//    for (int j = 0; j < 3; j++)
+	//    {
+	//	(*dmxsum)(k) += real (radau_Pi[0][j]) * dif;
+	//	(*dmxsum_c)(k) += radau_Pi[1][j] * dif;
+	//    }
+	//}
     }
     else
 	*dmxsum = *x - *SOL (1);
@@ -628,92 +683,43 @@ void trsolver::calcMAMulti (void)
 	*MA *= corrCoeff[0];
         *MA += *A;
 
-	//fprintf (stderr, "performing SVD...\n");
-	//eqnsys<nr_double_t> F_eqns;
-	////tmatrix<nr_double_t> U = *MA;
-	//tmatrix<nr_double_t> U = *F;
-	//if (Ut) delete (Ut);
-	//if (Vt) delete (Vt);
-	//Vt = new tmatrix<nr_double_t> ();
-	//F_eqns.get_svd (&U, NULL, Vt);
-	//
-	//Ut = new tmatrix<nr_double_t> (U);
-	//Ut->transpose ();
-	//tmatrix<nr_double_t> V = *Vt;
-	//V.transpose ();
-	//MA->print (true);
-	//*MA = *Ut * *MA * V;
-	//F->print (true);
-	//(*Ut * *F * V).print (true);
-	//normalizeRows ();
-
-	
-	//fprintf (stderr, "normalizing...\n");
-	//MA->print (true);
-	scaleMatrix ();
+	scaleMatrix (true);
     }
 }
 
-//void trsolver::normalizeRows (void)
-//{
-//    int n = getSysSize ();
-//    if (Nv != NULL) delete Nv;
-//    Nv = new tvector<nr_double_t> (n);
-//
-//    for (int i = 0; i < n; i++)
-//    {
-//	nr_double_t gmax = 0.0;
-//	for (int j = 0; j < n; j++)
-//	{
-//	    nr_double_t g = fabs (MA->get (i, j));
-//	    if (g > gmax)
-//		gmax = g;
-//	}
-//	assert (gmax > 0.0);
-//	nr_double_t mult = 1.0/gmax;
-//	Nv->set (i, mult);
-//	for (int j = 0; j < n; j++)
-//	{
-//	    nr_double_t g = MA->get (i, j);
-//	    MA->set (i, j, g * mult);
-//	}
-//    }
-//}
-
-void trsolver::scaleMatrix (void)
+void trsolver::scaleMatrix (bool ldlt)
 {
     int N = countNodes ();
     int M = countVoltageSources ();
     int n = N + M;
 
     if (L) delete (L);
-    L = new tmatrix<nr_double_t> ();
-
-    //fprintf (stderr, "doing LDLt\n");
-    getLDLt (*L);
-    //tmatrix<nr_double_t> Lt = *L;
-    //Lt.transpose ();
-    //tmatrix<nr_double_t> MA2 = *MA;
-    // Perform the operations on MA
-    for (int a = 0; a < N + M; a++)
+    if (ldlt)
     {
-    	for (int i = a+1; i < N + M; i++)
-	{
-	    nr_double_t l = (*L)(i, a);
-	    if (l == 0) continue;
-    	    for (int j = 0; j < N + M; j++)
-    		(*MA)(i, j) -= (*MA)(a, j) * l;
-	}
-    	for (int i = a+1; i < N + M; i++)
-	{
-	    nr_double_t l = (*L)(i, a);
-	    if (l == 0) continue;
-    	    for (int j = 0; j < N + M; j++)
-    		(*MA)(j, i) -= (*MA)(j, a) * l;
+	L = new tmatrix<nr_double_t> ();
+
+	getLDLt (*L);
+
+	// Perform the operations on MA
+	for (int a = 0; a < N + M; a++)
+        {
+	    for (int i = a+1; i < N + M; i++)
+	    {
+		nr_double_t l = (*L)(i, a);
+		if (l == 0) continue;
+		for (int j = 0; j < N + M; j++)
+		    (*MA)(i, j) -= (*MA)(a, j) * l;
+	    }
+	    for (int i = a+1; i < N + M; i++)
+	    {
+		nr_double_t l = (*L)(i, a);
+		if (l == 0) continue;
+		for (int j = 0; j < N + M; j++)
+		    (*MA)(j, i) -= (*MA)(j, a) * l;
+	    }
 	}
     }
     
-    //fprintf (stderr, "scaling...\n");
     if (RS != NULL) delete RS;
     RS = new tvector<nr_double_t> (n);
     if (CS != NULL) delete CS;
@@ -782,8 +788,11 @@ void trsolver::scaleMatrix (void)
     for (int i = 0; i < N; i++)
     {
 	CS->set (i, 1);
-	//RS->set (i, 1);
-	//continue;
+	if (!ldlt)
+	{
+	    RS->set (i, 1);
+	    continue;
+	}
 
 	nr_double_t rmax = 0;
 	for (int j = 0; j < N + M; j++)
@@ -796,11 +805,10 @@ void trsolver::scaleMatrix (void)
     }
 
     // Apply to the matrix
-    for (int i = 0; i < N; i++)
-    	for (int j = 0; j < N + M; j++)
-    	    (*MA)(i, j) *= (*RS)(i);
-
-    //MA->print (1);
+    if (ldlt)
+	for (int i = 0; i < N; i++)
+	    for (int j = 0; j < N + M; j++)
+		(*MA)(i, j) *= (*RS)(i);
 }
 
 // Do an LDLt decomposition on F
@@ -833,6 +841,13 @@ void trsolver::calcEuler (void)
 {
     calcMAMulti ();
     *mz = *z - *A * *mx;
+
+    //fprintf (stderr, "A, x, z:\n");
+    //A->print (1);
+    //x->print (1);
+    //z->print (1);
+    //mz->print (1);
+
     *mz += corrCoeff[1] * (*F * *dmxsum);
 }
 
@@ -855,6 +870,11 @@ void trsolver::calcGear (void)
     }
     dc += corrCoeff[1];
     *mz += dc * (*F * *dmxsum);
+
+    //if (updateMatrix)
+    //	MA->print(1);
+    //mx->print (1);
+    //mz->print (1);
 }
 
 void trsolver::calcMoulton (void)
@@ -869,80 +889,125 @@ void trsolver::calcMoulton (void)
 
 void trsolver::calcRadau5 (void)
 {
-    const nr_double_t radau_A[3][3] =
-	{{(88-7*sqrt(6))/360, (296-169*sqrt(6))/1800, (-2+3*sqrt(6))/225},
-	 {(296+169*sqrt(6))/1800, (88+7*sqrt(6))/360, (-2-3*sqrt(6))/225},
-	 {(16-sqrt(6))/36, (16+sqrt(6))/36, 1./9}};
+    //const nr_double_t radau_A[3][3] =
+    //	{{(88-7*sqrt(6))/360, (296-169*sqrt(6))/1800, (-2+3*sqrt(6))/225},
+    //	 {(296+169*sqrt(6))/1800, (88+7*sqrt(6))/360, (-2-3*sqrt(6))/225},
+    //	 {(16-sqrt(6))/36, (16+sqrt(6))/36, 1./9}};
     //const nr_double_t radau_b[3] =
     //	{(16-sqrt(6))/36, (16+sqrt(6))/36, 1./9};
-    const nr_double_t radau_c[3] =
-	{(4-sqrt(6))/10, (4+sqrt(6))/10, 1};
 
+    nr_double_t newCurrent = current;
     nr_double_t saveCurrent = current - delta;
     int n = countNodes () + countVoltageSources ();
+    nr_double_t dr = 1. / delta;
 
     if (updateMatrix)
     {
 	current = saveCurrent;
 	// Is this necessary?
 	for (int k = 0; k < n; k++)
-	    x->set(k, SOL (0)->get(k));
+	    x->set(k, SOL (1)->get(k));
+	saveSolution ();
 	calculate ();
 	createMatrix ();
 
-	// Compute the (naive) Jacobian for the RadauIIA method
-	for (int i = 0; i < 3; i++)
-	    for (int j = 0; j < 3; j++)
-		for (int k = 0; k < n; k++)
-		    for (int l = 0; l < n; l++)
-		    {
-			nr_double_t g = radau_A[i][j] * A->get(k, l);
+	// Compute the real and complex Jacobians for the RadauIIA method
+	*MA = radau_A_1 * *A;
+	*MA += dr * *F;
 
-			if (i == j)
-			    g += F->get(k, l) / delta;
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                (*MA_c)(i, j) = radau_A_2 * (*A)(i, j) + dr * (*F)(i, j);
 
-			MA->set(i*n + k, j*n + l, g);
-		    }
-	//MA->print (1);
+	scaleMatrix (false);
+	for (int i = 0; i < n; i++)
+	    for (int j = 0; j < n; j++)
+		(*MA_c)(i, j) *= (*RS)(i) * (*CS)(j);
+	//logprint (LOG_STATUS, "DEBUG: condition (complex): %g\n", condition (*MA_c));
     }
     
+    //tmatrix<nr_complex_t> checkident = tmatrix<nr_complex_t> (3);
+    //
+    //for (int i = 0; i < 3; i++)
+    //	for (int j = 0; j < 3; j++)
+    //	    for (int k = 0; k < 3; k++)
+    //		checkident(i, j) += radau_Pi[i][k] * radau_P[k][j];
+    //checkident.print ();
+
+    // Transform mx back
+    tvector<nr_double_t> mx_r[3];
+    for (int i = 0; i < 3; i++)
+    {
+	mx_r[i] = tvector<nr_double_t> (n);
+	for (int k = 0; k < n; k++)
+	{
+	    mx_r[i](k) = real (radau_P[i][0]) * (*mx)(k)
+		+ real (radau_P[i][1] * (*mx_c)(k))
+		+ real (radau_P[i][2] * conj ((*mx_c)(k)));
+	    //fprintf (stderr, "real: %g\n", mx_r[i](k));
+	    //fprintf (stderr, "imaginary: %g\n",
+	    //	     imag (radau_P[i][1] * (*mx_c)(k))
+	    //	     + imag (radau_P[i][2] * conj ((*mx_c)(k))));
+	}
+    }
+
     // Evaluate the circuit
     tvector<nr_double_t> fsave[3];
-
     for (int i = 0; i < 3; i++)
     {
 	current = saveCurrent + radau_c[i] * delta;
-	for (int k = 0; k < n; k++)
-	    x->set(k, mx->get(i*n + k));
+	*x = mx_r[i];
+
 	saveSolution ();
 	calculate ();
 	createMatrix ();
 
 	fsave[i] = *z - *A * *x;
-
-	for (int k = 0; k < n; k++)
-	{
-	    nr_double_t mzk = 0;
-	    for (int l = 0; l < n; l++)
-		mzk -= F->get(k, l) * dmxsum->get(i*n + l) / delta;
-	    mz->set(i*n + k, mzk);
-	}
+	//fprintf (stderr, "A, x, z:\n");
+	//A->print (1);
+	//x->print (1);
+	//z->print (1);
+	//fsave[i].print (1);
     }
 
     // Combine
-    for (int i = 0; i < 3; i++)
-	for (int k = 0; k < n; k++)
-        {
-	    nr_double_t mzk = mz->get(i*n + k);
-	    for (int j = 0; j < 3; j++)
-		mzk += radau_A[i][j] * fsave[j].get(k);
-	    
-	    mz->set(i*n + k, mzk);
+    for (int k = 0; k < n; k++)
+    {
+	nr_double_t mzk = 0;
+	nr_complex_t mzk_c = 0;
+
+	// Evaluate capacitors
+	for (int l = 0; l < n; l++)
+	{
+	    mzk -= F->get(k, l) * dmxsum->get(l) * dr;
+	    mzk_c -= F->get(k, l) * dmxsum_c->get(l) * dr;
 	}
 
-    // We should already be there:
-    // current = saveCurrent + delta;
-    assert (current - delta - saveCurrent < 1e-16);
+	// Add evaluated resistors etc.
+	for (int j = 0; j < 3; j++)
+	{
+	    mzk += radau_A_1 * real (radau_Pi[0][j]) * fsave[j](k);
+	    mzk_c += radau_A_2 * radau_Pi[1][j] * fsave[j](k);
+	}	    
+
+	mz->set (k, mzk);
+	mz_c->set (k, mzk_c);
+    }
+
+    //mz->print (1);
+
+    //fprintf (stderr, "complex system:\n");
+    //if (updateMatrix)
+    //	MA_c->print(0);
+    //mz_c->print (0);
+
+    //if (updateMatrix)
+    //	MA->print(1);
+    //mx_r[2].print (1);
+    //fsave[2].print (1);
+
+    // We should already be there, but still:
+    current = newCurrent;
 }
 
 void trsolver::setInitX (void)
@@ -952,12 +1017,31 @@ void trsolver::setInitX (void)
     switch (corrType)
     {
     case INTEGRATOR_RADAU5:
-	for (int i = 0; i < 3; i++)
-	    for (int k = 0; k < n; k++)
-		mx->set (i*n + k, x->get (k));
+	for (int k = 0; k < n; k++)
+	{
+	    (*mx)(k) = 0;
+	    (*mx_c)(k) = 0;
+	    for (int j = 0; j < 3; j++)
+	    {
+		(*mx)(k) += real (radau_Pi[0][j]) * (*x)(k);
+		(*mx_c)(k) += radau_Pi[1][j] * (*x)(k);
+	    }
+	}
 	break;
     default:
 	nasolver::setInitX ();
+    }
+}
+
+void trsolver::setInit (void)
+{
+    nasolver::setInit ();
+    if (corrType == INTEGRATOR_RADAU5)
+    {
+	if (mxprev_c != NULL) delete mxprev_c;
+	mxprev_c = new tvector<nr_complex_t> (*mx_c);
+	if (dmxsumprev_c != NULL) delete dmxsumprev_c;
+	dmxsumprev_c = new tvector<nr_complex_t> (*dmxsum_c);
     }
 }
 
@@ -970,25 +1054,149 @@ void trsolver::extractSol (void)
     case INTEGRATOR_RADAU5:
 	for (int k = 0; k < n; k++)
 	{
-	    x->set (k, mx->get(2*n + k));
-	    dx->set (k, dmxsum->get(2*n + k));
+	    (*x)(k) = real (radau_P[2][0]) * (*mx)(k)
+		+ real (radau_P[2][1] * (*mx_c)(k))
+		+ real (radau_P[2][2] * conj ((*mx_c)(k)));
+	    (*dx)(k) = real (radau_P[2][0]) * (*dmxsum)(k)
+		+ real (radau_P[2][1] * (*dmxsum_c)(k))
+		+ real (radau_P[2][2] * conj ((*dmxsum_c)(k)));
 	}
 	break;
     default:
 	nasolver::extractSol ();
     }
+
+    //x->print (1);
+    //dx->print (1);
+    //if (corrType != INTEGRATOR_UNKNOWN)
+    //{
+    //	tvector<nr_double_t> dx1 = *x - *SOL (1);
+    //	dx1.print (1);
+    //}
 }
 
 int trsolver::getSysSize (void)
 {
     int n = countVoltageSources () + countNodes ();
 
-    if (corrType == INTEGRATOR_RADAU5)
-	return n * 3;
-    else
-	return n;
+    return n;
 }
 
+void trsolver::solve_pre (void)
+{
+    nasolver::solve_pre ();
+
+    if (corrType == INTEGRATOR_RADAU5)
+    {
+	int n = getSysSize ();
+
+	if (MA_c != NULL) delete MA_c;
+	MA_c = new tmatrix<nr_complex_t> (n);
+	if (mx_c != NULL) delete mx_c;
+	mx_c = new tvector<nr_complex_t> (n);
+	if (dmx_c != NULL) delete dmx_c;
+	dmx_c = new tvector<nr_complex_t> (n);
+	if (dmxsum_c != NULL) delete dmxsum_c;
+	dmxsum_c = new tvector<nr_complex_t> (n);
+	if (mz_c != NULL) delete mz_c;
+	mz_c = new tvector<nr_complex_t> (n);
+    }
+}
+
+void trsolver::update_mx ()
+{
+    nasolver::update_mx ();
+
+    if (corrType == INTEGRATOR_RADAU5)
+    {
+	if (mxprev_c != NULL)
+	    *mx_c = *mxprev_c + *dmx_c;
+	else
+	    *mx_c += *dmx_c;
+
+	if (dmxsumprev_c != NULL)
+	    *dmxsum_c = *dmxsumprev_c + *dmx_c;
+	else
+	    *dmxsum_c += *dmx_c;
+
+	//fprintf (stderr, "update:\n");
+	//dmx_c->print ();
+	//mx_c->print ();
+    }
+}
+
+void trsolver::solveEquation ()
+{
+    nasolver::solveEquation ();
+
+    if (corrType == INTEGRATOR_RADAU5)
+    {
+	int n = getSysSize ();
+
+	if (RS)
+	    for (int k = 0; k < n; k++)
+		(*mz_c)(k) *= (*RS)(k);
+
+	eqns_c->setAlgo (eqnAlgo);
+	eqns_c->passEquationSys (updateMatrix ? MA_c : NULL, dmx_c, mz_c);
+	eqns_c->solve ();
+
+	if (CS)
+	    for (int k = 0; k < n; k++)
+	    (*dmx_c)(k) *= (*CS)(k);
+    }
+}
+
+int trsolver::checkConvergence (void)
+{
+    int retval = nasolver::checkConvergence ();
+
+    if (retval <= 0 || corrType != INTEGRATOR_RADAU5)
+	return retval;
+
+    int N = countNodes ();
+    int M = countVoltageSources ();
+    nr_double_t v_abs, v_rel, i_abs, i_rel;
+    int r;
+
+#if STEPDEBUG
+    logprint (LOG_STATUS, "DEBUG: covariant norm (complex): %g\n", norm (*mx_c));
+#endif
+
+    for (r = 0; r < N; r++)
+    {
+        v_abs = fabs (dmx_c->get (r));
+        v_rel = fabs (mx_c->get (r));
+        if (told * v_abs >= vntol + reltol * v_rel) goto noconv;
+    }
+
+    for (r = 0; r < M; r++)
+    {
+        i_abs = fabs (dmx_c->get (r + N));
+        i_rel = fabs (mx_c->get (r + N));
+        if (told * i_abs >= abstol + reltol * i_rel) goto noconv;
+    }
+    return 1;
+    
+ noconv:
+    return 0;
+}
+
+void trsolver::savePreviousIteration (void)
+{
+    nasolver::savePreviousIteration ();
+    if (corrType == INTEGRATOR_RADAU5)
+    {
+	*mxprev_c = *mx_c;
+
+	//if (dmxprev_c != NULL)
+	//	*dmxprev_c = *dmx_c;
+	//else
+	//	dmxprev_c = new tvector<nr_complex_t> (*dmx_c);
+
+	*dmxsumprev_c = *dmxsum_c;
+    }
+}
 
 /* The function predicts the successive solution vector using the
    explicit Gear integration formula. */

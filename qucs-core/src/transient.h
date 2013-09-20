@@ -58,6 +58,13 @@ namespace transient {
   nr_double_t getCorrectorError (int, int);
   nr_double_t getPredictorError (int, int);
 
+  extern const nr_complex_t I;
+  extern const nr_double_t radau_A_1;
+  extern const nr_complex_t radau_A_2;
+  extern const nr_complex_t radau_P[3][3];
+  extern const nr_complex_t radau_Pi[3][3];
+  extern const nr_double_t radau_c[3];
+
 } // namespace
 
 #endif /* __TRANSIENT_H__ */

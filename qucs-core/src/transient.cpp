@@ -447,3 +447,21 @@ nr_double_t transient::getCorrectorError (int Method, int order) {
 nr_double_t transient::getPredictorError (int Method, int order) {
   return integration_types[Method].predErrorConstant[order - 1];
 }
+
+const nr_complex_t transient::I = std::complex<nr_double_t> (0, 1);
+// real eigenvalue of radau_A
+const nr_double_t transient::radau_A_1 = 0.2748888295956773;
+// complex eigenvalue of radau_A
+const nr_complex_t transient::radau_A_2 = 0.1625555852021613+0.1849493244071407*I;
+// transformation_matrix, eigenvectofs of A
+// order: real ev, complex ev, conjugate ev
+const nr_complex_t transient::radau_P[3][3] =
+  {{ 1, 1, 1 },
+   { 2.649474817022757, -1.934028324065125-2.299841579466921*I, -1.934028324065125+2.299841579466921*I },
+   { 10.58887234059997, -6.773271448063634+1.439916875403385*I, -6.773271448063634-1.439916875403385*I }};
+// inverse of the latter
+const nr_complex_t transient::radau_Pi[3][3] =
+  {{ 0.3946330125758354, 0.03094596008157141, 0.04942702382884661 },
+   { 0.3026834937120822+0.02722506464463433*I, -0.0154729800407857+0.1865691755518763*I, -0.0247135119144233-0.0492531574776241*I },
+   { 0.3026834937120822-0.02722506464463433*I, -0.0154729800407857-0.1865691755518763*I, -0.0247135119144233+0.0492531574776241*I }};
+const nr_double_t transient::radau_c[3] = {(4-sqrt(6))/10, (4+sqrt(6))/10, 1};

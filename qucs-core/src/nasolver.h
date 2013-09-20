@@ -57,7 +57,7 @@ public:
     int  solve_nonlinear_continuation_gMin (void);
     int  solve_nonlinear_continuation_Source (void);
     int  solve_linear (void);
-    void solve_pre (void);
+    virtual void solve_pre (void);
     void solve_post (void);
     void setDescription (const char * n) { desc = n; }
     const char * getDescription (void) { return desc; }
@@ -75,7 +75,7 @@ public:
     virtual void calcMatrices (void);
     virtual void setInitX (void)
     { *mx = *x; }
-    void setInit (void)
+    virtual void setInit (void)
     { setInitX ();
       if (mxprev != NULL) delete mxprev;
       mxprev = new tvector<nr_type_t> (*mx);
@@ -86,8 +86,8 @@ public:
 
 protected:
     void restartNR (void);
-    void savePreviousIteration (void);
-    void update_mx (void);
+    virtual void savePreviousIteration (void);
+    virtual void update_mx (void);
     void restorePreviousIteration (void);
     int  countNodes (void);
     int  getNodeNr (char *);
@@ -98,10 +98,11 @@ protected:
     void applyNodeset (bool nokeep = true);
     void createNoiseMatrix (void);
     void runMNA (void);
+    virtual void solveEquation (void);
     void createMatrix (void);
     void storeSolution (void);
     void recallSolution (void);
-    int  checkConvergence (void);
+    virtual int checkConvergence (void);
 
 private:
     void assignVoltageSources (void);
@@ -154,17 +155,18 @@ protected:
     nr_double_t gMin;
     nr_double_t told;
     const char * desc;
+    nr_double_t reltol;
+    nr_double_t abstol;
+    nr_double_t vntol;
 
 private:
     nodelist * nlist;
     eqnsys<nr_type_t> * eqns;
-    nr_double_t reltol;
-    nr_double_t abstol;
-    nr_double_t vntol;
     nasolution<nr_type_t> solution;
     nr_double_t chop_thres;
     void substituteL (void);
     void substituteLt (void);
+    nr_double_t countNonZero (tmatrix<nr_type_t> *);
     calculate_func_t calculate_func;
 };
 

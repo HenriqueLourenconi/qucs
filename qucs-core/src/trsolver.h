@@ -66,8 +66,10 @@ public:
     void predictEuler (void);
     void predictGear (void);
     void setInitX (void);
+    void setInit (void);
     void extractSol (void);
     int getSysSize (void);
+    void solve_pre (void);
     void calcMAMulti (void);
     void calcEuler (void);
     void calcBilinear (void);
@@ -79,6 +81,10 @@ public:
     int  dcAnalysis (void);
 
 protected:
+    int checkConvergence (void);
+    void update_mx (void);
+    void solveEquation (void);
+    void savePreviousIteration (void);
     sweep * swp;
     nr_double_t predCoeff[8];
     nr_double_t corrCoeff[8];
@@ -111,8 +117,16 @@ protected:
     bool initialDC;
 
  private:
-    void scaleMatrix (void);
+    void scaleMatrix (bool);
     void getLDLt (tmatrix<nr_double_t> &);
+    tmatrix<nr_complex_t> * MA_c;
+    tvector<nr_complex_t> * mx_c;
+    tvector<nr_complex_t> * dmx_c;
+    tvector<nr_complex_t> * dmxsum_c;
+    tvector<nr_complex_t> * mz_c;
+    eqnsys<nr_complex_t> * eqns_c;
+    tvector<nr_complex_t> * mxprev_c;
+    tvector<nr_complex_t> * dmxsumprev_c;
 };
 
 #endif /* __TRSOLVER_H__ */

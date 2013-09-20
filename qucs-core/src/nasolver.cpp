@@ -1231,6 +1231,19 @@ void nasolver<nr_type_t>::calcMatrices (void)
     *mz = *z - *A * *mx;
 }
 
+template <class nr_type_t>
+nr_double_t nasolver<nr_type_t>::countNonZero (tmatrix<nr_type_t> *D)
+{
+    int n = getSysSize ();
+    int nz = 0;
+
+    for (int i = 0; i < n; i++)
+	for (int j = 0; j < n; j++)
+	    if (D->get (i, j) != 0)
+		nz++;
+
+    return (nr_double_t) nz / (n * n);
+}
 
 /* The matrix equation Ax = z is solved by x = A^-1*z.  The function
    applies the operation to the previously generated matrices. */
@@ -1239,36 +1252,7 @@ void nasolver<nr_type_t>::runMNA (void)
 {
     calcMatrices ();
 
-    if (L)
-	substituteL ();
-    if (RS)
-	*mz = *RS * *mz;
-
-#if STEPDEBUG
-    if (updateMatrix)
-	logprint (LOG_STATUS, "DEBUG: condition: %g\n", condition (*MA));
-
-    if (mzprev != NULL)
-    {
-	logprint (LOG_STATUS, "DEBUG: RHS ratio: %g/%g = %g\n",
-		  norm(*mz), norm (*mzprev), norm(*mz) / norm (*mzprev));
-    }
-    else
-	logprint (LOG_STATUS, "DEBUG: RHS: %g\n", norm(*mz));
-#endif
-
-    //MA->print (1);
-    //mz->print (1);
-
-    // just solve the equation system here
-    eqns->setAlgo (eqnAlgo);
-    eqns->passEquationSys (updateMatrix ? MA : NULL, dmx, mz);
-    eqns->solve ();
-
-    if (CS)
-	*dmx = *CS * *dmx;
-    if (L)
-	substituteLt ();
+    solveEquation ();
 
     update_mx ();
 
@@ -1298,6 +1282,44 @@ void nasolver<nr_type_t>::runMNA (void)
     }
 
     extractSol ();
+}
+
+template <class nr_type_t>
+void nasolver<nr_type_t>::solveEquation (void)
+{
+    if (L)
+	substituteL ();
+    if (RS)
+	*mz = *RS * *mz;
+
+#if STEPDEBUG
+    if (updateMatrix)
+	logprint (LOG_STATUS, "DEBUG: condition: %g\n", condition (*MA));
+
+    if (mzprev != NULL)
+    {
+	logprint (LOG_STATUS, "DEBUG: RHS ratio: %g/%g = %g\n",
+		  norm(*mz), norm (*mzprev), norm(*mz) / norm (*mzprev));
+    }
+    else
+	logprint (LOG_STATUS, "DEBUG: RHS: %g\n", norm(*mz));
+#endif
+
+    //if (updateMatrix)
+    //	fprintf (stderr, "non-zero before: %g\n", countNonZero (MA));
+
+    // just solve the equation system here
+    eqns->setAlgo (eqnAlgo);
+    eqns->passEquationSys (updateMatrix ? MA : NULL, dmx, mz);
+    eqns->solve ();
+
+    //if (updateMatrix)
+    //	fprintf (stderr, "non-zero after: %g\n", countNonZero (MA));
+
+    if (CS)
+	*dmx = *CS * *dmx;
+    if (L)
+	substituteLt ();
 }
 
 template <class nr_type_t>
@@ -1331,23 +1353,6 @@ void nasolver<nr_type_t>::substituteLt (void)
     }
     //    dmx->print (1);
 }
-
-//template <class nr_type_t>
-//void nasolver<nr_type_t>::multiplyLt (void)
-//{
-//    int n = getSysSize ();
-//
-//    fprintf (stderr, "multiplyLt...\n");
-//    L->print (1);
-//    mx->print (1);
-//    for (int i = n-2; i >= 0; i--)
-//    {
-//	for (int j = i+1; j < n; j++)
-//	    (*mx)(i) += (*mx)(j) * (*L)(j, i);
-//    }
-//    mx->print (1);
-//}
-
 
 /* This function applies a damped Newton-Raphson (limiting scheme) to
    the current solution vector in the form x1 = x0 + a * (x1 - x0).  This
@@ -1472,7 +1477,6 @@ void nasolver<nr_type_t>::steepestDescent (void)
 template <class nr_type_t>
 int nasolver<nr_type_t>::checkConvergence (void)
 {
-
     int N = countNodes ();
     int M = countVoltageSources ();
     nr_double_t v_abs, v_rel, i_abs, i_rel;
@@ -1494,15 +1498,15 @@ int nasolver<nr_type_t>::checkConvergence (void)
     // and relative tolerance values
     for (r = 0; r < N; r++)
     {
-        v_abs = abs (dmx->get (r));
-        v_rel = abs (mx->get (r));
+        v_abs = fabs (dmx->get (r));
+        v_rel = fabs (mx->get (r));
         if (told * v_abs >= vntol + reltol * v_rel) goto noconv;
     }
 
     for (r = 0; r < M; r++)
     {
-        i_abs = abs (dmx->get (r + N));
-        i_rel = abs (mx->get (r + N));
+        i_abs = fabs (dmx->get (r + N));
+        i_rel = fabs (mx->get (r + N));
         if (told * i_abs >= abstol + reltol * i_rel) goto noconv;
     }
     return 1;
