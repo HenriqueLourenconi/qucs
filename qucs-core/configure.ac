@@ -198,6 +198,7 @@ AC_CHECK_HEADERS([stddef.h stdlib.h string.h unistd.h ieeefp.h])
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_TYPE_SIZE_T
+AC_C_BIGENDIAN
 
 dnl Check for type sizes.
 AC_CHECK_SIZEOF([short])
@@ -303,6 +304,8 @@ AH_TOP([
 #define _GNU_SOURCE 1
 #endif
 ])
+
+AH_BOTTOM([#include <config-base.h>])
 
 dnl Add here all your Makefiles. These are created by configure.
 AC_CONFIG_FILES([Makefile
