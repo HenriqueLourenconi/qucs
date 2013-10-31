@@ -879,17 +879,17 @@ int e_trsolver::getM()
 
 int e_trsolver::getJacRows()
 {
-    return A->getRows();
+    return A->rows();
 }
 
 int e_trsolver::getJacCols()
 {
-    return A->getCols();
+    return A->cols();
 }
 
 double e_trsolver::getJacData(int r, int c)
 {
-    return A->get(r,c);
+  return (*A)(r,c);
 }
 
 // properties

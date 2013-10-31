@@ -50,7 +50,7 @@ class tmatrix
   tmatrix () : m() {};
 
   /*! \brief Create a square matrix */
-  tmatrix (const int i): m(i,i) {};
+  // tmatrix (const int i): m(i,i) {};
 
   /* \brief General constructor case */
   tmatrix (const int line, const int col) : m(line,col) {};
@@ -89,27 +89,17 @@ class tmatrix
   }
 
   /*! return number of columns */
-  int  getCols (void) const { 
+  int cols() const {
     return this->m.cols(); 
   }
-  
+
   /*! return number of rows */
-  int  getRows (void) const { 
+  int rows() const {
     return this->m.rows(); 
   }
-  
+
   /* default destructor thanks eigen */
   /* ~tmatrix (); */
-
-  /*! \brief acess alias  */
-  nr_type_t get (const int r, const int c) const {
-    return this->m(r,c);
-  }
-  
-  /*! \brief acess alias  */
-  void set (const int r, const int c, const nr_type_t &v) {
-    this->m(r,c)=v;
-  }
   
   /*!\brief fill matrix */
   void set (const nr_type_t &v) {
@@ -125,8 +115,8 @@ class tmatrix
     \todo simplifie when tvector is converted
   */
   tvector<nr_type_t> getRow (const int r) const {
-    const int cols = this.getCols();
-    const int rows = this.getRows();
+    const int cols = this.cols();
+    const int rows = this.rows();
     
     assert (r >= 0 && r < rows);
     
@@ -139,8 +129,8 @@ class tmatrix
 
   /*! Puts the given tvector into the given row of the tmatrix instance */
   void setRow (const int r, const tvector<nr_type_t> & v) {
-    const int cols = this.getCols();
-    const int rows = this.getRows();   
+    const int cols = this.cols();
+    const int rows = this.rows();   
 
     assert (r >= 0 && r < rows && v.getSize () == cols);
 
@@ -150,8 +140,8 @@ class tmatrix
   
   /*! The function returns the given column in a tvector */
   tvector<nr_type_t> getCol (const int c) const {
-    const int cols = this.getCols();
-    const int rows = this.getRows();
+    const int cols = this.cols();
+    const int rows = this.rows();
     assert (c >= 0 && c < cols);
 
     tvector<nr_type_t> res (rows);
@@ -162,8 +152,8 @@ class tmatrix
 
   /*! Puts the given tvector into the given column of the tmatrix instance. */
   void setCol (const int c, const tvector<nr_type_t> &v) {
-    const int cols = this.getCols();
-    const int rows = this.getRows();
+    const int cols = this.cols();
+    const int rows = this.rows();
     assert (c >= 0 && c < cols);
 
     for(int r = 0; r < rows; r++)
@@ -193,8 +183,8 @@ class tmatrix
   
   /*! Checks validity of matrix*/
   bool  isFinite (void) const {
-    const int rows = this->getRows();
-    const int cols = this->getCols();
+    const int rows = this->rows();
+    const int cols = this->cols();
     for (int i = 0; i < rows; i++)
       for(int j=0;j < cols; j++)
 	if (!finite (real ((*this)(i,j)))) 
@@ -255,7 +245,7 @@ class tmatrix
 /*! Multiplication of two matrix */
 template <typename nr_type_t>
 tmatrix<nr_type_t> operator * (const tmatrix<nr_type_t> &a, const tmatrix<nr_type_t>& b) {
-  assert (a.getCols () == b.getRows ());
+  assert (a.cols () == b.rows ());
 
   tmatrix<nr_type_t> ret;
   ret.m = a.m * b.m;
@@ -283,13 +273,13 @@ template <class nr_type_t> tmatrix<nr_type_t> teye (const int &n)
 */
 template <class nr_type_t>
 tvector<nr_type_t> operator * (const tmatrix<nr_type_t> &a, const tvector<nr_type_t> &b) {
-  assert (a.getCols () == b.getSize ());
-  int r, c, n = a.getCols ();
+  assert (a.cols () == b.getSize ());
+  int r, c, n = a.cols ();
   nr_type_t z;
   tvector<nr_type_t> res (n);
 
   for (r = 0; r < n; r++) {
-    for (c = 0, z = 0; c < n; c++) z += a.get (r, c) * b.get (c);
+    for (c = 0, z = 0; c < n; c++) z += a(r, c) * b.get (c);
     res.set (r, z);
   }
   return res;
@@ -297,13 +287,13 @@ tvector<nr_type_t> operator * (const tmatrix<nr_type_t> &a, const tvector<nr_typ
 
 template <class nr_type_t>
 tvector<nr_type_t> operator * (const tvector<nr_type_t> &a, const tmatrix<nr_type_t> &b) {
-  assert (a.getSize () == b.getRows ());
-  int r, c, n = b.getRows ();
+  assert (a.getSize () == b.rows ());
+  int r, c, n = b.rows ();
   nr_type_t z;
   tvector<nr_type_t> res (n);
 
   for (c = 0; c < n; c++) {
-    for (r = 0, z = 0; r < n; r++) z += a.get (r) * b.get (r, c);
+    for (r = 0, z = 0; r < n; r++) z += a.get (r) * b(r, c);
     res.set (c, z);
   }
   return res;

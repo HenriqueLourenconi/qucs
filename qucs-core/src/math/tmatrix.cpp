@@ -44,7 +44,7 @@ tmatrix<nr_type_t> inverse (const tmatrix<nr_type_t> &a) {
   nr_type_t f;
   tmatrix<nr_type_t> b;
   tmatrix<nr_type_t> e;
-  int i, c, r, pivot, n = a.getCols ();
+  int i, c, r, pivot, n = a.cols ();
 
   // create temporary matrix and the result matrix
   b = tmatrix<nr_type_t> (a);
@@ -54,8 +54,8 @@ tmatrix<nr_type_t> inverse (const tmatrix<nr_type_t> &a) {
   for (i = 0; i < n; i++) {
     // find maximum column value for pivoting
     for (MaxPivot = 0, pivot = r = i; r < n; r++) {
-      if (abs (b.get (r, i)) > MaxPivot) {
-	MaxPivot = abs (b.get (r, i));
+      if (abs (b(r, i)) > MaxPivot) {
+	MaxPivot = abs (b(r, i));
 	pivot = r;
       }
     }
@@ -67,19 +67,19 @@ tmatrix<nr_type_t> inverse (const tmatrix<nr_type_t> &a) {
     }
 
     // compute current row
-    f = b.get (i, i);
+    f = b (i, i);
     for (c = 0; c < n; c++) {
-      b.set (i, c, b.get (i, c) / f);
-      e.set (i, c, e.get (i, c) / f);
+      b(i, c) =  b (i, c) / f;
+      e(i, c) =  e (i, c) / f;
     }
 
     // compute new rows and columns
     for (r = 0; r < n; r++) {
       if (r != i) {
-	f = b.get (r, i);
+	f = b (r, i);
 	for (c = 0; c < n; c++) {
-	  b.set (r, c, b.get (r, c) - f * b.get (i, c));
-	  e.set (r, c, e.get (r, c) - f * e.get (i, c));
+	  b(r, c) =  b (r, c) - f * b (i, c);
+	  e(r, c) =  e (r, c) - f * e (i, c);
 	}
       }
     }
@@ -87,7 +87,6 @@ tmatrix<nr_type_t> inverse (const tmatrix<nr_type_t> &a) {
   return e;
 }
 
-// Multiplication of vector (transposed) and matrix.
 
 #ifdef DEBUG
 // Debug function: Prints the matrix object.
@@ -96,11 +95,11 @@ void tmatrix<nr_type_t>::print (bool realonly) {
   for (int r = 0; r < this->m.rows; r++) {
     for (int c = 0; c < this->m.cols(); c++) {
       if (realonly) {
-	fprintf (stderr, "%+.2e%s", (double) real (get (r, c)),
+	fprintf (stderr, "%+.2e%s", (double) real ((*this)(r, c)),
 		 c != this->m.cols() - 1 ? " " : "");
       } else {
-	fprintf (stderr, "%+.2e%+.2ei%s", (double) real (get (r, c)),
-		 (double) imag (get (r, c)), c !=  this->m.cols() - 1 ? " " : "");
+	fprintf (stderr, "%+.2e%+.2ei%s", (double) real ((*this)(r, c)),
+		 (double) imag ((*this)(r, c)), c !=  this->m.cols() - 1 ? " " : "");
       }
     }
     fprintf (stderr, ";\n");
