@@ -34,7 +34,6 @@
 
 template <typename nr_type_t> class tvector;
 template <typename nr_type_t> class tmatrix;
-template <typename nr_type_t> tmatrix<nr_type_t> teye (const int &n);
 template <typename T>  tmatrix<T> operator * (const tmatrix<T> &a, const tmatrix<T> & b);
 template <typename T>  tmatrix<T> operator * (const T &a, const tmatrix<T> & b);
 template <typename nr_type_t> tvector<nr_type_t> operator * (const tmatrix<nr_type_t> &a, const tvector<nr_type_t> &b);
@@ -102,12 +101,12 @@ class tmatrix
   /* ~tmatrix (); */
   
   /*!\brief fill matrix */
-  void set (const nr_type_t &v) {
-    this->m.setConstant(v);
+  void setConstant (const nr_type_t &v) {
+     this->m.setConstant(v);
   }
   
   /*! \brief return raw array */
-  nr_type_t * const getData (void) const { 
+  nr_type_t * const data (void) const { 
     return this->m.data(); 
   }
   
@@ -177,7 +176,7 @@ class tmatrix
   }
   
   /*! \transpose in place a matrix */
-  void transpose (void) {
+  void transposeInPlace (void) {
     this->m.transposeInPlace();
   }
   
@@ -213,13 +212,12 @@ class tmatrix
   template<typename T> friend tvector<T> operator * (const tvector<T> &a, const tmatrix<T> &b);
   template<typename T> friend tmatrix<T> inverse (const tmatrix<T> &a);
     
-  static tmatrix teye(const int n) {
+  static tmatrix Identity(const int n, const int m) {
     tmatrix<nr_type_t> ret;
     ret.m = Eigen::Matrix<nr_type_t, Eigen::Dynamic, Eigen::Dynamic >::Identity(n,n);
     return ret;
   }
  
-
   // intrinsic operators
   tmatrix<nr_type_t> operator += (const tmatrix<nr_type_t> & t) {
     this->m+=t.m;
@@ -257,14 +255,6 @@ tmatrix<nr_type_t> operator * (const tmatrix<nr_type_t> &a, const tmatrix<nr_typ
 template <typename nr_type_t>
 tmatrix<nr_type_t> operator * (const nr_type_t &a, const tmatrix<nr_type_t>& b) {
   return a * b.m;
-}
-
-/*! identity 
-  \todo should die 
-*/
-template <class nr_type_t> tmatrix<nr_type_t> teye (const int &n) 
-{
-  return tmatrix<nr_type_t>::teye(n);
 }
 
 
