@@ -40,21 +40,13 @@
 /* Global variables. */
 FILE * matlab_out = NULL; // output file stream
 int matlab_symbols = 1;   // convert data names to have valid Matlab identifier
-int nr_bigendian = 0;     // endianness
-
-// Test endianness.
-static void initendian (void) {
-  unsigned char EndianTest[2] = { 1, 0 };
-  nr_int16_t x = * (nr_int16_t *) EndianTest;
-  nr_bigendian = (x == 1) ? 0 : 1;
-}
 
 // Writes a Matlab v4 header.
 static void matlab_header (nr_int32_t rows, nr_int32_t cols, char * name) {
 
   // MOPT
   char mopt[4];
-  mopt[0] = nr_bigendian ? 1 : 0; // endianness
+  mopt[0] = is_set(WORDS_BIGENDIAN) ? 1 : 0; // endianness
   mopt[1] = 0; // always zero
   switch (sizeof (nr_double_t) * 8) {
     case 32: mopt[2] = 1; break;
@@ -171,9 +163,6 @@ void matlab_producer (void) {
 
   dataset * data = qucs_data;
   ::vector * v;
-
-  // initialize endianness
-  initendian ();
 
   // independent vectors and matrices
   for (v = data->getDependencies (); v != NULL; v = (::vector *) v->getNext ()) {
