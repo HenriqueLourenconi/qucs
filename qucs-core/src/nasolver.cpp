@@ -265,9 +265,9 @@ void nasolver<nr_type_t>::solve_pre (void)
     int M = countVoltageSources ();
     int N = countNodes ();
     if (A != NULL) delete A;
-    A = new tmatrix<nr_type_t> (M + N);
+    A = new tmatrix<nr_type_t> (M + N, M + N);
     if (F != NULL) delete F;
-    F = new tmatrix<nr_type_t> (M + N);
+    F = new tmatrix<nr_type_t> (M + N, M + N);
     if (z != NULL) delete z;
     z = new tvector<nr_type_t> (N + M);
     if (x != NULL) delete x;
@@ -275,7 +275,7 @@ void nasolver<nr_type_t>::solve_pre (void)
 
     int sysSize = getSysSize ();
     if (MA != NULL) delete MA;
-    MA = new tmatrix<nr_type_t> (sysSize);
+    MA = new tmatrix<nr_type_t> (sysSize, sysSize);
     if (mz != NULL) delete mz;
     mz = new tvector<nr_type_t> (sysSize);
     if (mx != NULL) delete mx;
@@ -697,7 +697,7 @@ void nasolver<nr_type_t>::createMatrix (void)
         int M = countVoltageSources ();
         for (int n = 0; n < N + M; n++)
         {
-            A->set (n, n, A->get (n, n) + gMin);
+	  (*A)(n, n) = (*A) (n, n) + gMin;
         }
     }
 
@@ -970,7 +970,7 @@ void nasolver<nr_type_t>::createNoiseMatrix (void)
 
     // create new Cy matrix if necessary
     if (C != NULL) delete C;
-    C = new tmatrix<nr_type_t> (N + M);
+    C = new tmatrix<nr_type_t> (N + M, N + M);
 
     // go through each column of the Cy matrix
     for (c = 0; c < N; c++)
@@ -992,7 +992,7 @@ void nasolver<nr_type_t>::createNoiseMatrix (void)
                         val += MatVal (ct->getN (pr, pc));
                     }
             // put value into Cy matrix
-            C->set (r, c, val);
+            (*C)(r, c) =  val;
         }
     }
 
@@ -1012,7 +1012,7 @@ void nasolver<nr_type_t>::createNoiseMatrix (void)
                 ci = vsc->getSize () + c - vsc->getVoltageSource ();
                 val = MatVal (vsr->getN (ri, ci));
             }
-            C->set (r + N, c + N, val);
+            (*C)(r + N, c + N) = val;
         }
     }
 
@@ -1036,7 +1036,7 @@ void nasolver<nr_type_t>::createNoiseMatrix (void)
                 }
             }
             // put value into Cy matrix
-            C->set (r + N, c, val);
+            (*C)(r + N, c) = val;
         }
     }
 
@@ -1060,7 +1060,7 @@ void nasolver<nr_type_t>::createNoiseMatrix (void)
                 }
             }
             // put value into Cy matrix
-            C->set (r, c + N, val);
+            (*C)(r, c + N) =  val;
         }
     }
 

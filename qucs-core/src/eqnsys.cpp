@@ -106,8 +106,8 @@ void eqnsys<nr_type_t>::passEquationSys (tmatrix<nr_type_t> * nA,
   if (nA != NULL) {
     A = nA;
     update = 1;
-    if (N != A->getCols ()) {
-      N = A->getCols ();
+    if (N != A->cols ()) {
+      N = A->cols ();
       if (cMap) delete[] cMap; cMap = new int[N];
       if (rMap) delete[] rMap; rMap = new int[N];
       if (nPvt) delete[] nPvt; nPvt = new nr_double_t[N];
@@ -695,8 +695,8 @@ void eqnsys<nr_type_t>::solve_sor (void) {
 template <class nr_type_t>
 nr_double_t eqnsys<nr_type_t>::convergence_criteria (void) {
   nr_double_t f = 0;
-  for (int r = 0; r < A->getCols (); r++) {
-    for (int c = 0; c < A->getCols (); c++) {
+  for (int r = 0; r < A->cols (); r++) {
+    for (int c = 0; c < A->cols (); c++) {
       if (r != c) f += norm (A_(r, c) / A_(r, r));
     }
   }
@@ -1307,7 +1307,7 @@ void eqnsys<nr_type_t>::factorize_svd (void) {
   // allocate space for vectors and matrices
   if (R) delete R; R = new tvector<nr_type_t> (N);
   if (T) delete T; T = new tvector<nr_type_t> (N);
-  if (V) delete V; V = new tmatrix<nr_type_t> (N);
+  if (V) delete V; V = new tmatrix<nr_type_t> (N, N);
   if (S) delete S; S = new tvector<nr_double_t> (N);
   if (E) delete E; E = new tvector<nr_double_t> (N);
 

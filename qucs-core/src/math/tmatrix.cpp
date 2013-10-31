@@ -45,7 +45,7 @@ tmatrix<nr_type_t> inverse (const tmatrix<nr_type_t> &a) {
   nr_type_t f;
   tmatrix<nr_type_t> b;
   tmatrix<nr_type_t> e;
-  int i, c, r, pivot, n = a.getCols ();
+  int i, c, r, pivot, n = a.cols ();
 
   // create temporary matrix and the result matrix
   b = tmatrix<nr_type_t> (a);
@@ -55,8 +55,8 @@ tmatrix<nr_type_t> inverse (const tmatrix<nr_type_t> &a) {
   for (i = 0; i < n; i++) {
     // find maximum column value for pivoting
     for (MaxPivot = 0, pivot = r = i; r < n; r++) {
-      if (abs (b.get (r, i)) > MaxPivot) {
-	MaxPivot = abs (b.get (r, i));
+      if (abs (b(r, i)) > MaxPivot) {
+	MaxPivot = abs (b(r, i));
 	pivot = r;
       }
     }
@@ -68,19 +68,19 @@ tmatrix<nr_type_t> inverse (const tmatrix<nr_type_t> &a) {
     }
 
     // compute current row
-    f = b.get (i, i);
+    f = b (i, i);
     for (c = 0; c < n; c++) {
-      b.set (i, c, b.get (i, c) / f);
-      e.set (i, c, e.get (i, c) / f);
+      b(i, c) =  b (i, c) / f;
+      e(i, c) =  e (i, c) / f;
     }
 
     // compute new rows and columns
     for (r = 0; r < n; r++) {
       if (r != i) {
-	f = b.get (r, i);
+	f = b (r, i);
 	for (c = 0; c < n; c++) {
-	  b.set (r, c, b.get (r, c) - f * b.get (i, c));
-	  e.set (r, c, e.get (r, c) - f * e.get (i, c));
+	  b(r, c) =  b (r, c) - f * b (i, c);
+	  e(r, c) =  e (r, c) - f * e (i, c);
 	}
       }
     }
@@ -88,7 +88,6 @@ tmatrix<nr_type_t> inverse (const tmatrix<nr_type_t> &a) {
   return e;
 }
 
-// Multiplication of vector (transposed) and matrix.
 
 #ifdef DEBUG
 // Debug function: Prints the matrix object.

@@ -559,10 +559,11 @@ void hbsolver::createMatrixLinearA (void) {
   int M = nlnvsrcs;
   int N = nnanodes;
   int f = 0;
+  int size = (N + M) * lnfreqs;
   nr_double_t freq;
 
   // create new MNA matrix
-  A = new tmatrix<nr_complex_t> ((N + M) * lnfreqs);
+  A = new tmatrix<nr_complex_t> (size, size);
 
   // through each frequency
   for (int i = 0; i < rfreqs.getSize (); i++) {
@@ -643,7 +644,7 @@ void hbsolver::fillMatrixLinearA (tmatrix<nr_complex_t> * A, int f) {
 void hbsolver::invertMatrix (tmatrix<nr_complex_t> * A,
 			     tmatrix<nr_complex_t> * H) {
   eqnsys<nr_complex_t> eqns;
-  int N = A->getCols ();
+  int N = A->cols ();
   tvector<nr_complex_t> * x = new tvector<nr_complex_t> (N);
   tvector<nr_complex_t> * z = new tvector<nr_complex_t> (N);
 
@@ -668,7 +669,8 @@ void hbsolver::invertMatrix (tmatrix<nr_complex_t> * A,
     z->set (c, 1.0);
     eqns.passEquationSys (A, x, z);
     eqns.solve ();
-    for (int r = 0; r < N; r++) H->set (r, c, x->get (r));
+    for (int r = 0; r < N; r++) 
+      (*H) (r, c) =  x->get (r);
   }
   delete x;
   delete z;
@@ -712,9 +714,11 @@ void hbsolver::createMatrixLinearY (void) {
   int sv = nbanodes;
   int se = nnlvsrcs;
   int sy = sv + se;
+  int sysize = sy * lnfreqs;
+  int svsize = sv * nlfreqs;
 
   // allocate new transimpedance matrix
-  Z = new tmatrix<nr_complex_t> (sy * lnfreqs);
+  Z = new tmatrix<nr_complex_t> (sysize, sysize);
 
   // prepare equation system
   eqnsys<nr_complex_t> eqns;  
@@ -823,7 +827,7 @@ void hbsolver::createMatrixLinearY (void) {
   delete V;
 
   // allocate new transadmittance matrix
-  Y = new tmatrix<nr_complex_t> (sy * lnfreqs);
+  Y = new tmatrix<nr_complex_t> (sysize, sysize);
 
   // invert the Z matrix to a Y matrix
   invertMatrix (Z, Y);
@@ -832,7 +836,7 @@ void hbsolver::createMatrixLinearY (void) {
   for (c = 0; c < sy * lnfreqs; c++) Y_(c, c) -= 0.01;
 
   // extract the variable transadmittance matrix
-  YV = new tmatrix<nr_complex_t> (sv * nlfreqs);
+  YV = new tmatrix<nr_complex_t> (svsize, svsize);
 
   // variable transadmittance matrix must be continued conjugately
   *YV = expandMatrix (*Y, sv);
@@ -983,56 +987,57 @@ void hbsolver::fillMatrixNonLinear (tmatrix<nr_complex_t> * jg,
 /* The function initializes the non-linear part of the HB. */
 void hbsolver::prepareNonLinear (void) {
   int N = nbanodes;
+  int nlsize = N * nlfreqs;
 
   // allocate matrices and vectors
   if (FQ == NULL) {
-    FQ = new tvector<nr_complex_t> (N * nlfreqs);
+    FQ = new tvector<nr_complex_t> (nlsize);
   }
   if (IG == NULL) {
-    IG = new tvector<nr_complex_t> (N * nlfreqs);
+    IG = new tvector<nr_complex_t> (nlsize);
   }
   if (IR == NULL) {
-    IR = new tvector<nr_complex_t> (N * nlfreqs);
+    IR = new tvector<nr_complex_t> (nlsize);
   }
   if (QR == NULL) {
-    QR = new tvector<nr_complex_t> (N * nlfreqs);
+    QR = new tvector<nr_complex_t> (nlsize);
   }
   if (JG == NULL) {
-    JG = new tmatrix<nr_complex_t> (N * nlfreqs);
+    JG = new tmatrix<nr_complex_t> (nlsize, nlsize );
   }
   if (JQ == NULL) {
-    JQ = new tmatrix<nr_complex_t> (N * nlfreqs);
+    JQ = new tmatrix<nr_complex_t> (nlsize, nlsize);
   }
   if (JF == NULL) {
-    JF = new tmatrix<nr_complex_t> (N * nlfreqs);
+    JF = new tmatrix<nr_complex_t> (nlsize, nlsize);
   }
 
   // voltage vector in frequency and time domain
   if (VS == NULL) {
-    VS = new tvector<nr_complex_t> (N * nlfreqs);
+    VS = new tvector<nr_complex_t> (nlsize);
   }
   if (vs == NULL) {
-    vs = new tvector<nr_complex_t> (N * nlfreqs);
+    vs = new tvector<nr_complex_t> (nlsize);
   }
   if (VP == NULL) {
-    VP = new tvector<nr_complex_t> (N * nlfreqs);
+    VP = new tvector<nr_complex_t> (nlsize);
   }
   
   // error vector
   if (FV == NULL) {
-    FV = new tvector<nr_complex_t> (N * nlfreqs);
+    FV = new tvector<nr_complex_t> (nlsize);
   }
   // right hand side vector
   if (RH == NULL) {
-    RH = new tvector<nr_complex_t> (N * nlfreqs);
+    RH = new tvector<nr_complex_t> (nlsize);
   }
 
   // linear and non-linear current vector
   if (IL == NULL) {
-    IL = new tvector<nr_complex_t> (N * nlfreqs);
+    IL = new tvector<nr_complex_t> (nlsize);
   }
   if (IN == NULL) {
-    IN = new tvector<nr_complex_t> (N * nlfreqs);
+    IN = new tvector<nr_complex_t> (nlsize);
   }
   
   // assign nodes
@@ -1138,13 +1143,13 @@ void hbsolver::MatrixFFT (tmatrix<nr_complex_t> * M) {
       tvector<nr_complex_t> V (nlfreqs);
       int fr, fc, fi;
       // transform the sub-diagonal only
-      for (fc = 0; fc < nlfreqs; fc++) V (fc) = M->get (nr + fc, nc + fc);
+      for (fc = 0; fc < nlfreqs; fc++) V (fc) = (*M) (nr + fc, nc + fc);
       VectorFFT (&V);
       // fill in resulting sub-matrix for the node
       for (fc = 0; fc < nlfreqs; fc++) {
 	for (fi = nlfreqs - 1 - fc, fr = 0; fr < nlfreqs; fr++) {
 	  if (++fi >= nlfreqs) fi = 0;
-	  M->set (nr + fr, nc + fc, V (fi));
+	  (*M) (nr + fr, nc + fc) = V (fi);
 	}
       }
     }
@@ -1202,7 +1207,7 @@ void hbsolver::calcJacobian (void) {
       for (r = 0; r < nbanodes; r++) {
 	rt = r * nlfreqs;
 	for (fr = 0; fr < nlfreqs; fr++, rt++) {
-	  JF_(rt, ct) = JG->get (rt, ct) + JQ->get (rt, ct) * OM_(fr);
+	  JF_(rt, ct) = (*JG) (rt, ct) + ((*JQ) (rt, ct)) * OM_(fr);
 	}
       }
     }
@@ -1235,7 +1240,7 @@ tvector<nr_complex_t> hbsolver::expandVector (tvector<nr_complex_t> V,
    make it a real valued signal in the time domain. */
 tmatrix<nr_complex_t> hbsolver::expandMatrix (tmatrix<nr_complex_t> M,
 					      int nodes) {
-  tmatrix<nr_complex_t> res (nodes * nlfreqs);
+  tmatrix<nr_complex_t> res (nodes * nlfreqs, nodes * nlfreqs);
   int r, c, rf, rt, cf, ct, ff;
   for (r = 0; r < nodes; r++) {
     for (c = 0; c < nodes; c++) {
@@ -1288,8 +1293,9 @@ void hbsolver::solveVoltages (void) {
    sources. */
 tmatrix<nr_complex_t> hbsolver::extendMatrixLinear (tmatrix<nr_complex_t> M,
 						    int nodes) {
-  int no = M.getCols ();
-  tmatrix<nr_complex_t> res (no + nodes * lnfreqs);
+  int no = M.cols ();
+  int size = no + nodes * lnfreqs;
+  tmatrix<nr_complex_t> res (size, size);
   // copy the existing part
   for (int r = 0; r < no; r++) {
     for (int c = 0; c < no; c++) {
@@ -1338,7 +1344,7 @@ void hbsolver::finalSolution (void) {
   // extend the linear MNA matrix
   *NA = extendMatrixLinear (*NA, nnlvsrcs);
 
-  int S = NA->getCols ();
+  int S = NA->cols ();
   int N = nnanodes * lnfreqs;
 
   // right hand side vector

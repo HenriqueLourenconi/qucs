@@ -54,7 +54,7 @@ void transient::calcCorrectorCoeff (int Method, int order,
 				    nr_double_t * coefficients,
 				    nr_double_t * delta) {
 
-  tmatrix<nr_double_t> A (order + 1);
+  tmatrix<nr_double_t> A (order + 1, order +1);
   tvector<nr_double_t> x (order + 1);
   tvector<nr_double_t> b (order + 1);
   eqnsys<nr_double_t> e;
@@ -99,13 +99,14 @@ void transient::calcCorrectorCoeff (int Method, int order,
       // right hand side vector
       b.set (1, -1 / delta[0]);
       // first row
-      for (c = 0; c < order + 1; c++) A.set (0, c, 1); 
+      for (c = 0; c < order + 1; c++) 
+	A(0, c) =  1; 
       nr_double_t f, a;
       for (f = 0, c = 0; c < order; c++) {
 	f += delta[c];
 	for (a = 1, r = 0; r < order; r++) {
 	  a *= f / delta[0];
-	  A.set (r + 1, c + 1, a);
+	  A(r + 1, c + 1) =  a;
 	}
       }
       e.passEquationSys (&A, &x, &b);
@@ -128,14 +129,14 @@ void transient::calcCorrectorCoeff (int Method, int order,
       // right hand side vector
       for (i = 0; i < order + 1; i++) b.set (i, 1);
       for (i = 1; i < order + 1; i++) {
-	A.set (i, 1, i); // second column
-	A.set (1, i, 1); // second row
+	A(i, 1) = i; // second column
+	A(1, i) = 1; // second row
       }
-      A.set (0, 0, 1);
+      A(0, 0) =  1;
       for (c = 1; c <= order - 2; c++) {
 	nr_double_t entry = -c;
 	for (r = 2; r <= order; r++) {
-	  A.set (r, c + 2, r * entry);
+	  A(r, c + 2) =  r * entry;
 	  entry *= -c;
 	}
       }
@@ -168,7 +169,7 @@ void transient::calcPredictorCoeff (int Method, int order,
 				    nr_double_t * coefficients,
 				    nr_double_t * delta) {
 
-  tmatrix<nr_double_t> A (order + 1);
+  tmatrix<nr_double_t> A (order + 1, order +1);
   tvector<nr_double_t> x (order + 1);
   tvector<nr_double_t> b (order + 1);
   eqnsys<nr_double_t> e;
@@ -181,13 +182,14 @@ void transient::calcPredictorCoeff (int Method, int order,
       // right hand side vector
       b.set (0, 1);
       // first row
-      for (c = 0; c < order + 1; c++) A.set (0, c, 1);
+      for (c = 0; c < order + 1; c++) 
+	A(0, c) = 1;
       nr_double_t f, a;
       for (f = 0, c = 0; c < order + 1; c++) {
 	f += delta[c];
 	for (a = 1, r = 0; r < order; r++) {
 	  a *= f / delta[0];
-	  A.set (r + 1, c, a);
+	  A(r + 1, c) =  a;
 	}
       }
       e.passEquationSys (&A, &x, &b);
@@ -199,13 +201,15 @@ void transient::calcPredictorCoeff (int Method, int order,
     {
       int i, r, c;
       // right hand side vector
-      for (i = 0; i < order + 1; i++) b.set (i, 1);
-      for (i = 1; i < order + 1; i++) A.set (1, i, 1); // second row
-      A.set (0, 0, 1);
+      for (i = 0; i < order + 1; i++) 
+	b.set (i, 1);
+      for (i = 1; i < order + 1; i++) 
+	A(1, i) =  1; // second row
+      A(0, 0) = 1;
       for (c = 1; c <= order - 1; c++) {
 	nr_double_t entry = -c;
 	for (r = 2; r <= order; r++) {
-	  A.set (r, c + 1, r * entry);
+	  A(r, c + 1) = r * entry;
 	  entry *= -c;
 	}
       }

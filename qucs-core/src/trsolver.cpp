@@ -982,8 +982,8 @@ void trsolver::calcRadau5 (void)
 	// Evaluate capacitors
 	for (int l = 0; l < n; l++)
 	{
-	    mzk -= F->get(k, l) * dmxsum->get(l) * dr;
-	    mzk_c -= F->get(k, l) * dmxsum_c->get(l) * dr;
+	  mzk -= (*F)(k, l) * dmxsum->get(l) * dr;
+	  mzk_c -= (*F)(k, l) * dmxsum_c->get(l) * dr;
 	}
 
 	// Add evaluated resistors etc.
@@ -1094,7 +1094,7 @@ void trsolver::solve_pre (void)
 	int n = getSysSize ();
 
 	if (MA_c != NULL) delete MA_c;
-	MA_c = new tmatrix<nr_complex_t> (n);
+	MA_c = new tmatrix<nr_complex_t> (n, n);
 	if (mx_c != NULL) delete mx_c;
 	mx_c = new tvector<nr_complex_t> (n);
 	if (dmx_c != NULL) delete dmx_c;
