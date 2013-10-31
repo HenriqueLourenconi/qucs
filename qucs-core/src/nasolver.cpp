@@ -902,7 +902,7 @@ void nasolver<nr_type_t>::createMDMatrix (void)
 template <class nr_type_t>
 void nasolver<nr_type_t>::createGMatrix (void)
 {
-    A->set (0);
+  A->setConstant (0.0);
 
     circuit * root = subnet->getRoot ();
     for (circuit * c = root; c != NULL; c = (circuit *) c->getNext ())
@@ -931,7 +931,7 @@ void nasolver<nr_type_t>::createGMatrix (void)
 template <class nr_type_t>
 void nasolver<nr_type_t>::createMGMatrix (void)
 {
-    F->set (0);
+    F->setConstant (0.0);
 
     circuit * root = subnet->getRoot ();
     for (circuit * c = root; c != NULL; c = (circuit *) c->getNext ())

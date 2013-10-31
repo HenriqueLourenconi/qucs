@@ -822,7 +822,7 @@ void eqnsys<nr_type_t>::solve_qr (void) {
    equation system in its minimum norm (least square) sense. */
 template <class nr_type_t>
 void eqnsys<nr_type_t>::solve_qr_ls (void) {
-  A->transpose ();
+  A->transposeInPlace ();
   factorize_qr_householder ();
   substitute_qr_householder_ls ();
 }

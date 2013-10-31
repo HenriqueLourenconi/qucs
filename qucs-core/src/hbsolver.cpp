@@ -1069,8 +1069,8 @@ void hbsolver::loadMatrices (void) {
   FQ->set (0.0);
   IR->set (0.0);
   QR->set (0.0);
-  JG->set (0.0);
-  JQ->set (0.0);
+  JG->setConstant (0.0);
+  JQ->setConstant (0.0);
   // through each frequency
   for (int f = 0; f < nlfreqs; f++) {
     // calculate components' HB matrices and vector for the given frequency

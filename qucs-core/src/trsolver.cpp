@@ -821,7 +821,7 @@ void trsolver::getLDLt (tmatrix<nr_double_t> &L)
     int M = countVoltageSources ();
     tmatrix <nr_double_t> D = *F;
 
-    L = teye<nr_double_t> (N + M);
+    L = tmatrix <nr_double_t>().Identity(N+M,N+M);
     for (int a = 0; a < N-1; a++)
     {
 	nr_double_t div = D(a, a);

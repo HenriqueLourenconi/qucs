@@ -201,7 +201,7 @@ void acsolver::solve_noise (void) {
 
   // create the MNA matrix once again and LU decompose the adjoint matrix
   createMatrix ();
-  A->transpose ();
+  A->transposeInPlace ();
   eqnAlgo = ALGO_LU_FACTORIZATION_CROUT;
   runMNA ();
 

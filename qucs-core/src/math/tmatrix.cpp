@@ -49,7 +49,7 @@ tmatrix<nr_type_t> inverse (const tmatrix<nr_type_t> &a) {
 
   // create temporary matrix and the result matrix
   b = tmatrix<nr_type_t> (a);
-  e = teye<nr_type_t> (n);
+  e = tmatrix<nr_type_t>().Identity(n,n);
 
   // create the eye matrix in 'b' and the result in 'e'
   for (i = 0; i < n; i++) {
