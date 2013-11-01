@@ -227,8 +227,12 @@ void spline::construct (void) {
       tridiag<nr_double_t> sys;
       tvector<nr_double_t> o (n);
       tvector<nr_double_t> d (n);
-      tvector<nr_double_t> b;
-      b.setData (&z[1], n);
+      tvector<nr_double_t> b (n);
+      /* TODO: avoid copy if possible */
+      assert(0);
+      for(i=0; i < n; i++)
+	b(i) = z[i+1];
+
       for (i = 0; i < n - 1; i++) {
 	o(i) = h[i+1];
 	d(i) = 2 * (h[i+1] + h[i]);
@@ -242,7 +246,12 @@ void spline::construct (void) {
       sys.setRHS (&b);
       sys.setType (TRIDIAG_SYM_CYCLIC);
       sys.solve ();
-      z[0] = z[n];
+
+      /* TODO: avoid copy back if possible */
+      for(i=0; i < n; i++) {
+	z[i+1] = b(i);
+      }
+      z[0] = b(n-1);
     }
 
     f1 = new nr_double_t[n+1];
