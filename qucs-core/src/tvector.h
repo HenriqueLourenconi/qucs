@@ -83,13 +83,10 @@ class tvector
   int  getSize (void) const { return size; }
   nr_type_t * getData (void) { return data; }
   void setData (nr_type_t *, int);
-  void clear (void);
-  void drop (int);
   void exchangeRows (int, int);
   int  isFinite (void);
   void print (bool realonly = false);
   void reorder (int *);
-  int  contains (nr_type_t, nr_double_t eps = std::numeric_limits<nr_double_t>::epsilon());
 
   // some basic vector operations
 #ifndef _MSC_VER
