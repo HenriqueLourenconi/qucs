@@ -83,7 +83,6 @@ class tvector
   int  getSize (void) const { return size; }
   nr_type_t * getData (void) { return data; }
   void setData (nr_type_t *, int);
-  void add (nr_type_t);
   void clear (void);
   void drop (int);
   void exchangeRows (int, int);

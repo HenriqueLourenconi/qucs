@@ -125,24 +125,6 @@ void tvector<nr_type_t>::set (nr_type_t z, int start, int stop) {
   for (int i = start; i < stop; i++) data[i] = z;
 }
 
-// Appends the given value to the tvector.
-template <class nr_type_t>
-void tvector<nr_type_t>::add (nr_type_t z) {
-  if (size >= capacity) {
-    if (data) {
-      // double the vectors capacity
-      capacity *= 2;
-      data = (nr_type_t *) realloc (data, capacity * sizeof (nr_type_t));
-    }
-    else {
-      // initial capacity
-      capacity = 4;
-      data = (nr_type_t *) malloc (capacity * sizeof (nr_type_t));
-    }
-  }
-  data[size++] = z;
-}
-
 // Rejects the given number of values in the tvector.
 template <class nr_type_t>
 void tvector<nr_type_t>::drop (int n) {
