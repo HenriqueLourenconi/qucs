@@ -25,6 +25,10 @@
 #ifndef __HISTORY_H__
 #define __HISTORY_H__
 
+#include <memory>
+#include <vector>
+#include <tvector.h>
+
 class history
 {
  public:
@@ -38,8 +42,8 @@ class history
   history (const history &h)
   {
       this->age = h.age;
-      this->t = h.t ? new tvector<nr_double_t> (*(h.t)) : NULL;
-      this->values = h.values ? new tvector<nr_double_t> (*(h.values)) : NULL;
+      this->t = h.t ? new std::vector<nr_double_t> (*(h.t)) : NULL;
+      this->values = h.values ? new std::vector<nr_double_t> (*(h.values)) : NULL;
   }
 
   /*! Destructor deletes a history object. */
@@ -51,8 +55,8 @@ class history
   /*! The function appends the given value to the history. */
   void append (const nr_double_t val) {
     if (values == NULL) 
-      this->values = new tvector<nr_double_t>;
-    this->values->add (val);
+      this->values = new std::vector<nr_double_t>;
+    this->values->push_back(val);
     if (this->values != t) 
       this->drop ();
   }
@@ -62,23 +66,23 @@ class history
      return last () - first ();
   }
   nr_double_t last (void) const {
-    return (t != NULL) ? (*this->t)(t->getSize () - 1) : 0.0;
+    return (t != NULL) ? this->t->back() : 0.0;
   }
   nr_double_t first (void) const {
-    return (this->t != NULL) ? (*this->t)(leftidx ()) : 0.0;
+    return (this->t != NULL) ? (*this->t)[leftidx ()] : 0.0;
   }
 
-  int leftidx (void) const {
-    int ts = this->t->getSize ();
-    int vs = this->values->getSize ();
+  unsigned int leftidx (void) const {
+    int ts = this->t->size ();
+    int vs = this->values->size ();
     return ts - vs > 0 ? ts - vs : 0;
   }
 
   /*! Returns number of unused values (time value vector shorter than
    value vector). */
   int unused (void) {
-    int ts = t->getSize ();
-    int vs = values->getSize ();
+    int ts = t->size ();
+    int vs = values->size ();
     return vs - ts > 0 ? vs - ts : 0;
   }
   void drop (void);
@@ -94,8 +98,8 @@ class history
  private:
   bool sign;
   nr_double_t age;
-  tvector<nr_double_t> * values;
-  tvector<nr_double_t> * t;
+  std::vector<nr_double_t> * values;
+  std::vector<nr_double_t> *t;
 };
 
 #endif /* __HISTORY_H__ */
