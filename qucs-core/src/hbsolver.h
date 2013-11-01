@@ -83,11 +83,11 @@ class hbsolver : public analysis
   void saveNodeVoltages (circuit *, int);
 
  private:
-  tvector<nr_double_t> negfreqs;    // full frequency set
-  tvector<nr_double_t> posfreqs;    // full frequency set but positive
-  tvector<nr_double_t> rfreqs;      // real positive frequency set
+  std::vector<nr_double_t> negfreqs; // full frequency set
+  std::vector<nr_double_t> posfreqs; // full frequency set but positive
+  std::vector<nr_double_t> rfreqs;   // real positive frequency set
   int * ndfreqs;                    // number of frequencies for each dimension
-  tvector<nr_double_t> dfreqs;      // base frequencies for each dimension
+  std::vector<nr_double_t> dfreqs;      // base frequencies for each dimension
   nr_double_t frequency;
   strlist * nlnodes, * lnnodes, * banodes, * nanodes, * exnodes;
   ptrlist<circuit> excitations;
