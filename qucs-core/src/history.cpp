@@ -43,11 +43,14 @@ void history::drop (void) {
   nr_double_t f = first ();
   nr_double_t l = last ();
   if (age > 0.0 && l - f > age) {
-    int r, i = leftidx ();
-    for (r = 0; i < t->getSize (); r++, i++)
-      if (l - t->get (i) < age)	break;
+    unsigned int r;
+    unsigned int i = leftidx ();
+    for (r = 0; i < t->size (); r++, i++)
+      if (l - (*this->t)[i] < age)	break;
     r += unused () - 2; // keep 2 values being older than specified age
-    if (r > 127) values->drop (r);
+    if (r > 127) 
+      /* erase the first r value */
+      this->values->erase(this->values->begin(),this->values->begin()+r);
   }
 }
 
@@ -58,18 +61,18 @@ nr_double_t history::interpol (nr_double_t tval, int idx, bool left) {
   static tvector<nr_double_t> x (4);
   static tvector<nr_double_t> y (4);
 
-  int n = left ? idx + 1: idx;
-  if (n > 1 && n + 2 < values->getSize ()) {
+  unsigned int n = left ? idx + 1: idx;
+  if (n > 1 && n + 2 < values->size ()) {
     int i, k, l = leftidx ();
     for (k = 0, i = n - 2; k < 4; i++, k++) {
-      x (k) = t->get (i + l);
-      y (k) = values->get (i);
+      x (k) = (*this->t)[i + l];
+      y (k) = (*this->values)[i];
     }
     spl.vectors (y, x);
     spl.construct ();
     return spl.evaluate (tval).f0;
   }
-  return values->get (idx);
+  return (*this->values)[idx];
 }
 
 /* The function returns the value nearest to the given time value.  If
@@ -78,14 +81,14 @@ nr_double_t history::interpol (nr_double_t tval, int idx, bool left) {
 nr_double_t history::nearest (nr_double_t tval, bool interpolate) {
   if (t != NULL) {
     int l = leftidx ();
-    int r = t->getSize () - 1;
+    int r = t->size () - 1;
     int i = -1;
     nr_double_t diff = std::numeric_limits<nr_double_t>::max();
     sign = true;
     i = seek (tval, l, r, diff, i);
     i = i - l;
     if (interpolate) return interpol (tval, i, sign);
-    return values->get (i);
+    return (*this->values)[i];
   }
   return 0.0;
 }
@@ -98,7 +101,7 @@ int history::seek (nr_double_t tval, int l, int r, nr_double_t& diff,
 		   int idx) {
   int i = (l + r) / 2;
   if (l == r) return i;
-  nr_double_t v = t->get (i);
+  nr_double_t v = (*this->t)[i];
   nr_double_t d = v - tval;
   if (fabs (d) < diff) {
     // better approximation
