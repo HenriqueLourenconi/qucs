@@ -96,11 +96,11 @@ void tmatrix<nr_type_t>::print (bool realonly) {
   for (int r = 0; r < this->m.rows; r++) {
     for (int c = 0; c < this->m.cols(); c++) {
       if (realonly) {
-	fprintf (stderr, "%+.2e%s", (double) real (get (r, c)),
+	fprintf (stderr, "%+.2e%s", (double) real (this->m(r, c)),
 		 c != this->m.cols() - 1 ? " " : "");
       } else {
-	fprintf (stderr, "%+.2e%+.2ei%s", (double) real (get (r, c)),
-		 (double) imag (get (r, c)), c !=  this->m.cols() - 1 ? " " : "");
+	fprintf (stderr, "%+.2e%+.2ei%s", (double) real (this->m(r, c)),
+		 (double) imag (this->m(r, c)), c !=  this->m.cols() - 1 ? " " : "");
       }
     }
     fprintf (stderr, ";\n");
