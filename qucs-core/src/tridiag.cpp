@@ -140,7 +140,7 @@ void tridiag<nr_type_t>::solve_ns (void) {
   f = ga = abov->getData ();
   e = belo->getData ();
   b = c = x = rhs->getData ();
-  int i, n = diag->getSize ();
+  int i, n = diag->size ();
   
   // factorize A = LU
   al[0] = d[0];
@@ -179,7 +179,7 @@ void tridiag<nr_type_t>::solve_ns_cyc (void) {
   f = ga = abov->getData ();
   e = be = belo->getData ();
   b = x = c = rhs->getData ();
-  int i, n = diag->getSize ();
+  int i, n = diag->size ();
   de = new nr_type_t[n];
   ep = new nr_type_t[n];
 
@@ -243,7 +243,7 @@ void tridiag<nr_type_t>::solve_s (void) {
   f = ga = offdiag->getData ();
   b = z = x = b = rhs->getData ();
   nr_type_t t;
-  int i, n = diag->getSize ();
+  int i, n = diag->size ();
   de = new nr_type_t[n];
 
   // factorize A = LDL'
@@ -290,7 +290,7 @@ void tridiag<nr_type_t>::solve_s_cyc (void) {
   f = ga = offdiag->getData ();
   b = c = z  = x = rhs->getData (); 
   nr_type_t t;
-  int i, n = diag->getSize ();
+  int i, n = diag->size ();
   de = new nr_type_t[n];
 
   // factorize A = LDL'

@@ -196,7 +196,7 @@ int trsolver::dcAnalysis (void)
 	//        convHelper = CONV_GMinStepping;
         logprint (LOG_ERROR, "WARNING: %s: %s analysis failed, using source"
                   " stepping fallback\n", getName (), getDescription ());
-	for (int i = 0; i < x->getSize (); i++)
+	for (int i = 0; i < x->size (); i++)
 	    x->set (i, 0);
         applyNodeset ();
         restart ();

@@ -923,7 +923,7 @@ int hbsolver::checkBalance (void) {
   nr_double_t iabstol = getPropertyDouble ("iabstol");
   nr_double_t vabstol = getPropertyDouble ("vabstol");
   nr_double_t reltol = getPropertyDouble ("reltol");
-  int n, len = FV->getSize ();
+  int n, len = FV->size ();
   for (n = 0; n < len; n++) {
     // check iteration voltages
     nr_double_t v_abs = abs (VS->get (n) - VP->get (n));
@@ -1090,7 +1090,7 @@ void hbsolver::VectorFFT (tvector<nr_complex_t> * V, int isign) {
   int i, k, r;
   int n = nlfreqs;
   unsigned int nd = dfreqs.size ();
-  int nodes = V->getSize () / n;
+  int nodes = V->size () / n;
   nr_double_t * d = (nr_double_t *) V->getData ();
 
   if (nd == 1) {

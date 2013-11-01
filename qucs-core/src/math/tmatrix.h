@@ -261,7 +261,7 @@ tmatrix<nr_type_t> operator * (const nr_type_t &a, const tmatrix<nr_type_t>& b) 
 */
 template <class nr_type_t>
 tvector<nr_type_t> operator * (const tmatrix<nr_type_t> &a, const tvector<nr_type_t> &b) {
-  assert (a.cols () == b.getSize ());
+  assert (a.cols () == b.size ());
   int r, c, n = a.cols ();
   nr_type_t z;
   tvector<nr_type_t> res (n);
@@ -275,7 +275,7 @@ tvector<nr_type_t> operator * (const tmatrix<nr_type_t> &a, const tvector<nr_typ
 
 template <class nr_type_t>
 tvector<nr_type_t> operator * (const tvector<nr_type_t> &a, const tmatrix<nr_type_t> &b) {
-  assert (a.getSize () == b.rows ());
+  assert (a.size () == b.rows ());
   int r, c, n = b.rows ();
   nr_type_t z;
   tvector<nr_type_t> res (n);
