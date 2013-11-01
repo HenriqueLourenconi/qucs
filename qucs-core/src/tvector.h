@@ -133,7 +133,6 @@ class tvector
  private:
   int external;
   int size_;
-  int capacity;
   nr_type_t * data;
 };
 

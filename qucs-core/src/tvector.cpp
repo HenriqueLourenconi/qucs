@@ -40,7 +40,7 @@
 template <class nr_type_t>
 tvector<nr_type_t>::tvector () {
   external = 0;
-  capacity = size_ = 0;
+  size_ = 0;
   data = NULL;
 }
 
@@ -49,7 +49,7 @@ tvector<nr_type_t>::tvector () {
 template <class nr_type_t>
 tvector<nr_type_t>::tvector (int s)  {
   external = 0;
-  capacity = size_ = s;
+  size_ = s;
   if (s > 0) {
     data = new nr_type_t[s];
     memset (data, 0, sizeof (nr_type_t) * s);
@@ -63,7 +63,6 @@ template <class nr_type_t>
 tvector<nr_type_t>::tvector (const tvector & v) {
   external = 0;
   size_ = v.size_;
-  capacity = v.capacity;
   data = NULL;
 
   // copy tvector elements
@@ -80,7 +79,6 @@ const tvector<nr_type_t>&
 tvector<nr_type_t>::operator=(const tvector<nr_type_t> & v) {
   if (&v != this) {
     size_ = v.size_;
-    capacity = v.capacity;
     if (data && !external) { delete[] data; data = NULL; }
     external = 0;
     if (size_ > 0) {
@@ -138,7 +136,7 @@ void tvector<nr_type_t>::setData (nr_type_t * d, int len) {
   if (data && !external) delete[] data;
   external = 1;
   data = d;
-  capacity = size_ = len;
+  size_ = len;
 }
 
 // The function swaps the given rows with each other.
