@@ -91,14 +91,6 @@ tvector<nr_type_t>::~tvector () {
   if (data) delete[] data;
 }
 
-// Returns the tvector element at the given position.
-template <class nr_type_t>
-inline
-nr_type_t tvector<nr_type_t>::get (int i) const {
-  assert (i >= 0 && i < size_);
-  return data[i];
-}
-
 // Sets the tvector element at the given position.
 template <class nr_type_t>
 inline
@@ -123,7 +115,7 @@ void tvector<nr_type_t>::set (nr_type_t z, int start, int stop) {
 // Copies the specified elements from the given tvector.
 template <class nr_type_t>
 void tvector<nr_type_t>::set (tvector<nr_type_t> a, int start, int stop) {
-  for (int i = start; i < stop; i++) data[i] = a.get (i);
+  for (int i = start; i < stop; i++) data[i] = a(i);
 } 
 
 // The function swaps the given rows with each other.
@@ -141,7 +133,7 @@ tvector<nr_type_t> operator + (tvector<nr_type_t> a, tvector<nr_type_t> b) {
   assert (a.size () == b.size ());
   int n = a.size ();
   tvector<nr_type_t> res (n);
-  for (int i = 0; i < n; i++) res.set (i, a.get (i) + b.get (i));
+  for (int i = 0; i < n; i++) res.set (i, a(i) + b(i));
   return res;
 }
 
@@ -161,7 +153,7 @@ tvector<nr_type_t> operator - (tvector<nr_type_t> a, tvector<nr_type_t> b) {
   assert (a.size () == b.size ());
   int n = a.size ();
   tvector<nr_type_t> res (n);
-  for (int i = 0; i < n; i++) res.set (i, a.get (i) - b.get (i));
+  for (int i = 0; i < n; i++) res.set (i, a(i) - b(i));
   return res;
 }
 
@@ -196,7 +188,7 @@ template <class nr_type_t>
 tvector<nr_type_t> operator * (nr_double_t s, tvector<nr_type_t> a) {
   int n = a.size ();
   tvector<nr_type_t> res (n);
-  for (int i = 0; i < n; i++) res.set (i, s * a.get (i));
+  for (int i = 0; i < n; i++) res.set (i, s * a(i));
   return res;
 }
 
@@ -211,7 +203,7 @@ tvector<nr_type_t> operator * (tvector<nr_type_t> a, tvector<nr_type_t> b) {
   assert (a.size () == b.size ());
   int n = a.size ();
   tvector<nr_type_t> res (n);
-  for (int i = 0; i < n; i++) res.set (i, a.get (i) * b.get (i));
+  for (int i = 0; i < n; i++) res.set (i, a(i) * b(i));
   return res;
 }
 
@@ -220,7 +212,7 @@ template <class nr_type_t>
 nr_type_t scalar (tvector<nr_type_t> a, tvector<nr_type_t> b) {
   assert (a.size () == b.size ());
   nr_type_t n = 0;
-  for (int i = 0; i < a.size (); i++) n += a.get (i) * b.get (i);
+  for (int i = 0; i < a.size (); i++) n += a(i) * b(i);
   return n;
 }
 
@@ -235,7 +227,7 @@ tvector<nr_type_t> tvector<nr_type_t>::operator = (const nr_type_t val) {
 template <class nr_type_t>
 nr_type_t sum (tvector<nr_type_t> a) {
   nr_type_t res = 0;
-  for (int i = 0; i < a.size (); i++) res += a.get (i);
+  for (int i = 0; i < a.size (); i++) res += a(i);
   return res;
 }
 
@@ -244,7 +236,7 @@ template <class nr_type_t>
 tvector<nr_type_t> operator - (tvector<nr_type_t> a) {
   int n = a.size ();
   tvector<nr_type_t> res (n);
-  for (int i = 0; i < n; i++) res.set (i, -a.get (i));
+  for (int i = 0; i < n; i++) res.set (i, -a(i));
   return res;
 }
 
@@ -253,7 +245,7 @@ template <class nr_type_t>
 bool operator < (tvector<nr_type_t> a, tvector<nr_type_t> b) {
   assert (a.size () == b.size ());
   int n = a.size ();
-  for (int i = 0; i < n; i++) if (a.get (i) >= b.get (i)) return false;
+  for (int i = 0; i < n; i++) if (a(i) >= b(i)) return false;
   return true;
 }
 
@@ -262,7 +254,7 @@ template <class nr_type_t>
 bool operator > (tvector<nr_type_t> a, tvector<nr_type_t> b) {
   assert (a.size () == b.size ());
   int n = a.size ();
-  for (int i = 0; i < n; i++) if (a.get (i) <= b.get (i)) return false;
+  for (int i = 0; i < n; i++) if (a(i) <= b(i)) return false;
   return true;
 }
 
@@ -271,7 +263,7 @@ template <class nr_type_t>
 tvector<nr_type_t> operator + (nr_type_t s, tvector<nr_type_t> a) {
   int n = a.size ();
   tvector<nr_type_t> res (n);
-  for (int i = 0; i < n; i++) res.set (i, s + a.get (i));
+  for (int i = 0; i < n; i++) res.set (i, s + a(i));
   return res;
 }
 
@@ -285,7 +277,7 @@ template <class nr_type_t>
 nr_double_t norm (tvector<nr_type_t> a) {
 #if 0
   nr_double_t k = 0;
-  for (int i = 0; i < a.size (); i++) k += norm (a.get (i));
+  for (int i = 0; i < a.size (); i++) k += norm (a(i));
   return n;
 #else
   nr_double_t scale = 0, n = 1, x, ax;
@@ -324,7 +316,7 @@ template <class nr_type_t>
 nr_double_t maxnorm (tvector<nr_type_t> a) {
   nr_double_t nMax = 0, n;
   for (int i = 0; i < a.size (); i++) {
-    n = norm (a.get (i));
+    n = norm (a(i));
     if (n > nMax) nMax = n;
   }
   return nMax;
@@ -335,7 +327,7 @@ template <class nr_type_t>
 tvector<nr_type_t> conj (tvector<nr_type_t> a) {
   int n = a.size ();
   tvector<nr_type_t> res (n);
-  for (int i = 0; i < n; i++) res.set (i, conj (a.get (i)));
+  for (int i = 0; i < n; i++) res.set (i, conj (a(i)));
   return res;
 }
 
@@ -351,7 +343,7 @@ int tvector<nr_type_t>::isFinite (void) {
 template <class nr_type_t>
 void tvector<nr_type_t>::reorder (int * idx) {
   tvector<nr_type_t> old = *this;
-  for (int i = 0; i < this->size(); i++) data[i] = old.get (idx[i]);
+  for (int i = 0; i < this->size(); i++) data[i] = old(idx[i]);
 }
 
 #ifdef DEBUG
@@ -360,10 +352,10 @@ template <class nr_type_t>
 void tvector<nr_type_t>::print (bool realonly) {
   for (int r = 0; r < size; r++) {
     if (realonly)
-      fprintf (stderr, "%+.2e\n", (double) real (get (r)));
+      fprintf (stderr, "%+.2e\n", (double) real (this(r)));
     else
-      fprintf (stderr, "%+.2e%+.2ei\n", (double) real (get (r)),
-	       (double) imag (get (r)));
+      fprintf (stderr, "%+.2e%+.2ei\n", (double) real (this(r)),
+	       (double) imag (this(r)));
   }
   fprintf (stderr, ";;;\n"); 
 }

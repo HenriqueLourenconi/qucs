@@ -528,14 +528,14 @@ void trsolver::saveHistory (circuit * c)
         else
             // the node was found, append the voltage value to
             // that node's history
-            c->appendHistory (i, x->get (r));
+	    c->appendHistory (i, (*x)(r));
     }
 
     for (i = 0; i < c->getVoltageSources (); i++)
     {
         // save branch currents
         r = c->getVoltageSource () + i;
-        c->appendHistory (i + s, x->get (r + N));
+        c->appendHistory (i + s, (*x)(r + N));
     }
 
 }
@@ -617,12 +617,12 @@ void trsolver::predictBashford (void)
     // go through each solution
     for (int r = 0; r < N + M; r++)
     {
-        xn = predCoeff[0] * SOL(1)->get (r); // a0 coefficient
+        xn = predCoeff[0] * (*SOL(1))(r); // a0 coefficient
         for (int o = 1; o <= predOrder; o++)
         {
             hn = getState (dState, o);         // previous time-step
             // divided differences
-            dd = (SOL(o)->get (r) - SOL(o + 1)->get (r)) / hn;
+            dd = ((*SOL(o))(r) - (*SOL(o + 1))(r)) / hn;
             xn += predCoeff[o] * dd;           // b0, b1, ... coefficients
         }
         x->set (r, xn);                      // save prediction
@@ -642,11 +642,11 @@ void trsolver::predictEuler (void)
     {
       //      printf("r=%i\n", r);
         hn = getState (dState, 1);
-        dd = (SOL(1)->get (r) - SOL(2)->get (r)) / hn;
-//	printf("(%g-%g)/%g\n", SOL(1)->get (r), SOL(2)->get (r), hn);
-//	printf("%g vs. %g\n", dd, CHFL(1)->get(r));
+        dd = ((*SOL(1))(r) - (*SOL(2))(r)) / hn;
+//	printf("(%g-%g)/%g\n", (*SOL(1))(r), (*SOL(2))(r), hn);
+//	printf("%g vs. %g\n", dd, (*CHFL(1))(r));
 
-        xn = predCoeff[0] * SOL(1)->get (r);
+        xn = predCoeff[0] * (*SOL(1))(r);
         xn += predCoeff[1] * dd;
         x->set (r, xn);
     }
@@ -909,7 +909,7 @@ void trsolver::calcRadau5 (void)
 	current = saveCurrent;
 	// Is this necessary?
 	for (int k = 0; k < n; k++)
-	    x->set(k, SOL (1)->get(k));
+	  x->set(k, (*SOL (1))(k));
 	saveSolution ();
 	calculate ();
 	createMatrix ();
@@ -982,8 +982,8 @@ void trsolver::calcRadau5 (void)
 	// Evaluate capacitors
 	for (int l = 0; l < n; l++)
 	{
-	  mzk -= (*F)(k, l) * dmxsum->get(l) * dr;
-	  mzk_c -= (*F)(k, l) * dmxsum_c->get(l) * dr;
+	  mzk -= (*F)(k, l) * (*dmxsum)(l) * dr;
+	  mzk_c -= (*F)(k, l) * (*dmxsum_c)(l) * dr;
 	}
 
 	// Add evaluated resistors etc.
@@ -1168,15 +1168,15 @@ int trsolver::checkConvergence (void)
 
     for (r = 0; r < N; r++)
     {
-        v_abs = fabs (dmx_c->get (r));
-        v_rel = fabs (mx_c->get (r));
+        v_abs = fabs ((*dmx_c)(r));
+        v_rel = fabs ((*mx_c)(r));
         if (told * v_abs >= vntol + reltol * v_rel) goto noconv;
     }
 
     for (r = 0; r < M; r++)
     {
-        i_abs = fabs (dmx_c->get (r + N));
-        i_rel = fabs (mx_c->get (r + N));
+        i_abs = fabs ((*dmx_c)(r + N));
+        i_rel = fabs ((*mx_c)(r + N));
         if (told * i_abs >= abstol + reltol * i_rel) goto noconv;
     }
     return 1;
@@ -1216,7 +1216,7 @@ void trsolver::predictGear (void)
         for (int o = 0; o <= predOrder; o++)
         {
             // a0, a1, ... coefficients
-            xn += predCoeff[o] * SOL(o + 1)->get (r);
+	    xn += predCoeff[o] * (*SOL(o + 1))(r);
         }
         x->set (r, xn); // save prediction
     }
@@ -1563,11 +1563,11 @@ nr_double_t trsolver::checkDelta (void)
                 continue;
         }
 
-        dif = x->get (r) - SOL(0)->get (r);
+        dif = (*x)(r) - (*SOL(0))(r);
         if (finite (dif) && dif != 0)
         {
             // use Milne' estimate for the local truncation error
-            rel = MAX (fabs (x->get (r)), fabs (SOL(0)->get (r)));
+	    rel = MAX (fabs ((*x)(r)), fabs ((*SOL(0))(r)));
             tol = LTEreltol * rel + LTEabstol;
             lte = LTEfactor * (cec / (pec - cec)) * dif;
             q =  delta * exp (log (fabs (tol / lte)) / (corrOrder + 1));

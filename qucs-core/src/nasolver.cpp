@@ -1497,15 +1497,15 @@ int nasolver<nr_type_t>::checkConvergence (void)
     // and relative tolerance values
     for (r = 0; r < N; r++)
     {
-        v_abs = fabs (dmx->get (r));
-        v_rel = fabs (mx->get (r));
+        v_abs = fabs ((*dmx)(r));
+        v_rel = fabs ((*mx)(r));
         if (told * v_abs >= vntol + reltol * v_rel) goto noconv;
     }
 
     for (r = 0; r < M; r++)
     {
-        i_abs = fabs (dmx->get (r + N));
-        i_rel = fabs (mx->get (r + N));
+        i_abs = fabs ((*dmx)(r + N));
+        i_rel = fabs ((*mx)(r + N));
         if (told * i_abs >= abstol + reltol * i_rel) goto noconv;
     }
     return 1;
@@ -1576,7 +1576,7 @@ void nasolver<nr_type_t>::saveNodeVoltages (void)
         n = nlist->getNode (r);
         for (int i = 0; i < n->nNodes; i++)
         {
-            n->nodes[i]->getCircuit()->setV (n->nodes[i]->getPort (), x->get (r));
+	  n->nodes[i]->getCircuit()->setV (n->nodes[i]->getPort (), (*x)(r));
         }
     }
     // save reference node
@@ -1600,7 +1600,7 @@ void nasolver<nr_type_t>::saveBranchCurrents (void)
     for (int r = 0; r < M; r++)
     {
         vs = findVoltageSource (r);
-        vs->setJ (r, x->get (r + N));
+        vs->setJ (r, (*x)(r + N));
     }
 }
 
@@ -1625,14 +1625,14 @@ void nasolver<nr_type_t>::storeSolution (void)
     for (r = 0; r < N; r++)
     {
         struct nodelist_t * n = nlist->getNode (r);
-        solution.add (n->name, x->get (r), 0);
+        solution.add (n->name, (*x)(r), 0);
     }
     // store all branch currents of voltage sources
     for (r = 0; r < M; r++)
     {
         circuit * vs = findVoltageSource (r);
         int vn = r - vs->getVoltageSource () + 1;
-        solution.add (vs->getName (), x->get (r + N), vn);
+        solution.add (vs->getName (), (*x)(r + N), vn);
     }
 }
 
@@ -1678,7 +1678,7 @@ void nasolver<nr_type_t>::saveResults (const char * volts, const char * amps,
         {
             if ((n = createV (r, volts, saveOPs)) != NULL)
             {
-                saveVariable (n, x->get (r), f);
+	        saveVariable (n, (*x)(r), f);
                 free (n);
             }
         }
@@ -1691,7 +1691,7 @@ void nasolver<nr_type_t>::saveResults (const char * volts, const char * amps,
         {
             if ((n = createI (r, amps, saveOPs)) != NULL)
             {
-                saveVariable (n, x->get (r + N), f);
+	        saveVariable (n, (*x)(r + N), f);
                 free (n);
             }
         }

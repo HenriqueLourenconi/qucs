@@ -85,14 +85,14 @@ void transient::calcCorrectorCoeff (int Method, int order,
 #if COEFFDEBUG
       logprint (LOG_STATUS, "DEBUG: Gear order %d:", order);
       for (i = 0; i < x.getRows (); i++) {
-	logprint (LOG_STATUS, " %g", x.get (i));
+	logprint (LOG_STATUS, " %g", x(i));
       }
       logprint (LOG_STATUS, "\n");
 #endif
-      nr_double_t k = x.get (0);
+      nr_double_t k = x(0);
       coefficients[COEFF_G] = 1 / delta[0] / k;
       for (i = 1; i <= order; i++) {
-	coefficients[i] = - 1 / delta[0] / k * x.get (i);
+	coefficients[i] = - 1 / delta[0] / k * x(i);
       }
 #else /* !FIXEDCOEFF */
       int c, r;
@@ -111,7 +111,7 @@ void transient::calcCorrectorCoeff (int Method, int order,
       }
       e.passEquationSys (&A, &x, &b);
       e.solve ();
-      for (r = 0; r <= order; r++) coefficients[r] = x.get (r);
+      for (r = 0; r <= order; r++) coefficients[r] = x(r);
 #endif /* !FIXEDCOEFF */
     }
     break;
@@ -147,15 +147,15 @@ void transient::calcCorrectorCoeff (int Method, int order,
 #if COEFFDEBUG
       logprint (LOG_STATUS, "DEBUG: Moulton order %d:", order);
       for (i = 0; i < x.getRows (); i++) {
-	logprint (LOG_STATUS, " %g", x.get (i));
+	logprint (LOG_STATUS, " %g", x(i));
       }
       logprint (LOG_STATUS, "\n");
 #endif
-      nr_double_t k = x.get (1);
+      nr_double_t k = x(1);
       coefficients[COEFF_G] = 1 / delta[0] / k;
-      coefficients[1] = -x.get (0) / delta[0] / k;
+      coefficients[1] = -x(0) / delta[0] / k;
       for (i = 2; i <= order; i++) {
-	coefficients[i] = -x.get (i) / k;
+	coefficients[i] = -x(i) / k;
       }
     }
     break;
@@ -194,7 +194,7 @@ void transient::calcPredictorCoeff (int Method, int order,
       }
       e.passEquationSys (&A, &x, &b);
       e.solve ();
-      for (r = 0; r <= order; r++) coefficients[r] = x.get (r);      
+      for (r = 0; r <= order; r++) coefficients[r] = x(r);      
     }
     break;
   case INTEGRATOR_ADAMSBASHFORD: // ADAMS-BASHFORD order 1 to 6
@@ -224,9 +224,9 @@ void transient::calcPredictorCoeff (int Method, int order,
       }
       logprint (LOG_STATUS, "\n");
 #endif
-      coefficients[COEFF_G] = x.get (0);
+      coefficients[COEFF_G] = x(0);
       for (i = 1; i <= order; i++) {
-	coefficients[i] = x.get (i) * delta[0];
+	coefficients[i] = x(i) * delta[0];
       }
 #if !FIXEDCOEFF
       if (order == 2) {
