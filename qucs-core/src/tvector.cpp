@@ -124,30 +124,6 @@ void tvector<nr_type_t>::set (nr_type_t z, int start, int stop) {
   for (int i = start; i < stop; i++) data[i] = z;
 }
 
-// Rejects the given number of values in the tvector.
-template <class nr_type_t>
-void tvector<nr_type_t>::drop (int n) {
-  if (n < size) {
-    for (int i = 0; i < size - n; i++) data[i] = data[i + n];
-    size -= n;
-  }
-  else size = 0;
-}
-
-// Sets size to zero.  Does not reduce the capacity.
-template <class nr_type_t>
-void tvector<nr_type_t>::clear (void) {
-  size = 0;
-}
-
-/* The function returns the number of entries with the given value
-   deviating no more than the given epsilon. */
-template <class nr_type_t>
-int tvector<nr_type_t>::contains (nr_type_t val, nr_double_t eps) {
-  int count = 0;
-  for (int i = 0; i < size; i++) if (abs (data[i] - val) <= eps) count++;
-  return count;
-}
 
 // Copies the specified elements from the given tvector.
 template <class nr_type_t>
