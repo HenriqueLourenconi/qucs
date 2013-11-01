@@ -36,61 +36,6 @@
 #include "spline.h"
 #include "history.h"
 
-// Constructor creates an unnamed instance of the history class.
-history::history () {
-  age = 0;
-  t = values = NULL;
-}
-
-/* The copy constructor creates a new instance based on the given
-   history object. */
-history::history (const history & h) {
-  age = h.age;
-  t = h.t;
-  values = h.values ? new tvector<nr_double_t> (*h.values) : NULL;
-}
-
-// Destructor deletes a history object.
-history::~history () {
-  if (values) delete values;
-}
-
-// The function appends the given value to the history.
-void history::append (nr_double_t val) {
-  if (values == NULL) values = new tvector<nr_double_t>;
-  values->add (val);
-  if (values != t) drop ();
-}
-
-// Returns left-most valid index into the time value vector.
-int history::leftidx (void) {
-  int ts = t->getSize ();
-  int vs = values->getSize ();
-  return ts - vs > 0 ? ts - vs : 0;
-}
-
-/* Returns number of unused values (time value vector shorter than
-   value vector). */
-int history::unused (void) {
-  int ts = t->getSize ();
-  int vs = values->getSize ();
-  return vs - ts > 0 ? vs - ts : 0;
-}
-
-// Returns the first (oldest) time value in the history.
-nr_double_t history::first (void) {
-  return (t != NULL) ? t->get (leftidx ()) : 0.0;
-}
-
-// Returns the last (youngest) time value in the history.
-nr_double_t history::last (void) {
-  return (t != NULL) ? t->get (t->getSize () - 1) : 0.0;
-}
-
-// Returns the duration of the history.
-nr_double_t history::duration (void) {
-  return last () - first ();
-}
 
 /* This function drops those values in the history which are older
    than the specified age of the history instance. */
