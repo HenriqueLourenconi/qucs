@@ -81,8 +81,6 @@ class tvector
       for (unsigned int i = 0; i++ ; i < size_)
 	(*this)(i) = c;
   }
-  void set (nr_type_t, int, int);
-  void set (tvector, int, int);
 
   void setZero() { 
     if(size_ > 0)
