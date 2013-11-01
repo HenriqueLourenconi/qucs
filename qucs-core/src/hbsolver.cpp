@@ -667,7 +667,7 @@ void hbsolver::invertMatrix (tmatrix<nr_complex_t> * A,
   eqns.setAlgo (ALGO_LU_SUBSTITUTION_CROUT);
   for (int c = 0; c < N; c++) {
     z->setConstant (0.0);
-    z->set (c, 1.0);
+    (*z)(c) =  1.0;
     eqns.passEquationSys (A, x, z);
     eqns.solve ();
     for (int r = 0; r < N; r++) 
@@ -895,7 +895,7 @@ void hbsolver::calcConstantCurrent (void) {
     }
     int f = r % lnfreqs;
     if (f != 0 && f != lnfreqs - 1) i /= 2;
-    IC->set (r, i);
+    (*IC)(r) =  i;
   }
   // expand the constant current conjugate
   *IC = expandVector (*IC, nbanodes);
@@ -910,7 +910,7 @@ void hbsolver::calcConstantCurrent (void) {
     for (c = 0; c < se; c++) {
       i += Y_(r + sn, c + sn) * VC (c);
     }
-    IS->set (r, i);
+    (*IS)(r) = i;
   }
 
   // delete overall transadmittance matrix
@@ -1189,10 +1189,10 @@ void hbsolver::solveHB (void) {
       ir += (*IR)(r);
       ir += OM_(f) * (*QR)(r);
       // put values into result vectors
-      RH->set (r, ir);
-      FV->set (r, il + in);
-      IL->set (r, il);
-      IN->set (r, in);
+      (*RH)(r) = ir;
+      (*FV)(r) = il + in;
+      (*IL)(r) = il;
+      (*IN)(r) = in;
     }
   }
 }
@@ -1382,7 +1382,9 @@ void hbsolver::finalSolution (void) {
 	      getName ());
     estack.print ();
   }
-  for (int i = 0; i < N; i++) x->set (i, V_(i));
+  /* TODO use deep copy */
+  for (int i = 0; i < N; i++) 
+    (*x)(i)= V_(i);
 }
 
 // Saves simulation results.

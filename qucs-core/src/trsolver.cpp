@@ -196,8 +196,7 @@ int trsolver::dcAnalysis (void)
 	//        convHelper = CONV_GMinStepping;
         logprint (LOG_ERROR, "WARNING: %s: %s analysis failed, using source"
                   " stepping fallback\n", getName (), getDescription ());
-	for (int i = 0; i < x->size (); i++)
-	    x->set (i, 0);
+	x->setZero();
         applyNodeset ();
         restart ();
 	//        applyNodeset ();
@@ -625,7 +624,7 @@ void trsolver::predictBashford (void)
             dd = ((*SOL(o))(r) - (*SOL(o + 1))(r)) / hn;
             xn += predCoeff[o] * dd;           // b0, b1, ... coefficients
         }
-        x->set (r, xn);                      // save prediction
+        (*x)(r)= xn;                      // save prediction
     }
 }
 
@@ -648,7 +647,7 @@ void trsolver::predictEuler (void)
 
         xn = predCoeff[0] * (*SOL(1))(r);
         xn += predCoeff[1] * dd;
-        x->set (r, xn);
+        (*x)(r) = xn;
     }
 }
 
@@ -750,29 +749,29 @@ void trsolver::scaleMatrix (bool ldlt)
     	if (d > Bmax && d > Cmax)
     	{
     	    // Just scale the row
-    	    RS->set (i, 1 / d);
-    	    CS->set (i, 1);
+	    (*RS)(i) =  1 / d;
+    	    (*CS)(i) = 1;
     	}
     	else if (d <= Bmax && d <= Cmax)
     	{
     	    // Ditto
-    	    RS->set (i, 1 / Cmax);
-    	    CS->set (i, 1);
+	    (*RS)(i) = 1 / Cmax;
+    	    (*CS)(i) = 1;
     	}
     	else if (Bmax > Cmax)
     	{
     	    // Scale the row, normalize the row and the column
 	    if (Cmax * Bmax > d)
-		RS->set (i, 1 / Cmax);
+	      (*RS)(i) = 1 / Cmax;
 	    else
-		RS->set (i, Bmax / d);
-    	    CS->set (i, 1 / Bmax);
+	      (*RS)(i) = Bmax / d;
+    	    (*CS)(i) = 1 / Bmax;
     	}
     	else
     	{
     	    // Scale the column, normalize the row
-    	    CS->set (i, Cmax / d);
-    	    RS->set (i, 1 / Cmax);
+	  (*CS)(i) = Cmax / d;
+    	  (*RS)(i) = 1 / Cmax;
     	}
     }
     
@@ -790,10 +789,10 @@ void trsolver::scaleMatrix (bool ldlt)
     // Scale the first N rows
     for (int i = 0; i < N; i++)
     {
-	CS->set (i, 1);
+        (*CS)(i) =  1;
 	if (!ldlt)
 	{
-	    RS->set (i, 1);
+	    (*RS)(i) =  1;
 	    continue;
 	}
 
@@ -804,7 +803,7 @@ void trsolver::scaleMatrix (bool ldlt)
 		rmax = fabs ((*MA)(i, j));
 	}
 	assert (rmax > 0);
-	RS->set (i, 1 / rmax);
+	(*RS)(i) = 1 / rmax;
     }
 
     // Apply to the matrix
@@ -909,7 +908,7 @@ void trsolver::calcRadau5 (void)
 	current = saveCurrent;
 	// Is this necessary?
 	for (int k = 0; k < n; k++)
-	  x->set(k, (*SOL (1))(k));
+	  (*x)(k) = (*SOL (1))(k);
 	saveSolution ();
 	calculate ();
 	createMatrix ();
@@ -993,8 +992,8 @@ void trsolver::calcRadau5 (void)
 	    mzk_c += radau_A_2 * radau_Pi[1][j] * fsave[j](k);
 	}	    
 
-	mz->set (k, mzk);
-	mz_c->set (k, mzk_c);
+	(*mz)(k) = mzk;
+	(*mz_c)(k) = mzk_c;
     }
 
     //mz->print (1);
@@ -1218,7 +1217,7 @@ void trsolver::predictGear (void)
             // a0, a1, ... coefficients
 	    xn += predCoeff[o] * (*SOL(o + 1))(r);
         }
-        x->set (r, xn); // save prediction
+        (*x)(r) = xn; // save prediction
     }
 }
 

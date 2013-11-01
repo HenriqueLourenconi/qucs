@@ -298,7 +298,8 @@ void nasolver<nr_type_t>::applyNodeset (bool nokeep)
     if (x == NULL || nlist == NULL) return;
 
     // set each solution to zero
-    if (nokeep) for (int i = 0; i < x->size (); i++) x->set (i, 0);
+    if (nokeep) 
+      x->setZero();
 
     // then apply the nodeset itself
     for (nodeset * n = subnet->getNodeset (); n; n = n->getNext ())
@@ -306,7 +307,7 @@ void nasolver<nr_type_t>::applyNodeset (bool nokeep)
         struct nodelist_t * nl = nlist->getNode (n->getName ());
         if (nl != NULL)
         {
-            x->set (nl->n, n->getValue ());
+	  (*x)(nl->n)= n->getValue ();
         }
         else
         {
@@ -1095,7 +1096,7 @@ void nasolver<nr_type_t>::createIVector (void)
             }
         }
         // put value into i vector
-        z->set (r, val);
+        (*z)(r) = val;
     }
 }
 
@@ -1115,7 +1116,7 @@ void nasolver<nr_type_t>::createEVector (void)
         vs = findVoltageSource (r);
         val = MatVal (vs->getE (r));
         // put value into e vector
-        z->set (r + N, val);
+        (*z)(r + N) =  val;
     }
 }
 
@@ -1649,7 +1650,7 @@ void nasolver<nr_type_t>::recallSolution (void)
     {
         struct nodelist_t * n = nlist->getNode (r);
         if ((na = solution.find (n->name, 0)) != NULL)
-            x->set (r, na->value);
+	  (*x)(r) = na->value;
     }
     // store all branch currents of voltage sources
     for (r = 0; r < M; r++)
@@ -1657,7 +1658,7 @@ void nasolver<nr_type_t>::recallSolution (void)
         circuit * vs = findVoltageSource (r);
         int vn = r - vs->getVoltageSource () + 1;
         if ((na = solution.find (vs->getName (), vn)) != NULL)
-            x->set (r + N, na->value);
+	  (*x)(r + N) =  na->value;
     }
 }
 

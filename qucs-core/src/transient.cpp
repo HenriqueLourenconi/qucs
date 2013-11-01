@@ -97,7 +97,7 @@ void transient::calcCorrectorCoeff (int Method, int order,
 #else /* !FIXEDCOEFF */
       int c, r;
       // right hand side vector
-      b.set (1, -1 / delta[0]);
+      b(1) = -1 / delta[0];
       // first row
       for (c = 0; c < order + 1; c++) 
 	A(0, c) =  1; 
@@ -127,7 +127,8 @@ void transient::calcCorrectorCoeff (int Method, int order,
     {
       int i, r, c;
       // right hand side vector
-      for (i = 0; i < order + 1; i++) b.set (i, 1);
+      for (i = 0; i < order + 1; i++) 
+	b(i) = 1;
       for (i = 1; i < order + 1; i++) {
 	A(i, 1) = i; // second column
 	A(1, i) = 1; // second row
@@ -180,7 +181,7 @@ void transient::calcPredictorCoeff (int Method, int order,
     {
       int c, r;
       // right hand side vector
-      b.set (0, 1);
+      b(0) = 1;
       // first row
       for (c = 0; c < order + 1; c++) 
 	A(0, c) = 1;
@@ -202,7 +203,7 @@ void transient::calcPredictorCoeff (int Method, int order,
       int i, r, c;
       // right hand side vector
       for (i = 0; i < order + 1; i++) 
-	b.set (i, 1);
+	b(i) =  1;
       for (i = 1; i < order + 1; i++) 
 	A(1, i) =  1; // second row
       A(0, 0) = 1;
