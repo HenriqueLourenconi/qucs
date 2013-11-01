@@ -520,7 +520,7 @@ void trsolver::predictBashford (void)
             dd = ((*SOL(o))(r) - (*SOL(o + 1))(r)) / hn;
             xn += predCoeff[o] * dd;           // b0, b1, ... coefficients
         }
-        x->set (r, xn);                      // save prediction
+        (*x)(r)= xn;                      // save prediction
     }
 }
 
@@ -541,10 +541,9 @@ void trsolver::predictEuler (void)
 //	printf("(%g-%g)/%g\n", (*SOL(1))(r), (*SOL(2))(r), hn);
 //	printf("%g vs. %g\n", dd, (*CHFL(1))(r));
         xn += predCoeff[1] * dd;
-        x->set (r, xn);
+        (*x)(r) = xn;
     }
 }
-
 
 /* The function predicts the successive solution vector using the
    explicit Gear integration formula. */
@@ -563,7 +562,7 @@ void trsolver::predictGear (void)
             // a0, a1, ... coefficients
 	    xn += predCoeff[o] * (*SOL(o + 1))(r);
         }
-        x->set (r, xn); // save prediction
+        (*x)(r) = xn; // save prediction
     }
 }
 

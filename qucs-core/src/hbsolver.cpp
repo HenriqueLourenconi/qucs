@@ -666,8 +666,8 @@ void hbsolver::invertMatrix (tmatrix<nr_complex_t> * A,
   // use the LU decomposition to obtain the inverse H
   eqns.setAlgo (ALGO_LU_SUBSTITUTION_CROUT);
   for (int c = 0; c < N; c++) {
-    z->set (0.0);
-    z->set (c, 1.0);
+    z->setConstant (0.0);
+    (*z)(c) =  1.0;
     eqns.passEquationSys (A, x, z);
     eqns.solve ();
     for (int r = 0; r < N; r++) 
@@ -770,7 +770,7 @@ void hbsolver::createMatrixLinearY (void) {
   // aquire variable transimpedance matrix entries
   eqns.setAlgo (ALGO_LU_SUBSTITUTION_CROUT);
   for (c = 0; c < sn; c++) {
-    I->set (0.0);
+    I->setZero ();
     I_(c) = 1.0;
     eqns.passEquationSys (A, V, I);
     eqns.solve ();
@@ -802,7 +802,7 @@ void hbsolver::createMatrixLinearY (void) {
     for (f = 0; f < lnfreqs; f++) { // for each frequency
       int pn = (pnode - 1) * lnfreqs + f;
       int nn = (nnode - 1) * lnfreqs + f;
-      I->set (0.0);
+      I->setZero ();
       if (pnode) I_(pn) = +1.0;
       if (nnode) I_(nn) = -1.0;
       eqns.passEquationSys (A, V, I);
@@ -895,7 +895,7 @@ void hbsolver::calcConstantCurrent (void) {
     }
     int f = r % lnfreqs;
     if (f != 0 && f != lnfreqs - 1) i /= 2;
-    IC->set (r, i);
+    (*IC)(r) =  i;
   }
   // expand the constant current conjugate
   *IC = expandVector (*IC, nbanodes);
@@ -910,7 +910,7 @@ void hbsolver::calcConstantCurrent (void) {
     for (c = 0; c < se; c++) {
       i += Y_(r + sn, c + sn) * VC (c);
     }
-    IS->set (r, i);
+    (*IS)(r) = i;
   }
 
   // delete overall transadmittance matrix
@@ -1066,10 +1066,10 @@ void hbsolver::saveNodeVoltages (circuit * cir, int f) {
    the matrix and vector entries appropriately. */
 void hbsolver::loadMatrices (void) {
   // clear matrices and vectors before
-  IG->set (0.0);
-  FQ->set (0.0);
-  IR->set (0.0);
-  QR->set (0.0);
+  IG->setZero();
+  FQ->setZero();
+  IR->setZero();
+  QR->setZero();
   JG->setConstant (0.0);
   JQ->setConstant (0.0);
   // through each frequency
@@ -1189,10 +1189,10 @@ void hbsolver::solveHB (void) {
       ir += (*IR)(r);
       ir += OM_(f) * (*QR)(r);
       // put values into result vectors
-      RH->set (r, ir);
-      FV->set (r, il + in);
-      IL->set (r, il);
-      IN->set (r, in);
+      (*RH)(r) = ir;
+      (*FV)(r) = il + in;
+      (*IL)(r) = il;
+      (*IN)(r) = in;
     }
   }
 }
@@ -1382,7 +1382,9 @@ void hbsolver::finalSolution (void) {
 	      getName ());
     estack.print ();
   }
-  for (int i = 0; i < N; i++) x->set (i, V_(i));
+  /* TODO use deep copy */
+  for (int i = 0; i < N; i++) 
+    (*x)(i)= V_(i);
 }
 
 // Saves simulation results.

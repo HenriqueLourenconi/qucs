@@ -270,7 +270,7 @@ tvector<nr_type_t> operator * (const tmatrix<nr_type_t> &a, const tvector<nr_typ
 
   for (r = 0; r < n; r++) {
     for (c = 0, z = 0; c < n; c++) z += a(r, c) * b(c);
-    res.set (r, z);
+    res(r) = z;
   }
   return res;
 }
@@ -284,7 +284,7 @@ tvector<nr_type_t> operator * (const tvector<nr_type_t> &a, const tmatrix<nr_typ
 
   for (c = 0; c < n; c++) {
     for (r = 0, z = 0; r < n; r++) z += a(r) * b(r, c);
-    res.set (c, z);
+    res(c) = z;
   }
   return res;
 }

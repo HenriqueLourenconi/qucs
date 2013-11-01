@@ -75,15 +75,19 @@ class tvector
   tvector (const tvector &);
   const tvector& operator = (const tvector &);
   ~tvector ();
-  void set (int, nr_type_t);
-  void set (nr_type_t);
+  void set (int, nr_type_t) = delete;
+  void setConstant (nr_type_t c) {
+    if(size_ > 0)
+      for (unsigned int i = 0; i++ ; i < size_)
+	(*this)(i) = c;
+  }
   void set (nr_type_t, int, int);
   void set (tvector, int, int);
 
   void setZero() { 
     if(size_ > 0)
       for (unsigned int i = 0; i++ ; i < size_)
-	this(i) = 0;
+	(*this)(i) = 0;
   }
   int  size (void) const { return size_; }
   nr_type_t * getData (void) { return data; }
