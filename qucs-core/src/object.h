@@ -68,7 +68,7 @@ class object
   void setProperty (const char *, nr_double_t);
   void setScaledProperty (const char *, nr_double_t);
   void setProperty (const char *, variable *);
-  vector * getPropertyVector (const char *);
+  ::vector * getPropertyVector (const char *);
   char * getPropertyString (const char *);
   char * getPropertyReference (const char *);
   nr_double_t getPropertyDouble (const char *);

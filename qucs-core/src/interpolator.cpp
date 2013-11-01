@@ -81,7 +81,7 @@ void interpolator::vectors (nr_double_t * y, nr_double_t * x, int len) {
 }
 
 // Pass real interpolation datapoints as vectors.
-void interpolator::rvectors (vector * y, vector * x) {
+void interpolator::rvectors (::vector * y, ::vector * x) {
   int len  = y->getSize ();
   int len1 = len;
   int len2 = 2 + len * sizeof (nr_double_t);
@@ -118,7 +118,7 @@ void interpolator::vectors (nr_complex_t * y, nr_double_t * x, int len) {
 }
 
 // Pass complex interpolation datapoints as vectors.
-void interpolator::cvectors (vector * y, vector * x) {
+void interpolator::cvectors (::vector * y, ::vector * x) {
   int len  = y->getSize ();
   int len1 = len;
   int len2 = 2 + len;
@@ -153,7 +153,7 @@ void interpolator::prepare (int interpol, int repitition, int domain) {
   // preparations for polar complex data
   if (cy != NULL && (domain & DATA_POLAR) && length > 1) {
     // unwrap phase of complex data vector
-    vector ang = vector (length);
+    ::vector ang = ::vector (length);
     for (int i = 0; i < length; i++) ang (i) = arg (cy[i]);
     ang = unwrap (ang);
     // store complex data
@@ -177,9 +177,9 @@ void interpolator::prepare (int interpol, int repitition, int domain) {
 	isp->setBoundary (SPLINE_BC_PERIODIC);
       }
       // prepare data vectors
-      vector rv = vector (length);
-      vector iv = vector (length);
-      vector rt = vector (length);
+      ::vector rv = ::vector (length);
+      ::vector iv = ::vector (length);
+      ::vector rt = ::vector (length);
       for (int i = 0; i < length; i++) {
 	rv (i) = real (cy[i]);
 	iv (i) = imag (cy[i]);

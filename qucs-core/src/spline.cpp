@@ -57,7 +57,7 @@ spline::spline (int b) {
 }
 
 // Constructor creates an instance of the spline class with vector data given.
-spline::spline (vector y, vector t) {
+spline::spline (::vector y, ::vector t) {
   x = f0 = f1 = f2 = f3 = NULL;
   d0 = dn = 0;
   n = 0;
@@ -80,7 +80,7 @@ spline::spline (tvector<nr_double_t> y, tvector<nr_double_t> t) {
 #define y_ (y)
 
 // Pass interpolation datapoints as vectors.
-void spline::vectors (vector y, vector t) {
+void spline::vectors (::vector y, ::vector t) {
   int i = t.getSize ();
   assert (y.getSize () == i && i >= 3);
 
