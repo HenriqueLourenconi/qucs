@@ -40,8 +40,8 @@
 /* This function drops those values in the history which are older
    than the specified age of the history instance. */
 void history::drop (void) {
-  nr_double_t f = first ();
-  nr_double_t l = last ();
+  nr_double_t f = this->first ();
+  nr_double_t l = this->last ();
   if (age > 0.0 && l - f > age) {
     unsigned int r;
     unsigned int i = leftidx ();
