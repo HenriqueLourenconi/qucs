@@ -363,7 +363,7 @@ void e_trsolver::printx()
 {
     char buf [1024];
 
-    for (int r = 0; r < x->getSize(); r++) {
+    for (int r = 0; r < x->size(); r++) {
         buf[0] = '\0';
         //sprintf (buf, "%+.2e%+.2ei", (double) real (x->get (r)), (double) imag (x->get (r)));
 

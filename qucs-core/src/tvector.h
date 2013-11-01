@@ -80,7 +80,7 @@ class tvector
   void set (nr_type_t);
   void set (nr_type_t, int, int);
   void set (tvector, int, int);
-  int  getSize (void) const { return size; }
+  int  size (void) const { return size_; }
   nr_type_t * getData (void) { return data; }
   void setData (nr_type_t *, int);
   void exchangeRows (int, int);
@@ -126,13 +126,13 @@ class tvector
 
   // easy accessor operators
   nr_type_t  operator () (int i) const {
-    assert (i >= 0 && i < size); return data[i]; }
+    assert (i >= 0 && i < this->size()); return data[i]; }
   nr_type_t& operator () (int i) {
-    assert (i >= 0 && i < size); return data[i]; }
+    assert (i >= 0 && i < this->size()); return data[i]; }
 
  private:
   int external;
-  int size;
+  int size_;
   int capacity;
   nr_type_t * data;
 };
