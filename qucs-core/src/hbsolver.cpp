@@ -671,7 +671,7 @@ void hbsolver::invertMatrix (tmatrix<nr_complex_t> * A,
     eqns.passEquationSys (A, x, z);
     eqns.solve ();
     for (int r = 0; r < N; r++) 
-      (*H) (r, c) =  x->get (r);
+      (*H) (r, c) =  (*x)(r);
   }
   delete x;
   delete z;
@@ -926,12 +926,12 @@ int hbsolver::checkBalance (void) {
   int n, len = FV->size ();
   for (n = 0; n < len; n++) {
     // check iteration voltages
-    nr_double_t v_abs = abs (VS->get (n) - VP->get (n));
-    nr_double_t v_rel = abs (VS->get (n));
+    nr_double_t v_abs = abs ((*VS)(n) - (*VP)(n));
+    nr_double_t v_rel = abs ((*VS)(n));
     if (v_abs >= vabstol + reltol * v_rel) return 0;
     // check balanced currents
-    nr_complex_t il = IL->get (n);
-    nr_complex_t in = IN->get (n);
+    nr_complex_t il = (*IL)(n);
+    nr_complex_t in = (*IN)(n);
     if (il != in) {
       nr_double_t i_abs = abs (il + in);
       nr_double_t i_rel = abs ((il + in) / (il - in));
@@ -1057,7 +1057,7 @@ void hbsolver::saveNodeVoltages (circuit * cir, int f) {
   for (r = 0; r < s; r++) {
     if ((nr = cir->getNode(r)->getNode () - 1) < 0) continue;
     // apply V-vector entries
-    cir->setV (r, real (vs->get (nr * nlfreqs + f)));
+    cir->setV (r, real ((*vs)(nr * nlfreqs + f)));
   }
 }
 
@@ -1174,7 +1174,7 @@ void hbsolver::solveHB (void) {
     for (int f = 0; f < nlfreqs; f++, r++) {
       nr_complex_t il = 0.0, in = 0.0, ir = 0.0;
       // constant current vector due to sources
-      il += IC->get (r);
+      il += (*IC)(r);
       // part 1 of right hand side vector
       ir -= il;
       // transadmittance matrix multiplied by voltage vector
@@ -1182,12 +1182,12 @@ void hbsolver::solveHB (void) {
 	il += YV_(r, c) * VS_(c);
       }
       // charge vector
-      in += OM_(f) * FQ->get (r);
+      in += OM_(f) * (*FQ)(r);
       // current vector
-      in += IG->get (r);
+      in += (*IG)(r);
       // part 2, 3 and 4 of right hand side vector
-      ir += IR->get (r);
-      ir += OM_(f) * QR->get (r);
+      ir += (*IR)(r);
+      ir += OM_(f) * (*QR)(r);
       // put values into result vectors
       RH->set (r, ir);
       FV->set (r, il + in);
@@ -1361,7 +1361,7 @@ void hbsolver::finalSolution (void) {
   // put currents through balanced nodes into right hand side
   for (int n = 0; n < nbanodes; n++) {
     for (int f = 0; f < lnfreqs; f++) {
-      nr_complex_t i = IL->get (n * nlfreqs + f);
+      nr_complex_t i = (*IL)(n * nlfreqs + f);
       if (f != 0 && f != lnfreqs - 1) i *= 2;
       I_(n * lnfreqs + f) = i;
     }
@@ -1404,7 +1404,7 @@ void hbsolver::saveResults (void) {
     char * n = (char *) malloc (l + 4);
     sprintf (n, "%s.Vb", *it);
     for (int i = 0; i < lnfreqs; i++) {
-      saveVariable (n, x->get (i + nanode * lnfreqs), f);
+      saveVariable (n, (*x)(i + nanode * lnfreqs), f);
     }
   }
 }

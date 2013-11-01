@@ -374,15 +374,15 @@ void e_trsolver::printx()
 //            solution[0]->get(r);
             sprintf (buf, "%f\t%18.17f\t%6.5f %6.5f %6.5f %6.5f %6.5f %6.5f %6.5f %6.5f",
                      current,
-                     (double) real (x->get (r)),
-                     solution[0]->get(r) ,
-                     solution[1]->get(r) ,
-                     solution[2]->get(r) ,
-                     solution[3]->get(r) ,
-                     solution[4]->get(r) ,
-                     solution[5]->get(r) ,
-                     solution[6]->get(r) ,
-                     solution[7]->get(r) );
+                     (double) real ((*x)(r)),
+                     (*solution[0])(r) ,
+	             (*solution[1])(r) ,
+		     (*solution[2])(r) ,
+                     (*solution[3])(r) ,
+		     (*solution[4])(r) ,
+		     (*solution[5])(r) ,
+		     (*solution[6])(r) ,
+		     (*solution[7])(r) );
 
             messagefcn(0, buf);
         }
@@ -863,7 +863,7 @@ void e_trsolver::getsolution(double * lastsol)
     // copy solution
     for (int r = 0; r < N + M; r++)
     {
-        lastsol[r]  = real(x->get(r));
+         lastsol[r]  = real((*x)(r));
     }
 }
 

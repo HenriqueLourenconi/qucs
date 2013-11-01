@@ -554,18 +554,18 @@ void eqnsys<nr_type_t>::solve_iterative (void) {
 	if (algo == ALGO_GAUSS_SEIDEL) {
 	  // Gauss-Seidel
 	  if (c < r)      f += A_(r, c) * X_(c);
-	  else if (c > r) f += A_(r, c) * Xprev->get (c);
+	  else if (c > r) f += A_(r, c) * (*Xprev)(c);
 	}
 	else {
 	  // Jacobi
-	  if (c != r) f += A_(r, c) * Xprev->get (c);
+	  if (c != r) f += A_(r, c) * (*Xprev)(c);
 	}
       }
       X_(r) = B_(r) - f;
     }
     // check for convergence
     for (conv = 1, r = 0; r < N; r++) {
-      diff = abs (X_(r) - Xprev->get (r));
+      diff = abs (X_(r) - (*Xprev)(r));
       if (diff >= abstol + reltol * abs (X_(r))) {
 	conv = 0;
 	break;
@@ -641,13 +641,13 @@ void eqnsys<nr_type_t>::solve_sor (void) {
     for (r = 0; r < N; r++) {
       for (f = 0, c = 0; c < N; c++) {
 	if (c < r)      f += A_(r, c) * X_(c);
-	else if (c > r) f += A_(r, c) * Xprev->get (c);
+	else if (c > r) f += A_(r, c) * (*Xprev)(c);
       }
-      X_(r) = (1 - l) * Xprev->get (r) + l * (B_(r) - f);
+      X_(r) = (1 - l) * (*Xprev)(r) + l * (B_(r) - f);
     }
     // check for convergence
     for (s = 0, d = 0, conv = 1, r = 0; r < N; r++) {
-      diff = abs (X_(r) - Xprev->get (r));
+      diff = abs (X_(r) - (*Xprev)(r));
       if (diff >= abstol + reltol * abs (X_(r))) {
 	conv = 0;
 	break;
