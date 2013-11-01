@@ -28,20 +28,59 @@
 class history
 {
  public:
-  // constructor and destructor set
-  history ();
-  history (nr_double_t);
-  history (const history &);
-  ~history ();
+  /*! default constructor */
+  history () : age(0), 
+    values(NULL), t(NULL)
+    {};
+  
+  /*! The copy constructor creates a new instance based on the given
+   history object. */
+  history (const history &h)
+    {
+      this->age = h.age;
+      this->t = h.t;
+      this->values = h.values ? new tvector<nr_double_t> (*(h.values)) : NULL;
+    }
 
-  void append (nr_double_t);
+  /*! Destructor deletes a history object. */
+  ~history () {
+    if (this->values) 
+      delete this->values;
+  }
+
+  /*! The function appends the given value to the history. */
+  void append (const nr_double_t val) {
+    if (values == NULL) 
+      this->values = new tvector<nr_double_t>;
+    this->values->add (val);
+    if (this->values != t) 
+      this->drop ();
+  }
   void setAge (nr_double_t a) { age = a; }
-  nr_double_t getAge (void) { return age; }
-  nr_double_t duration (void);
-  nr_double_t last (void);
-  nr_double_t first (void);
-  int leftidx (void);
-  int unused (void);
+  nr_double_t getAge (void) const { return age; }
+  nr_double_t duration(void) const {
+     return last () - first ();
+  }
+  nr_double_t last (void) const {
+    return (t != NULL) ? (*this->t)(t->getSize () - 1) : 0.0;
+  }
+  nr_double_t first (void) const {
+    return (this->t != NULL) ? (*this->t)(leftidx ()) : 0.0;
+  }
+
+  int leftidx (void) const {
+    int ts = this->t->getSize ();
+    int vs = this->values->getSize ();
+    return ts - vs > 0 ? ts - vs : 0;
+  }
+
+  /*! Returns number of unused values (time value vector shorter than
+   value vector). */
+  int unused (void) {
+    int ts = t->getSize ();
+    int vs = values->getSize ();
+    return vs - ts > 0 ? vs - ts : 0;
+  }
   void drop (void);
   void apply (const history & h) {
     this->t = h.t;
