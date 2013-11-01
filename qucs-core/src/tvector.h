@@ -82,7 +82,7 @@ class tvector
   void set (tvector, int, int);
   int  size (void) const { return size_; }
   nr_type_t * getData (void) { return data; }
-  void setData (nr_type_t *, int);
+  void setData (nr_type_t *, int) = delete; 
   void exchangeRows (int, int);
   int  isFinite (void);
   void print (void);
@@ -131,7 +131,6 @@ class tvector
     assert (i >= 0 && i < this->size()); return data[i]; }
 
  private:
-  int external;
   int size_;
   nr_type_t * data;
 };
