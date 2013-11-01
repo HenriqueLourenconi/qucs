@@ -101,7 +101,7 @@ void tvector<nr_type_t>::set (int i, nr_type_t z) {
 
 // Sets all the tvector elements to the given value.
 template <class nr_type_t>
-void tvector<nr_type_t>::set (nr_type_t z) {
+void tvector<nr_type_t>::setConstant (nr_type_t z) {
   for (int i = 0; i < size_; i++) data[i] = z;
 }
 

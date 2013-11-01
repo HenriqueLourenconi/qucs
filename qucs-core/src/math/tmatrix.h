@@ -104,6 +104,10 @@ class tmatrix
      this->m.setConstant(v);
   }
   
+  void setZero() {
+    this->m.setZero();
+  }
+  
   /*! \brief return raw array */
   nr_type_t * const data (void) const { 
     return this->m.data(); 

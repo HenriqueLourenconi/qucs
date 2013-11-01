@@ -212,7 +212,8 @@ void acsolver::solve_noise (void) {
 
   // compute noise voltage for each node (and voltage source)
   for (int i = 0; i < N + M; i++) {
-    z->set (0); z->set (i, -1); // modify right hand side appropriately
+    z->setZero(); 
+    z->set (i, -1); // modify right hand side appropriately
     runMNA ();                  // solve
     zn = *x;                    // save transimpedance vector
 

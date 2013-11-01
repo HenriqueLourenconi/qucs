@@ -666,7 +666,7 @@ void hbsolver::invertMatrix (tmatrix<nr_complex_t> * A,
   // use the LU decomposition to obtain the inverse H
   eqns.setAlgo (ALGO_LU_SUBSTITUTION_CROUT);
   for (int c = 0; c < N; c++) {
-    z->set (0.0);
+    z->setConstant (0.0);
     z->set (c, 1.0);
     eqns.passEquationSys (A, x, z);
     eqns.solve ();
@@ -770,7 +770,7 @@ void hbsolver::createMatrixLinearY (void) {
   // aquire variable transimpedance matrix entries
   eqns.setAlgo (ALGO_LU_SUBSTITUTION_CROUT);
   for (c = 0; c < sn; c++) {
-    I->set (0.0);
+    I->setZero();
     I_(c) = 1.0;
     eqns.passEquationSys (A, V, I);
     eqns.solve ();
@@ -802,7 +802,7 @@ void hbsolver::createMatrixLinearY (void) {
     for (f = 0; f < lnfreqs; f++) { // for each frequency
       int pn = (pnode - 1) * lnfreqs + f;
       int nn = (nnode - 1) * lnfreqs + f;
-      I->set (0.0);
+      I->setZero();
       if (pnode) I_(pn) = +1.0;
       if (nnode) I_(nn) = -1.0;
       eqns.passEquationSys (A, V, I);
@@ -1066,12 +1066,12 @@ void hbsolver::saveNodeVoltages (circuit * cir, int f) {
    the matrix and vector entries appropriately. */
 void hbsolver::loadMatrices (void) {
   // clear matrices and vectors before
-  IG->set (0.0);
-  FQ->set (0.0);
-  IR->set (0.0);
-  QR->set (0.0);
-  JG->setConstant (0.0);
-  JQ->setConstant (0.0);
+  IG->setZero();
+  FQ->setZero();
+  IR->setZero();
+  QR->setZero();
+  JG->setZero();
+  JQ->setZero();
   // through each frequency
   for (int f = 0; f < nlfreqs; f++) {
     // calculate components' HB matrices and vector for the given frequency
