@@ -97,18 +97,6 @@ void tvector<nr_type_t>::setConstant (nr_type_t z) {
   for (int i = 0; i < size_; i++) data[i] = z;
 }
 
-// Sets the specified tvector elements to the given value.
-template <class nr_type_t>
-void tvector<nr_type_t>::set (nr_type_t z, int start, int stop) {
-  for (int i = start; i < stop; i++) data[i] = z;
-}
-
-
-// Copies the specified elements from the given tvector.
-template <class nr_type_t>
-void tvector<nr_type_t>::set (tvector<nr_type_t> a, int start, int stop) {
-  for (int i = start; i < stop; i++) data[i] = a(i);
-} 
 
 // The function swaps the given rows with each other.
 template <class nr_type_t>

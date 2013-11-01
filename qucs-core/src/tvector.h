@@ -75,10 +75,7 @@ class tvector
   tvector (const tvector &);
   const tvector& operator = (const tvector &);
   ~tvector ();
-  void set (int, nr_type_t) = delete;
   void setConstant (nr_type_t);
-  void set (nr_type_t, int, int);
-  void set (tvector, int, int);
 
   void setZero() { 
     if(size_ > 0)
