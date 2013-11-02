@@ -136,10 +136,10 @@ void tridiag<nr_type_t>::solve (void) {
 */
 template <class nr_type_t>
 void tridiag<nr_type_t>::solve_ns (void) {
-  d = al = diag->getData ();
-  f = ga = abov->getData ();
-  e = belo->getData ();
-  b = c = x = rhs->getData ();
+  d = al = diag->data ();
+  f = ga = abov->data ();
+  e = belo->data ();
+  b = c = x = rhs->data ();
   int i, n = diag->size ();
   
   // factorize A = LU
@@ -175,10 +175,10 @@ void tridiag<nr_type_t>::solve_ns (void) {
 */
 template <class nr_type_t>
 void tridiag<nr_type_t>::solve_ns_cyc (void) {
-  d = al = diag->getData ();
-  f = ga = abov->getData ();
-  e = be = belo->getData ();
-  b = x = c = rhs->getData ();
+  d = al = diag->data ();
+  f = ga = abov->data ();
+  e = be = belo->data ();
+  b = x = c = rhs->data ();
   int i, n = diag->size ();
   de = new nr_type_t[n];
   ep = new nr_type_t[n];
@@ -239,9 +239,9 @@ void tridiag<nr_type_t>::solve_ns_cyc (void) {
 */
 template <class nr_type_t>
 void tridiag<nr_type_t>::solve_s (void) {
-  d = al = diag->getData ();
-  f = ga = offdiag->getData ();
-  b = z = x = b = rhs->getData ();
+  d = al = diag->data ();
+  f = ga = offdiag->data ();
+  b = z = x = b = rhs->data ();
   nr_type_t t;
   int i, n = diag->size ();
   de = new nr_type_t[n];
@@ -286,9 +286,9 @@ void tridiag<nr_type_t>::solve_s (void) {
 */
 template <class nr_type_t>
 void tridiag<nr_type_t>::solve_s_cyc (void) {
-  d = al = diag->getData ();
-  f = ga = offdiag->getData ();
-  b = c = z  = x = rhs->getData (); 
+  d = al = diag->data ();
+  f = ga = offdiag->data ();
+  b = c = z  = x = rhs->data (); 
   nr_type_t t;
   int i, n = diag->size ();
   de = new nr_type_t[n];

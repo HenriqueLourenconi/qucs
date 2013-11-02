@@ -83,7 +83,7 @@ class tvector
 	(*this)(i) = 0;
   }
   int  size (void) const { return size_; }
-  nr_type_t * getData (void) { return data; }
+  nr_type_t * data (void) { return data_; }
   void setData (nr_type_t *, int) = delete; 
   void exchangeRows (int, int);
   int  isFinite (void);
@@ -128,13 +128,13 @@ class tvector
 
   // easy accessor operators
   nr_type_t  operator () (int i) const {
-    assert (i >= 0 && i < this->size()); return data[i]; }
+    assert (i >= 0 && i < this->size()); return data_[i]; }
   nr_type_t& operator () (int i) {
-    assert (i >= 0 && i < this->size()); return data[i]; }
+    assert (i >= 0 && i < this->size()); return data_[i]; }
 
  private:
   int size_;
-  nr_type_t * data;
+  nr_type_t * data_;
 };
 
 #include "tvector.cpp"
