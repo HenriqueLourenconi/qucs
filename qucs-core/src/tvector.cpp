@@ -131,14 +131,6 @@ nr_type_t dot (const tvector<nr_type_t> &a, const tvector<nr_type_t> &b) {
   return n;
 }
 
-// Constant assignment operation.
-template <class nr_type_t>
-tvector<nr_type_t> tvector<nr_type_t>::operator = (const nr_type_t val) {
-  for (int i = 0; i < size; i++) 
-    (*this)(i) = val;
-  return *this;
-}
-
 // Returns the sum of the vector elements.
 template <class nr_type_t>
 nr_type_t sum (tvector<nr_type_t> a) {

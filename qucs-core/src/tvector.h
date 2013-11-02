@@ -126,7 +126,7 @@ class tvector
   tvector operator *= (nr_double_t);
 
   // assignment operators
-  tvector operator = (const nr_type_t);
+  tvector operator = (const nr_type_t) = delete;
 
   // easy accessor operators
   nr_type_t  operator () (int i) const {
