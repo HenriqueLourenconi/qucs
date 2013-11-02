@@ -31,6 +31,8 @@
 
 #include "precision.h"
 
+#include <Eigen/Core>
+
 template <class nr_type_t>
 class tvector;
 
@@ -70,25 +72,21 @@ template <class nr_type_t>
 class tvector
 {
  public:
-  tvector ();
-  tvector (int);
-  tvector (const tvector &);
-  const tvector& operator = (const tvector &);
-  ~tvector ();
-  void set (int, nr_type_t) = delete;
-  void setConstant (nr_type_t c) {
-    if(size_ > 0)
-      for (unsigned int i = 0; i++ ; i < size_)
-	(*this)(i) = c;
+  tvector () : v() {};
+  tvector (int n): v(Eigen::Matrix<nr_type_t,Eigen::Dynamic,1>::Zero(n,1)) {};
+  void setConstant (const nr_type_t &c) {
+    if(this->size() > 0)
+      for (int i = 0; i < this->size(); i++)
+	(*this)(i) = c; 
   }
 
   void setZero() { 
-    if(size_ > 0)
-      for (unsigned int i = 0; i++ ; i < size_)
+    if(this->size() > 0)
+      for (int i = 0; i < this->size(); i++)
 	(*this)(i) = 0;
   }
-  int  size (void) const { return size_; }
-  nr_type_t * data (void) { return data_; }
+  int  size (void) const { return this->v.size(); }
+  nr_type_t * data (void) { return this->v.data(); }
   void setData (nr_type_t *, int) = delete; 
   void exchangeRows (int, int);
   int  isFinite (void);
@@ -132,13 +130,12 @@ class tvector
 
   // easy accessor operators
   nr_type_t  operator () (int i) const {
-    assert (i >= 0 && i < this->size()); return data_[i]; }
+    assert (i >= 0 && i < this->size()); return v(i); }
   nr_type_t& operator () (int i) {
-    assert (i >= 0 && i < this->size()); return data_[i]; }
+    assert (i >= 0 && i < this->size()); return v(i); }
 
  private:
-  int size_;
-  nr_type_t * data_;
+  Eigen::Matrix<nr_type_t,Eigen::Dynamic,1> v;
 };
 
 #include "tvector.cpp"
