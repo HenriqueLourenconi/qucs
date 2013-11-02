@@ -40,7 +40,7 @@
 template <class nr_type_t>
 tvector<nr_type_t>::tvector () {
   size_ = 0;
-  data = NULL;
+  data_ = NULL;
 }
 
 /* Constructor creates an unnamed instance of the tvector class with a
@@ -49,10 +49,10 @@ template <class nr_type_t>
 tvector<nr_type_t>::tvector (int s)  {
   size_ = s;
   if (s > 0) {
-    data = new nr_type_t[s];
-    memset (data, 0, sizeof (nr_type_t) * s);
+    data_ = new nr_type_t[s];
+    memset (data_, 0, sizeof (nr_type_t) * s);
   }
-  else data = NULL;
+  else data_ = NULL;
 }
 
 /* The copy constructor creates a new instance based on the given
@@ -60,12 +60,12 @@ tvector<nr_type_t>::tvector (int s)  {
 template <class nr_type_t>
 tvector<nr_type_t>::tvector (const tvector & v) {
   size_ = v.size_;
-  data = NULL;
+  data_ = NULL;
 
   // copy tvector elements
   if (this->size_ > 0) {
-    data = new nr_type_t[size_];
-    memcpy (data, v.data, sizeof (nr_type_t) * size_);
+    data_ = new nr_type_t[size_];
+    memcpy (data_, v.data_, sizeof (nr_type_t) * size_);
   }
 }
 
@@ -76,10 +76,10 @@ const tvector<nr_type_t>&
 tvector<nr_type_t>::operator=(const tvector<nr_type_t> & v) {
   if (&v != this) {
     size_ = v.size_;
-    if (data) { delete[] data; data = NULL; }
+    if (data_) { delete[] data_; data_ = NULL; }
     if (size_ > 0) {
-      data = new nr_type_t[size_];
-      memcpy (data, v.data, sizeof (nr_type_t) * size_);
+      data_ = new nr_type_t[size_];
+      memcpy (data_, v.data_, sizeof (nr_type_t) * size_);
     }
   }
   return *this;
@@ -88,19 +88,16 @@ tvector<nr_type_t>::operator=(const tvector<nr_type_t> & v) {
 // Destructor deletes a tvector object.
 template <class nr_type_t>
 tvector<nr_type_t>::~tvector () {
-  if (data) delete[] data;
+  if (data_) delete[] data_;
 }
-
-
-
 
 // The function swaps the given rows with each other.
 template <class nr_type_t>
 void tvector<nr_type_t>::exchangeRows (int r1, int r2) {
   assert (r1 >= 0 && r2 >= 0 && r1 < this->size() && r2 < this->size());
-  nr_type_t s = data[r1];
-  data[r1] = data[r2];
-  data[r2] = s;
+  nr_type_t s = (*this)(r1);
+  (*this)(r1) = (*this)(r2);
+  (*this)(r2) = s;
 }
 
 // Addition.
@@ -118,9 +115,8 @@ tvector<nr_type_t> operator + (tvector<nr_type_t> a, tvector<nr_type_t> b) {
 template <class nr_type_t>
 tvector<nr_type_t> tvector<nr_type_t>::operator += (tvector<nr_type_t> a) {
   assert (a.size () == this->size());
-  nr_type_t * src = a.getData ();
-  nr_type_t * dst = data;
-  for (int i = 0; i < this->size(); i++) *dst++ += *src++;
+  for (int i = 0; i < this->size(); i++)
+    (*this)(i) += a(i);
   return *this;
 }
 
@@ -139,25 +135,24 @@ tvector<nr_type_t> operator - (tvector<nr_type_t> a, tvector<nr_type_t> b) {
 template <class nr_type_t>
 tvector<nr_type_t> tvector<nr_type_t>::operator -= (tvector<nr_type_t> a) {
   assert (a.size () == this->size());
-  nr_type_t * src = a.getData ();
-  nr_type_t * dst = data;
-  for (int i = 0; i < this->size(); i++) *dst++ -= *src++;
+  for (int i = 0; i < this->size(); i++)
+    (*this)(i) += a(i);
   return *this;
 }
 
 // Intrinsic scalar multiplication.
 template <class nr_type_t>
 tvector<nr_type_t> tvector<nr_type_t>::operator *= (nr_double_t s) {
-  nr_type_t * dst = data;
-  for (int i = 0; i < this->size(); i++) *dst++ *= s;
+  for (int i = 0; i < this->size(); i++) 
+    (*this)(i) *= s;
   return *this;
 }
 
 // Intrinsic scalar division.
 template <class nr_type_t>
 tvector<nr_type_t> tvector<nr_type_t>::operator /= (nr_double_t s) {
-  nr_type_t * dst = data;
-  for (int i = 0; i < size; i++) *dst++ /= s;
+  for (int i = 0; i < size; i++) 
+     (*this)(i) /= s;
   return *this;
 }
 
@@ -200,7 +195,8 @@ nr_type_t scalar (tvector<nr_type_t> a, tvector<nr_type_t> b) {
 // Constant assignment operation.
 template <class nr_type_t>
 tvector<nr_type_t> tvector<nr_type_t>::operator = (const nr_type_t val) {
-  for (int i = 0; i < size; i++) data[i] = val;
+  for (int i = 0; i < size; i++) 
+    (*this)(i) = val;
   return *this;
 }
 
@@ -208,7 +204,8 @@ tvector<nr_type_t> tvector<nr_type_t>::operator = (const nr_type_t val) {
 template <class nr_type_t>
 nr_type_t sum (tvector<nr_type_t> a) {
   nr_type_t res = 0;
-  for (int i = 0; i < a.size (); i++) res += a(i);
+  for (int i = 0; i < a.size (); i++)
+    res += a(i);
   return res;
 }
 
@@ -318,7 +315,8 @@ tvector<nr_type_t> conj (tvector<nr_type_t> a) {
 template <class nr_type_t>
 int tvector<nr_type_t>::isFinite (void) {
   for (int i = 0; i < this->size(); i++)
-    if (!finite (real (data[i]))) return 0;
+    if (!finite (real ((*this)(i)))) 
+      return 0;
   return 1;
 }
 
@@ -326,7 +324,8 @@ int tvector<nr_type_t>::isFinite (void) {
 template <class nr_type_t>
 void tvector<nr_type_t>::reorder (int * idx) {
   tvector<nr_type_t> old = *this;
-  for (int i = 0; i < this->size(); i++) data[i] = old(idx[i]);
+  for (int i = 0; i < this->size(); i++) 
+    (*this)(i) = old(idx[i]);
 }
 
 #ifdef DEBUG
