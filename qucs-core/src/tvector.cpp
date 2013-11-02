@@ -184,7 +184,7 @@ tvector<nr_type_t> operator * (tvector<nr_type_t> a, tvector<nr_type_t> b) {
 
 // Computes the scalar product of two vectors.
 template <class nr_type_t>
-nr_type_t scalar (tvector<nr_type_t> a, tvector<nr_type_t> b) {
+nr_type_t dot (const tvector<nr_type_t> &a, const tvector<nr_type_t> &b) {
   assert (a.size () == b.size ());
   nr_type_t n = 0;
   for (int i = 0; i < a.size (); i++) 

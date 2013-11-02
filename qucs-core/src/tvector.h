@@ -36,7 +36,7 @@ class tvector;
 
 // Forward declarations of friend functions.
 template <class nr_type_t>
-nr_type_t   scalar (tvector<nr_type_t>, tvector<nr_type_t>);
+nr_type_t   dot (const tvector<nr_type_t>&, const tvector<nr_type_t>&);
 template <class nr_type_t>
 nr_double_t maxnorm (tvector<nr_type_t>);
 template <class nr_type_t>
@@ -112,7 +112,7 @@ class tvector
   friend nr_double_t norm<> (tvector);
   friend nr_double_t maxnorm<> (tvector);
   friend nr_type_t   sum<> (tvector);
-  friend nr_type_t   scalar<> (tvector, tvector);
+  friend nr_type_t   dot<> (const tvector&, const tvector&);
   friend tvector     conj<> (tvector);
 #endif
 
@@ -126,7 +126,6 @@ class tvector
   tvector operator += (tvector);
   tvector operator -= (tvector);
   tvector operator *= (nr_double_t);
-  tvector operator /= (nr_double_t);
 
   // assignment operators
   tvector operator = (const nr_type_t);
