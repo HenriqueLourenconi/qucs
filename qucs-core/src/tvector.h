@@ -44,7 +44,7 @@ nr_double_t norm (tvector<nr_type_t>);
 template <class nr_type_t>
 nr_type_t   sum (tvector<nr_type_t>);
 template <class nr_type_t>
-tvector<nr_type_t> conj (tvector<nr_type_t>);
+tvector<nr_type_t> conjugate (const tvector<nr_type_t>&);
 template <class nr_type_t>
 tvector<nr_type_t> operator + (tvector<nr_type_t>, tvector<nr_type_t>);
 template <class nr_type_t>
@@ -113,7 +113,7 @@ class tvector
   friend nr_double_t maxnorm<> (tvector);
   friend nr_type_t   sum<> (tvector);
   friend nr_type_t   dot<> (const tvector&, const tvector&);
-  friend tvector     conj<> (tvector);
+  friend tvector     conjugate<> (const tvector&);
 #endif
 
   // comparisons

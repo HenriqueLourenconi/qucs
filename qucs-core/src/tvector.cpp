@@ -304,7 +304,7 @@ nr_double_t maxnorm (tvector<nr_type_t> a) {
 
 // Conjugate vector.
 template <class nr_type_t>
-tvector<nr_type_t> conj (tvector<nr_type_t> a) {
+tvector<nr_type_t> conjugate (const tvector<nr_type_t> &a) {
   int n = a.size ();
   tvector<nr_type_t> res (n);
   for (int i = 0; i < n; i++) res(i) =  conj (a(i));
