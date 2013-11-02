@@ -156,14 +156,6 @@ tvector<nr_type_t> tvector<nr_type_t>::operator *= (nr_double_t s) {
   return *this;
 }
 
-// Intrinsic scalar division.
-template <class nr_type_t>
-tvector<nr_type_t> tvector<nr_type_t>::operator /= (nr_double_t s) {
-  for (int i = 0; i < size; i++) 
-     (*this)(i) /= s;
-  return *this;
-}
-
 // Scalar multiplication.
 template <class nr_type_t>
 tvector<nr_type_t> operator * (nr_double_t s, tvector<nr_type_t> a) {
