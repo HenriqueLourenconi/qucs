@@ -83,11 +83,11 @@ nr_double_t emi::f_gauss (nr_double_t fc, nr_double_t bw, nr_double_t f) {
    waveform in the time domain.  The number of points in the waveform
    is required to be a power of two.  Also the samples are supposed
    to be equidistant. */
-vector * emi::receiver (nr_double_t * ida, nr_double_t duration, int ilength) {
+::vector * emi::receiver (nr_double_t * ida, nr_double_t duration, int ilength) {
 
   int i, n, points;
   nr_double_t fres;
-  vector * ed = new vector ();
+  ::vector * ed = new ::vector ();
   
   points = ilength;
   
@@ -103,12 +103,12 @@ vector * emi::receiver (nr_double_t * ida, nr_double_t duration, int ilength) {
   /* calculate frequency step */
   fres = 1.0 / duration;
 
-  /* generate data vector; inplace calculation of magnitudes */
+  /* generate data ::vector; inplace calculation of magnitudes */
   nr_double_t * d = ida;
   for (n = 0, i = 0; i < points / 2; i++, n += 2){
     /* abs value of complex number */
     d[i] = xhypot (ida[n], ida[n + 1]);
-    /* vector contains complex values; thus every second value */
+    /* ::vector contains complex values; thus every second value */
   }
 
   points /= 2;
@@ -124,7 +124,7 @@ vector * emi::receiver (nr_double_t * ida, nr_double_t duration, int ilength) {
   /* define EMI noise floor */
   nr_double_t noise = pow (10.0, (-100.0 / 40.0)) * 1e-6; 
   
-  /* generate resulting data & frequency vector */
+  /* generate resulting data & frequency ::vector */
   nr_double_t fcur, dcur;
   int ei = 0;
 
@@ -179,7 +179,7 @@ vector * emi::receiver (nr_double_t * ida, nr_double_t duration, int ilength) {
 /* This is a wrapper for the basic EMI rceiver functionality.  It
    takes an arbitraty waveform in the time domain and interpolates it
    such, that its length results in a power of two elements. */
-vector * emi::receiver (vector * da, vector * dt, int len) {
+::vector * emi::receiver (::vector * da, ::vector * dt, int len) {
 
   int i, nlen, olen =  da->getSize ();
 
@@ -201,7 +201,7 @@ vector * emi::receiver (vector * da, vector * dt, int len) {
   inter->rvectors (da, dt);
   inter->prepare (INTERPOL_CUBIC, REPEAT_NO, DATA_RECTANGULAR);
 
-  // adjust the time domain vector using interpolation
+  // adjust the time domain ::vector using interpolation
   nr_double_t * ida = new nr_double_t[2 * nlen];
   nr_double_t tstep = duration / (nlen - 1);
   for (i = 0; i < nlen; i++) {
@@ -214,7 +214,7 @@ vector * emi::receiver (vector * da, vector * dt, int len) {
   delete inter;
 
   // run actual EMI receiver computations
-  vector * res = receiver (ida, duration, nlen);
+  ::vector * res = receiver (ida, duration, nlen);
 
   // delete intermediate data
   delete[] ida;

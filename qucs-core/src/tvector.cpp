@@ -36,65 +36,10 @@
 #include "complex.h"
 #include "tvector.h"
 
-// Constructor creates an unnamed instance of the tvector class.
-template <class nr_type_t>
-tvector<nr_type_t>::tvector () {
-  size_ = 0;
-  data_ = NULL;
-}
-
-/* Constructor creates an unnamed instance of the tvector class with a
-   certain length. */
-template <class nr_type_t>
-tvector<nr_type_t>::tvector (int s)  {
-  size_ = s;
-  if (s > 0) {
-    data_ = new nr_type_t[s];
-    memset (data_, 0, sizeof (nr_type_t) * s);
-  }
-  else data_ = NULL;
-}
-
-/* The copy constructor creates a new instance based on the given
-   tvector object. */
-template <class nr_type_t>
-tvector<nr_type_t>::tvector (const tvector & v) {
-  size_ = v.size_;
-  data_ = NULL;
-
-  // copy tvector elements
-  if (this->size_ > 0) {
-    data_ = new nr_type_t[size_];
-    memcpy (data_, v.data_, sizeof (nr_type_t) * size_);
-  }
-}
-
-/* The assignment copy constructor creates a new instance based on the
-   given tvector object. */
-template <class nr_type_t>
-const tvector<nr_type_t>&
-tvector<nr_type_t>::operator=(const tvector<nr_type_t> & v) {
-  if (&v != this) {
-    size_ = v.size_;
-    if (data_) { delete[] data_; data_ = NULL; }
-    if (size_ > 0) {
-      data_ = new nr_type_t[size_];
-      memcpy (data_, v.data_, sizeof (nr_type_t) * size_);
-    }
-  }
-  return *this;
-}
-
-// Destructor deletes a tvector object.
-template <class nr_type_t>
-tvector<nr_type_t>::~tvector () {
-  if (data_) delete[] data_;
-}
-
 // Sets all the tvector elements to the given value.
 template <class nr_type_t>
 void tvector<nr_type_t>::setConstant (nr_type_t z) {
-  for (int i = 0; i < size_; i++) 
+  for (int i = 0; i < this->size(); i++) 
     (*this)(i) = z;
 }
 
