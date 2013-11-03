@@ -185,7 +185,7 @@ void eqnsys<nr_type_t>::solve (void) {
 /* Simple matrix inversion is used to solve the equation system. */
 template <class nr_type_t>
 void eqnsys<nr_type_t>::solve_inverse (void) {
-  *X = inverse (*A) * *B;
+  *X = (*A).inverse() * (*B);
 }
 
 #define A_ (*A)
