@@ -155,8 +155,7 @@ class tmatrix
   template<typename T> friend tmatrix<T> operator * (const T &a, const tmatrix<T> & b);
   template<typename T> friend tvector<T> operator * (const tmatrix<T> &a, const tvector<T> &b);
   template<typename T> friend tvector<T> operator * (const tvector<T> &a, const tmatrix<T> &b);
-  template<typename T> friend tmatrix<T> inverse (const tmatrix<T> &a);
-    
+
   static tmatrix Identity(const int n, const int m) {
     tmatrix<nr_type_t> ret;
     ret.m = Eigen::Matrix<nr_type_t, Eigen::Dynamic, Eigen::Dynamic >::Identity(n,n);
@@ -178,6 +177,56 @@ class tmatrix
   tmatrix<nr_type_t> operator *= (const nr_type_t & t) {
     this->m*=t;
     return *this;
+  }
+
+  // Compute inverse matrix of the given matrix by Gauss-Jordan elimination.
+  tmatrix<nr_type_t> inverse () {
+    auto & a = *this;
+    nr_double_t MaxPivot;
+    nr_type_t f;
+    tmatrix<nr_type_t> b;
+    tmatrix<nr_type_t> e;
+    int i, c, r, pivot, n = a.cols ();
+  
+    // create temporary matrix and the result matrix
+    b = tmatrix<nr_type_t> (a);
+    e = tmatrix<nr_type_t>().Identity(n,n);
+    
+    // create the eye matrix in 'b' and the result in 'e'
+    for (i = 0; i < n; i++) {
+      // find maximum column value for pivoting
+      for (MaxPivot = 0, pivot = r = i; r < n; r++) {
+	if (abs (b(r, i)) > MaxPivot) {
+	  MaxPivot = abs (b(r, i));
+	  pivot = r;
+	}
+      }
+      // exchange rows if necessary
+      assert (MaxPivot != 0); // singular matrix
+      if (i != pivot) {
+	b.row(i).swap(b.row(pivot));
+	e.row(i).swap(e.row(pivot));
+      }
+      
+      // compute current row
+      f = b (i, i);
+      for (c = 0; c < n; c++) {
+	b(i, c) =  b (i, c) / f;
+	e(i, c) =  e (i, c) / f;
+      }
+      
+      // compute new rows and columns
+      for (r = 0; r < n; r++) {
+	if (r != i) {
+	  f = b (r, i);
+	  for (c = 0; c < n; c++) {
+	    b(r, c) =  b (r, c) - f * b (i, c);
+	    e(r, c) =  e (r, c) - f * e (i, c);
+	  }
+	}
+      }
+    }
+    return e;
   }
 };
 
