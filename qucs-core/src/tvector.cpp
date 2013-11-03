@@ -97,16 +97,12 @@ tvector<nr_type_t> tvector<nr_type_t>::operator *= (nr_double_t s) {
 
 // Scalar multiplication.
 template <class nr_type_t>
-tvector<nr_type_t> operator * (nr_double_t s, tvector<nr_type_t> a) {
-  int n = a.size ();
-  tvector<nr_type_t> res (n);
-  for (int i = 0; i < n; i++) 
-    res(i) = s * a(i);
-  return res;
+tvector<nr_type_t> operator * (const nr_type_t &s, const tvector<nr_type_t> &a) {
+  return tvector<nr_type_t>(s*a.v);
 }
 
 template <class nr_type_t>
-tvector<nr_type_t> operator * (tvector<nr_type_t> a, nr_double_t s) {
+tvector<nr_type_t> operator * (const tvector<nr_type_t> a, const nr_double_t s) {
   return s * a;
 }
 
@@ -118,25 +114,6 @@ tvector<nr_type_t> operator * (tvector<nr_type_t> a, tvector<nr_type_t> b) {
   tvector<nr_type_t> res (n);
   for (int i = 0; i < n; i++) 
     res(i) = a(i) * b(i);
-  return res;
-}
-
-// Computes the scalar product of two vectors.
-template <class nr_type_t>
-nr_type_t dot (const tvector<nr_type_t> &a, const tvector<nr_type_t> &b) {
-  assert (a.size () == b.size ());
-  nr_type_t n = 0;
-  for (int i = 0; i < a.size (); i++) 
-    n += a(i) * b(i);
-  return n;
-}
-
-// Returns the sum of the vector elements.
-template <class nr_type_t>
-nr_type_t sum (tvector<nr_type_t> a) {
-  nr_type_t res = 0;
-  for (int i = 0; i < a.size (); i++)
-    res += a(i);
   return res;
 }
 
@@ -231,24 +208,6 @@ nr_double_t maxnorm (tvector<nr_type_t> a) {
     if (n > nMax) nMax = n;
   }
   return nMax;
-}
-
-// Conjugate vector.
-template <class nr_type_t>
-tvector<nr_type_t> conjugate (const tvector<nr_type_t> &a) {
-  int n = a.size ();
-  tvector<nr_type_t> res (n);
-  for (int i = 0; i < n; i++) res(i) =  conj (a(i));
-  return res;
-}
-
-// Checks validity of vector.
-template <class nr_type_t>
-int tvector<nr_type_t>::isFinite (void) {
-  for (int i = 0; i < this->size(); i++)
-    if (!finite (real ((*this)(i)))) 
-      return 0;
-  return 1;
 }
 
 // The functions reorders the vector according to the given index array.

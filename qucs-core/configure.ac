@@ -261,7 +261,7 @@ AC_CHECK_FUNCS([floor pow exp sqrt log10 log cos sin acos asin tan atan sinh \
 		asinh strdup strerror strchr])
 
 # check for package
-PKG_CHECK_MODULES([EIGEN3],[eigen3])
+PKG_CHECK_MODULES([EIGEN3],[eigen3 >= 3.2])
 
 dnl Checks for complex classes and functions.
 AX_CXX_NAMESPACES
