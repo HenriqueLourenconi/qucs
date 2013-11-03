@@ -1122,7 +1122,7 @@ void nasolver<nr_type_t>::steepestDescent (void)
 
         // check gradient criteria, ThinkME: Is this correct?
         dz = *z - *zprev;
-        sl = real ((dz * -dz).sum());
+        sl = real ((dz.array() * -dz.array()).sum());
         if (norm (*z) < n + alpha * sl) break;
         alpha *= 0.7;
     }

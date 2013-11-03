@@ -61,8 +61,6 @@ tvector<nr_type_t> operator * (const tvector<nr_type_t>&, const nr_type_t&);
 template <class nr_type_t>
 tvector<nr_type_t> operator * (const nr_type_t&, const tvector<nr_type_t>&);
 template <class nr_type_t>
-tvector<nr_type_t> operator * (tvector<nr_type_t>, tvector<nr_type_t>);
-template <class nr_type_t>
 tvector<nr_type_t> operator - (tvector<nr_type_t>);
 template <class nr_type_t>
 bool operator < (tvector<nr_type_t>, tvector<nr_type_t>);
@@ -73,15 +71,22 @@ bool operator > (tvector<nr_type_t>, tvector<nr_type_t>);
 template <class nr_type_t>
 class tvector
 {
+ private:
+  Eigen::Matrix<nr_type_t,Eigen::Dynamic,1> v;
+
  public:
   tvector () : v() {};
   tvector (int n) = delete;
-  tvector (const Eigen::Matrix<nr_type_t,Eigen::Dynamic,1> &n):
+  tvector (Eigen::Matrix<nr_type_t,Eigen::Dynamic,1> &n):
       v(n) {};
   tvector (Eigen::Matrix<nr_type_t,Eigen::Dynamic,1> &&n):
-      v(std::move(n)) {};
+      v(std::move(n)) {}
   void setConstant (const nr_type_t &v) {
     this->v.setConstant(v);
+  }
+
+  auto array(void) -> decltype(this->v.array()) {
+    return v.array();
   }
 
   static tvector<nr_type_t> Zero(unsigned int row, unsigned int col) {
@@ -121,7 +126,6 @@ class tvector
   friend tvector operator -<> (tvector, tvector);
   friend tvector operator *<> (const tvector&, const nr_type_t&);
   friend tvector operator *<> (const nr_type_t&, const tvector&);
-  friend tvector operator *<> (tvector, tvector);
   friend tvector operator -<> (tvector);
   friend tvector operator +<> (tvector, nr_type_t);
   friend tvector operator +<> (nr_type_t, tvector);
@@ -146,15 +150,16 @@ class tvector
 
   // assignment operators
   tvector operator = (const nr_type_t) = delete;
+  tvector operator = (const Eigen::Array<nr_type_t,Eigen::Dynamic,1> &a) {
+    this->v = a;
+    return *this;
+  }
 
   // easy accessor operators
   nr_type_t  operator () (int i) const {
     assert (i >= 0 && i < this->size()); return v(i); }
   nr_type_t& operator () (int i) {
     assert (i >= 0 && i < this->size()); return v(i); }
-
- private:
-  Eigen::Matrix<nr_type_t,Eigen::Dynamic,1> v;
 };
 
 #include "tvector.cpp"

@@ -107,17 +107,6 @@ tvector<nr_type_t> operator * (const tvector<nr_type_t> a, const nr_double_t s) 
   return s * a;
 }
 
-// Vector multiplication (element by element).
-template <class nr_type_t>
-tvector<nr_type_t> operator * (tvector<nr_type_t> a, tvector<nr_type_t> b) {
-  assert (a.size () == b.size ());
-  int n = a.size ();
-  tvector<nr_type_t> res = tvector<nr_type_t>::Zero(n,1);
-  for (int i = 0; i < n; i++) 
-    res(i) = a(i) * b(i);
-  return res;
-}
-
 // Vector negation.
 template <class nr_type_t>
 tvector<nr_type_t> operator - (tvector<nr_type_t> a) {
