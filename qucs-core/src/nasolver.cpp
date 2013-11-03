@@ -1372,7 +1372,7 @@ void nasolver<nr_type_t>::applyAttenuation (void)
     nr_double_t alpha = 1.0, nMax;
 
     // create solution difference vector and find maximum deviation
-    nMax = maxnorm (*dmx);
+    nMax = (*dmx).template lpNorm<Eigen::Infinity>();
 
     // compute appropriate damping factor
     if (nMax > 0.0)
@@ -1412,7 +1412,7 @@ void nasolver<nr_type_t>::lineSearch (void)
         createZVector ();
 
         // calculate norm of right hand side vector
-        n = norm (*z);
+        n = (*z).norm();
 
         // TODO: this is not perfect, but usable
         astep /= 2;
@@ -1452,7 +1452,7 @@ void nasolver<nr_type_t>::steepestDescent (void)
     // compute solution deviation vector
     tvector<nr_type_t> dmz = *mz - *mzprev;
     tvector<nr_type_t> dmxorig = *dmx;
-    n = norm (*mzprev);
+    n = (*mzprev).norm();
 
     do
     {
@@ -1469,7 +1469,7 @@ void nasolver<nr_type_t>::steepestDescent (void)
         // check gradient criteria, ThinkME: Is this correct?
         dmz = *mz - *mzprev;
         sl = real ((dmz.array() * -dmz.array()).sum());
-        if (norm (*mz) < n + alpha * sl) break;
+        if ((*mz).norm() < n + alpha * sl) break;
         alpha *= 0.7;
     }
     while (alpha > 0.001);
@@ -1521,7 +1521,7 @@ int nasolver<nr_type_t>::checkConvergence (void)
     return 1;
     
  noconv:
-    if (dmxprev == NULL || norm (*dmx) < norm (*dmxprev))
+    if (dmxprev == NULL || (*dmx).norm() < (*dmxprev).norm())
 	return 0;
     else
 	return -1;

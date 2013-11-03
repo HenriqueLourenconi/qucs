@@ -30,13 +30,13 @@
 
 #include "consts.h"
 #include "precision.h"
+#include "complex.h"
 
 #ifdef log2
 #undef log2
 #endif
 
 class strlist;
-class vector;
 
 ::vector linspace (nr_double_t, nr_double_t, int);
 ::vector logspace (nr_double_t, nr_double_t, int);
