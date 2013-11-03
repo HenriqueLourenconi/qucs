@@ -379,7 +379,8 @@ void hbsolver::collectFrequencies (void) {
   if (ndfreqs) delete[] ndfreqs;
 
   // obtain order
-  int i, n = calcOrder (getPropertyInteger ("n"));
+  int n = calcOrder (getPropertyInteger ("n"));
+  unsigned int i;
 
   // expand frequencies for each exitation
   nr_double_t f;
@@ -876,7 +877,7 @@ void hbsolver::calcConstantCurrent (void) {
   int r, c, vsrc = 0;
 
   // collect excitation voltages
-  auto VC = tvector<nr_complex_t>::Zero(se,1);
+  tvector<nr_complex_t> VC = tvector<nr_complex_t>::Zero(se,1);
   for (auto it = excitations.begin(); it != excitations.end(); ++it, vsrc++) {
     circuit * vs = *it;
     vs->initHB ();
@@ -1159,7 +1160,7 @@ void hbsolver::MatrixFFT (tmatrix<nr_complex_t> * M) {
   // for each non-linear node block
   for (nc = c = 0; c < nbanodes; c++, nc += nlfreqs) {
     for (nr = r = 0; r < nbanodes; r++, nr += nlfreqs) {
-      auto V = tvector<nr_complex_t>::Zero(nlfreqs,1);
+      tvector<nr_complex_t> V = tvector<nr_complex_t>::Zero(nlfreqs,1);
       int fr, fc, fi;
       // transform the sub-diagonal only
       for (fc = 0; fc < nlfreqs; fc++) V (fc) = (*M) (nr + fc, nc + fc);
@@ -1238,7 +1239,7 @@ void hbsolver::calcJacobian (void) {
    make it a real valued signal in the time domain. */
 tvector<nr_complex_t> hbsolver::expandVector (tvector<nr_complex_t> V,
 					      int nodes) {
-  auto res = tvector<nr_complex_t>::Zero(nodes * nlfreqs,1);
+  tvector<nr_complex_t> res = tvector<nr_complex_t>::Zero(nodes * nlfreqs,1);
   int r, ff, rf, rt;
   for (r = 0; r < nodes; r++) {
     rt = r * nlfreqs;

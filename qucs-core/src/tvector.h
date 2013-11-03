@@ -34,7 +34,7 @@
 #include <Eigen/Core>
 
 
-# if 0
+# if 1
 template <typename nr_type_t>
 using tvector = Eigen::Matrix<nr_type_t,Eigen::Dynamic,1>;
 

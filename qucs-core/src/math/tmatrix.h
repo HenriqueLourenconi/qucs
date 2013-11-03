@@ -265,7 +265,7 @@ tvector<nr_type_t> operator * (const tmatrix<nr_type_t> &a, const tvector<nr_typ
   assert (a.cols () == b.size ());
   int r, c, n = a.cols ();
   nr_type_t z;
-  auto res = tvector<nr_type_t>::Zero (n,1);
+  tvector<nr_type_t> res = tvector<nr_type_t>::Zero (n,1);
 
   for (r = 0; r < n; r++) {
     for (c = 0, z = 0; c < n; c++) z += a(r, c) * b(c);
@@ -279,7 +279,7 @@ tvector<nr_type_t> operator * (const tvector<nr_type_t> &a, const tmatrix<nr_typ
   assert (a.size () == b.rows ());
   int r, c, n = b.rows ();
   nr_type_t z;
-  auto res = tvector<nr_type_t>::Zero (n,1);
+  tvector<nr_type_t> res = tvector<nr_type_t>::Zero (n,1);
 
   for (c = 0; c < n; c++) {
     for (r = 0, z = 0; r < n; r++) z += a(r) * b(r, c);
