@@ -46,7 +46,7 @@ libqucs_la_LDFLAGS = -no-undefined
 pkginclude_HEADERS = logging.h net.h input.h dataset.h equation.h    \
 	environment.h exceptionstack.h check_netlist.h module.h
 
-noinst_TEMPLATES = eqnsys.cpp nasolver.cpp states.cpp tvector.cpp \
+noinst_TEMPLATES = eqnsys.cpp nasolver.cpp states.cpp \
 	tridiag.cpp hash.cpp valuelist.cpp nasolution.cpp
 
 noinst_HEADERS = $(noinst_TEMPLATES)            \
@@ -57,7 +57,7 @@ noinst_HEADERS = $(noinst_TEMPLATES)            \
 	operatingpoint.h libqucsator.h evaluate.h exception.h      \
 	matvec.h constants.h consts.h nasolver.h \
 	circuit.h acsolver.h trsolver.h transient.h integrator.h states.h     \
-	tvector.h nodeset.h netdefs.h qucsdefs.h ptrlist.h hbsolver.h poly.h  \
+	nodeset.h netdefs.h qucsdefs.h ptrlist.h hbsolver.h poly.h  \
 	spline.h tridiag.h fourier.h hash.h applications.h                    \
 	valuelist.h pair.h characteristic.h range.h history.h                 \
 	devstates.h tokens_citi.h check_citi.h check_zvr.h tokens_zvr.h       \
