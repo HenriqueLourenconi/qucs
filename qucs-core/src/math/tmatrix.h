@@ -161,22 +161,6 @@ class tmatrix
       this->m(r,c) = v(c);
   }
 
-  /*!\brief The function swaps the given rows with each other.
-    \param[in] r1 source row
-    \param[in] r2 destination row
-  */
-  void exchangeRows (const int r1, const int r2) = delete ;/* {
-    this->m.row(r1).swap(this->m.row(r2));
-    }*/
-
-  /*!\brief The function swaps the given column with each other.
-    \param[in] c1 source column
-    \param[in] c2 destination column
-  */
-  void exchangeCols (const int c1, const int c2) {
-    this->m.col(c1).swap(this->m.col(c2));
-  }
-  
   /*! \transpose in place a matrix */
   void transposeInPlace (void) {
     this->m.transposeInPlace();
@@ -206,6 +190,10 @@ class tmatrix
 
   auto row(const unsigned int i) -> decltype(this->m.row(i)) {
     return this->m.row(i);
+  }
+
+  auto col(const unsigned int i) -> decltype(this->m.col(i)) {
+    return this->m.col(i);
   }
   
   auto rowwise() -> decltype(this->m.rowwise()) {
