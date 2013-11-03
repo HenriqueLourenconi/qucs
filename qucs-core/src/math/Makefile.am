@@ -27,7 +27,7 @@ AM_CPPFLAGS = $(EIGEN3_CFLAGS) -I$(top_srcdir)/src
 
 pkginclude_HEADERS = precision.h
 
-noinst_HEADERS = complex.h fspecial.h real.h matrix.h tmatrix.h
+noinst_HEADERS = complex.h fspecial.h real.h matrix.h tmatrix.h tvector.h
 
 noinst_LTLIBRARIES = libqucsmath.la
 
