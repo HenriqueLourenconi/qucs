@@ -58,8 +58,8 @@ void history::drop (void) {
    possible. */
 nr_double_t history::interpol (nr_double_t tval, int idx, bool left) {
   static spline spl (SPLINE_BC_NATURAL);
-  static tvector<nr_double_t> x (4);
-  static tvector<nr_double_t> y (4);
+  static tvector<nr_double_t> x = tvector<nr_double_t>::Zero(4,1);
+  static tvector<nr_double_t> y = tvector<nr_double_t>::Zero(4,1);
 
   unsigned int n = left ? idx + 1: idx;
   if (n > 1 && n + 2 < values->size ()) {

@@ -723,9 +723,11 @@ void trsolver::scaleMatrix (bool ldlt)
     }
     
     if (RS != NULL) delete RS;
-    RS = new tvector<nr_double_t> (n);
+    RS = new tvector<nr_double_t> ();
+    *RS = tvector<nr_double_t>::Zero (n,1);
     if (CS != NULL) delete CS;
-    CS = new tvector<nr_double_t> (n);    
+    CS = new tvector<nr_double_t> ();
+    *CS = tvector<nr_double_t>::Zero (n,1);
 
     // First, attempt diagonal dominance and normalize
     for (int i = N; i < N + M; i++)
@@ -940,7 +942,7 @@ void trsolver::calcRadau5 (void)
     tvector<nr_double_t> mx_r[3];
     for (int i = 0; i < 3; i++)
     {
-	mx_r[i] = tvector<nr_double_t> (n);
+        mx_r[i] = tvector<nr_double_t>::Zero (n,1);
 	for (int k = 0; k < n; k++)
 	{
 	    mx_r[i](k) = real (radau_P[i][0]) * (*mx)(k)
@@ -1095,13 +1097,17 @@ void trsolver::solve_pre (void)
 	if (MA_c != NULL) delete MA_c;
 	MA_c = new tmatrix<nr_complex_t> (n, n);
 	if (mx_c != NULL) delete mx_c;
-	mx_c = new tvector<nr_complex_t> (n);
+	mx_c = new tvector<nr_complex_t> ();
+	*mx_c = tvector<nr_complex_t>::Zero(n,1);
 	if (dmx_c != NULL) delete dmx_c;
-	dmx_c = new tvector<nr_complex_t> (n);
+	dmx_c = new tvector<nr_complex_t> ();
+	*dmx_c = tvector<nr_complex_t>::Zero(n,1);
 	if (dmxsum_c != NULL) delete dmxsum_c;
-	dmxsum_c = new tvector<nr_complex_t> (n);
+	dmxsum_c = new tvector<nr_complex_t> ();
+	*dmxsum_c = tvector<nr_complex_t>::Zero(n,1);
 	if (mz_c != NULL) delete mz_c;
-	mz_c = new tvector<nr_complex_t> (n);
+	mz_c = new tvector<nr_complex_t> ();
+	*mz_c = tvector<nr_complex_t>::Zero(n,1);
     }
 }
 

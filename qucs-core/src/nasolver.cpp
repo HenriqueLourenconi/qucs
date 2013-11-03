@@ -269,19 +269,24 @@ void nasolver<nr_type_t>::solve_pre (void)
     if (F != NULL) delete F;
     F = new tmatrix<nr_type_t> (M + N, M + N);
     if (z != NULL) delete z;
-    z = new tvector<nr_type_t> (N + M);
+    z = new tvector<nr_type_t>();
+    (*z) = tvector<nr_type_t>::Zero (N + M,  1);
     if (x != NULL) delete x;
-    x = new tvector<nr_type_t> (N + M);
+    x = new tvector<nr_type_t> ();
+    (*x) = tvector<nr_type_t>::Zero (N + M,  1);
 
     int sysSize = getSysSize ();
     if (MA != NULL) delete MA;
     MA = new tmatrix<nr_type_t> (sysSize, sysSize);
     if (mz != NULL) delete mz;
-    mz = new tvector<nr_type_t> (sysSize);
+    mz = new tvector<nr_type_t> ();
+    *mz = tvector<nr_type_t>::Zero (sysSize,  1);
     if (mx != NULL) delete mx;
-    mx = new tvector<nr_type_t> (sysSize);
+    mx = new tvector<nr_type_t> ();
+    *mx = tvector<nr_type_t>::Zero (sysSize,  1);
     if (dmxsum != NULL) delete dmxsum;
-    dmxsum = new tvector<nr_type_t> (sysSize);
+    dmxsum = new tvector<nr_type_t>();
+    *dmxsum = tvector<nr_type_t>::Zero (sysSize,  1);
 
 #if DEBUG
     logprint (LOG_STATUS, "NOTIFY: %s: solving %s netlist\n", getName (), desc);
@@ -576,9 +581,11 @@ int nasolver<nr_type_t>::solve_nonlinear (void)
     if (dmxprev != NULL) delete dmxprev;
     dmxprev = NULL;
     if (dx != NULL) delete dx;
-    dx = new tvector<nr_type_t> (countVoltageSources () + countNodes ());
+    dx = new tvector<nr_type_t> ();
+    *dx =  tvector<nr_type_t>::Zero(countVoltageSources () + countNodes (),1);
     if (dmx != NULL) delete dmx;
-    dmx = new tvector<nr_type_t> (getSysSize ());
+    dmx = new tvector<nr_type_t> ();
+    *dmx = tvector<nr_type_t>::Zero(getSysSize (),1);
 
     if (convHelper == CONV_GMinStepping)
     {
@@ -656,9 +663,11 @@ int nasolver<nr_type_t>::solve_linear (void)
     int error = 0;
 
     if (dx != NULL) delete dx;
-    dx = new tvector<nr_type_t> (countVoltageSources () + countNodes ());
+    dx = new tvector<nr_type_t> ();
+    (*dx) = tvector<nr_type_t>::Zero(countVoltageSources () + countNodes (),1);
     if (dmx != NULL) delete dmx;
-    dmx = new tvector<nr_type_t> (getSysSize ());
+    dmx = new tvector<nr_type_t>();
+    *dmx = tvector<nr_type_t>::Zero(getSysSize (),1);
     
     error += solve_once ();
     *x = *dx;

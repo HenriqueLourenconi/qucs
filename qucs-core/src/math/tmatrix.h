@@ -28,10 +28,10 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
+#include "tvector.h"
+
 #include <assert.h>
 
-
-template <typename nr_type_t> class tvector;
 template <typename nr_type_t> class tmatrix;
 template <typename T>  tmatrix<T> operator * (const tmatrix<T> &a, const tmatrix<T> & b);
 template <typename T>  tmatrix<T> operator * (const T &a, const tmatrix<T> & b);
@@ -268,7 +268,7 @@ tvector<nr_type_t> operator * (const tmatrix<nr_type_t> &a, const tvector<nr_typ
   assert (a.cols () == b.size ());
   int r, c, n = a.cols ();
   nr_type_t z;
-  tvector<nr_type_t> res (n);
+  auto res = tvector<nr_type_t>::Zero (n,1);
 
   for (r = 0; r < n; r++) {
     for (c = 0, z = 0; c < n; c++) z += a(r, c) * b(c);
@@ -282,7 +282,7 @@ tvector<nr_type_t> operator * (const tvector<nr_type_t> &a, const tmatrix<nr_typ
   assert (a.size () == b.rows ());
   int r, c, n = b.rows ();
   nr_type_t z;
-  tvector<nr_type_t> res (n);
+  auto res = tvector<nr_type_t>::Zero (n,1);
 
   for (c = 0; c < n; c++) {
     for (r = 0, z = 0; r < n; r++) z += a(r) * b(r, c);

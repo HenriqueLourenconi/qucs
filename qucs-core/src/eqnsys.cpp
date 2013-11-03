@@ -890,7 +890,9 @@ void eqnsys<nr_type_t>::factorize_qrh (void) {
   nr_type_t f, t;
   nr_double_t s, MaxPivot;
 
-  if (R) delete R; R = new tvector<nr_type_t> (N);
+  if (R) delete R; 
+  R = new tvector<nr_type_t>();
+  *R = tvector<nr_type_t>::Zero (N,1);
 
   for (c = 0; c < N; c++) {
     // compute column norms and save in work array
@@ -954,7 +956,9 @@ void eqnsys<nr_type_t>::factorize_qr_householder (void) {
   int c, r, pivot;
   nr_double_t s, MaxPivot;
 
-  if (T) delete T; T = new tvector<nr_type_t> (N);
+  if (T) delete T; 
+  T = new tvector<nr_type_t> ();
+  *T = tvector<nr_type_t>::Zero(N,1);
 
   for (c = 0; c < N; c++) {
     // compute column norms and save in work array
@@ -1305,11 +1309,19 @@ void eqnsys<nr_type_t>::factorize_svd (void) {
   nr_type_t t;
 
   // allocate space for vectors and matrices
-  if (R) delete R; R = new tvector<nr_type_t> (N);
-  if (T) delete T; T = new tvector<nr_type_t> (N);
+  if (R) delete R; 
+  R = new tvector<nr_type_t>(); 
+  *R = tvector<nr_type_t>::Zero (N,1);
+  if (T) delete T; 
+  T = new tvector<nr_type_t> ();
+  *T = tvector<nr_type_t>::Zero (N,1);
   if (V) delete V; V = new tmatrix<nr_type_t> (N, N);
-  if (S) delete S; S = new tvector<nr_double_t> (N);
-  if (E) delete E; E = new tvector<nr_double_t> (N);
+  if (S) delete S; 
+  S = new tvector<nr_double_t> ();
+  *S = tvector<nr_double_t>::Zero (N,1);
+  if (E) delete E; 
+  E = new tvector<nr_double_t> ();
+  *E = tvector<nr_double_t>::Zero (N,1);
 
   // bidiagonalization through householder transformations
   for (i = 0; i < N; i++) {

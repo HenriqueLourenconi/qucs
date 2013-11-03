@@ -55,8 +55,8 @@ void transient::calcCorrectorCoeff (int Method, int order,
 				    nr_double_t * delta) {
 
   tmatrix<nr_double_t> A (order + 1, order +1);
-  tvector<nr_double_t> x (order + 1);
-  tvector<nr_double_t> b (order + 1);
+  tvector<nr_double_t> x = tvector<nr_double_t>::Zero(order+1, 1);
+  tvector<nr_double_t> b = tvector<nr_double_t>::Zero(order+1, 1);
   eqnsys<nr_double_t> e;
   e.setAlgo (ALGO_LU_DECOMPOSITION);
 
@@ -171,8 +171,8 @@ void transient::calcPredictorCoeff (int Method, int order,
 				    nr_double_t * delta) {
 
   tmatrix<nr_double_t> A (order + 1, order +1);
-  tvector<nr_double_t> x (order + 1);
-  tvector<nr_double_t> b (order + 1);
+  tvector<nr_double_t> x =  tvector<nr_double_t>::Zero(order + 1,1);
+  tvector<nr_double_t> b =  tvector<nr_double_t>::Zero(order + 1,1);
   eqnsys<nr_double_t> e;
   e.setAlgo (ALGO_LU_DECOMPOSITION);
 
