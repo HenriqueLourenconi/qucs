@@ -1299,7 +1299,7 @@ void nasolver<nr_type_t>::solveEquation (void)
     if (L)
 	substituteL ();
     if (RS)
-	*mz = *RS * *mz;
+      *mz = (*RS).array() * (*mz).array();
 
 #if STEPDEBUG
     if (updateMatrix)
@@ -1326,7 +1326,7 @@ void nasolver<nr_type_t>::solveEquation (void)
     //	fprintf (stderr, "non-zero after: %g\n", countNonZero (MA));
 
     if (CS)
-	*dmx = *CS * *dmx;
+      *dmx = (*CS).array() * (*dmx).array();
     if (L)
 	substituteLt ();
 }
@@ -1468,7 +1468,7 @@ void nasolver<nr_type_t>::steepestDescent (void)
 
         // check gradient criteria, ThinkME: Is this correct?
         dmz = *mz - *mzprev;
-        sl = real ((dmz * -dmz).sum());
+        sl = real ((dmz.array() * -dmz.array()).sum());
         if (norm (*mz) < n + alpha * sl) break;
         alpha *= 0.7;
     }
