@@ -1395,7 +1395,7 @@ void nasolver<nr_type_t>::lineSearch (void)
     do
     {
         // apply current damping factor and see what happens
-        *mx = *mxprev + alpha * *dmx;
+        *mx = *mxprev + nr_type_t(alpha) * (*dmx);
 
         // recalculate Jacobian and right hand side
         saveSolution ();
@@ -1428,7 +1428,7 @@ void nasolver<nr_type_t>::lineSearch (void)
 
     // apply final damping factor
     assert (alpha > 0 && alpha <= 1);
-    *mx = *mxprev + alpha * *dmx;
+    *mx = *mxprev + nr_type_t(alpha) * (*dmx);
 }
 
 /* The function looks for the optimal gradient for the right hand side
@@ -1448,7 +1448,7 @@ void nasolver<nr_type_t>::steepestDescent (void)
     do
     {
         // apply current damping factor and see what happens
-        *dmx = alpha * dmxorig;
+        (*dmx) = nr_type_t(alpha) * dmxorig;
 	update_mx ();
 
         // recalculate Jacobian and right hand side
@@ -1459,14 +1459,14 @@ void nasolver<nr_type_t>::steepestDescent (void)
 
         // check gradient criteria, ThinkME: Is this correct?
         dmz = *mz - *mzprev;
-        sl = real (sum (dmz * -dmz));
+        sl = real ((dmz * -dmz).sum());
         if (norm (*mz) < n + alpha * sl) break;
         alpha *= 0.7;
     }
     while (alpha > 0.001);
 
     // apply final damping factor
-    *dmx = alpha * dmxorig;
+    *dmx = nr_type_t(alpha) * dmxorig;
     update_mx ();
 }
 
