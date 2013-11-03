@@ -115,55 +115,6 @@ class tmatrix
   nr_type_t * const data (void) const { 
     return this->m.data(); 
   }
-  
-  /*!\brief The function returns the given row in a tvector 
-    \todo simplifie when tvector is converted
-  */
-  tvector<nr_type_t> getRow (const int r) const {
-    const int cols = this.getCols();
-    const int rows = this.getRows();
-    
-    assert (r >= 0 && r < rows);
-    
-    tvector<nr_type_t> res (cols);
-    for(int c = 0; c < cols; c++)
-      res(c) = this->m(r,c);
-   
-    return res;
-  }
-
-  /*! Puts the given tvector into the given row of the tmatrix instance */
-  void setRow (const int r, const tvector<nr_type_t> & v) {
-    const int cols = this.getCols();
-    const int rows = this.getRows();   
-
-    assert (r >= 0 && r < rows && v.getSize () == cols);
-
-    for(int c = 0; c < cols; c++)
-      this->m(r,c) = v(c);
-  }
-  
-  /*! The function returns the given column in a tvector */
-  tvector<nr_type_t> getCol (const int c) const {
-    const int cols = this.getCols();
-    const int rows = this.getRows();
-    assert (c >= 0 && c < cols);
-
-    tvector<nr_type_t> res (rows);
-    for(int r = 0; r < rows; r++)
-      res(r) = this->m(r,c);
-    return res;
-  }
-
-  /*! Puts the given tvector into the given column of the tmatrix instance. */
-  void setCol (const int c, const tvector<nr_type_t> &v) {
-    const int cols = this.getCols();
-    const int rows = this.getRows();
-    assert (c >= 0 && c < cols);
-
-    for(int r = 0; r < rows; r++)
-      this->m(r,c) = v(c);
-  }
 
   /*! \transpose in place a matrix */
   void transposeInPlace (void) {
