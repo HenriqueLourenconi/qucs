@@ -62,8 +62,8 @@ tmatrix<nr_type_t> inverse (const tmatrix<nr_type_t> &a) {
     // exchange rows if necessary
     assert (MaxPivot != 0); // singular matrix
     if (i != pivot) {
-      b.exchangeRows (i, pivot);
-      e.exchangeRows (i, pivot);
+      b.row(i).swap(b.row(pivot));
+      e.row(i).swap(e.row(pivot));
     }
 
     // compute current row

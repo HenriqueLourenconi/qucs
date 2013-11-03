@@ -43,6 +43,9 @@ template <typename nr_type_t> tvector<nr_type_t> operator * (const tmatrix<nr_ty
 template <typename nr_type_t>
 class tmatrix
 {
+ private:
+  /*! Matrix data */
+  Eigen::Matrix<nr_type_t,Eigen::Dynamic, Eigen::Dynamic,Eigen::RowMajor> m;
  public:
   /*! \brief default constructor */
   tmatrix () : m() {};
@@ -162,9 +165,9 @@ class tmatrix
     \param[in] r1 source row
     \param[in] r2 destination row
   */
-  void exchangeRows (const int r1, const int r2) {
+  void exchangeRows (const int r1, const int r2) = delete ;/* {
     this->m.row(r1).swap(this->m.row(r2));
-  }
+    }*/
 
   /*!\brief The function swaps the given column with each other.
     \param[in] c1 source column
@@ -192,18 +195,22 @@ class tmatrix
   
   void print (bool realonly = false);
 
-
  /*!\brief return L inf norm of norm-1 vector of rowise */
  nr_double_t infnorm () {
    return ((this->m.rowwise()).template lpNorm<1>()).template lpNorm<Eigen::Infinity>();
  }
 
- /* \brief return condition number 
-    \note slow For debugging purposes only
- */
- nr_double_t condition () {
-   return this->infnorm () * inverse(this).infnorm();
- }
+  auto array(void) -> decltype(this->m.array()) {
+    return m.array();
+  }
+
+  auto row(const unsigned int i) -> decltype(this->m.row(i)) {
+    return this->m.row(i);
+  }
+  
+  auto rowwise() -> decltype(this->m.rowwise()) {
+    return m.rowwise();
+  }
 
   template<typename T> friend tmatrix<T> operator * (const tmatrix<T> &a, const tmatrix<T> & b);
   template<typename T> friend tmatrix<T> operator * (const T &a, const tmatrix<T> & b);
@@ -233,10 +240,6 @@ class tmatrix
     this->m*=t;
     return *this;
   }
-
- private:
-  /*! Matrix data */
-  Eigen::Matrix<nr_type_t,Eigen::Dynamic, Eigen::Dynamic,Eigen::RowMajor> m;
 };
 
 /*! Multiplication of two matrix */

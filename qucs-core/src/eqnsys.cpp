@@ -212,7 +212,7 @@ void eqnsys<nr_type_t>::solve_gauss (void) {
     // exchange rows if necessary
     assert (MaxPivot != 0);
     if (i != pivot) {
-      A->exchangeRows (i, pivot);
+      A->row(i).swap(A->row(pivot));
       B->row(i).swap(B->row(pivot));
     }
     // compute new rows and columns
@@ -252,7 +252,7 @@ void eqnsys<nr_type_t>::solve_gauss_jordan (void) {
     // exchange rows if necessary
     assert (MaxPivot != 0);
     if (i != pivot) {
-      A->exchangeRows (i, pivot);
+      A->row(i).swap(A->row(pivot));
       B->row(i).swap(B->row(pivot));
     }
 
@@ -371,7 +371,7 @@ void eqnsys<nr_type_t>::factorize_lu_crout (void) {
     // swap matrix rows if necessary and remember that step in the
     // exchange table
     if (c != pivot) {
-      A->exchangeRows (c, pivot);
+      A->row(c).swap(A->row(pivot));
       Swap (int, rMap[c], rMap[pivot]);
       Swap (nr_double_t, nPvt[c], nPvt[pivot]);
     }
@@ -437,7 +437,7 @@ void eqnsys<nr_type_t>::factorize_lu_doolittle (void) {
     // swap matrix rows if necessary and remember that step in the
     // exchange table
     if (c != pivot) {
-      A->exchangeRows (c, pivot);
+      A->row(c).swap(A->row(pivot));
       Swap (int, rMap[c], rMap[pivot]);
       Swap (nr_double_t, nPvt[c], nPvt[pivot]);
     }
@@ -728,7 +728,7 @@ void eqnsys<nr_type_t>::ensure_diagonal_MNA (void) {
       if (A_(i, i) == 0) {
 	pairs = countPairs (i, pivot1, pivot2);
 	if (pairs == 1) { /* lone pair found, substitute rows */
-	  A->exchangeRows (i, pivot1);
+	  A->row(i).swap(A->row(pivot1));
 	  B->row(i).swap(B->row(pivot1));
 	  exchanged = 1;
 	}
@@ -744,7 +744,7 @@ void eqnsys<nr_type_t>::ensure_diagonal_MNA (void) {
       for (i = begin; !exchanged && i < N; i++) {
 	if (A_(i, i) == 0) {
 	  pairs = countPairs (i, pivot1, pivot2);
-	  A->exchangeRows (i, pivot1);
+	  A->row(i).swap(A->row(pivot1));
 	  B->row(i).swap(B->row(pivot1));
 	  exchanged = 1;
 	}
@@ -792,7 +792,7 @@ void eqnsys<nr_type_t>::preconditioner (void) {
     }
     // swap matrix rows if possible
     if (i != pivot) {
-      A->exchangeRows (i, pivot);
+      A->row(i).swap(A->row(pivot));
       B->row(i).swap(B->row(pivot));
     }
   }
