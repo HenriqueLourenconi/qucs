@@ -194,10 +194,13 @@ void acsolver::solve_noise (void) {
   // create the Cy matrix
   createNoiseMatrix ();
   // create noise result vector if necessary
-  if (xn == NULL) xn = new tvector<nr_double_t> (N + M);
+  if (xn == NULL) {
+    xn = new tvector<nr_double_t>();
+    (*xn) = tvector<nr_double_t>::Zero(N + M , 1);
+  }
 
   // temporary result vector for transimpedances
-  tvector<nr_complex_t> zn = tvector<nr_complex_t> (N + M);
+  tvector<nr_complex_t> zn = tvector<nr_complex_t>::Zero (N + M , 1);
 
   // create the MNA matrix once again and LU decompose the adjoint matrix
   createMatrix ();

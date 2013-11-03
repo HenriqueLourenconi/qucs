@@ -33,6 +33,13 @@
 
 #include <Eigen/Core>
 
+
+# if 0
+template <typename nr_type_t>
+using tvector = Eigen::Matrix<nr_type_t,Eigen::Dynamic,1>;
+
+#else
+
 template <class nr_type_t>
 class tvector;
 
@@ -62,12 +69,13 @@ bool operator < (tvector<nr_type_t>, tvector<nr_type_t>);
 template <class nr_type_t>
 bool operator > (tvector<nr_type_t>, tvector<nr_type_t>);
 
+
 template <class nr_type_t>
 class tvector
 {
  public:
   tvector () : v() {};
-  tvector (int n): v(Eigen::Matrix<nr_type_t,Eigen::Dynamic,1>::Zero(n,1)) {};
+  tvector (int n) = delete;
   tvector (const Eigen::Matrix<nr_type_t,Eigen::Dynamic,1> &n):
       v(n) {};
   tvector (Eigen::Matrix<nr_type_t,Eigen::Dynamic,1> &&n):
@@ -76,6 +84,9 @@ class tvector
     this->v.setConstant(v);
   }
 
+  static tvector<nr_type_t> Zero(unsigned int row, unsigned int col) {
+    return tvector(Eigen::Matrix<nr_type_t,Eigen::Dynamic,1>::Zero(row,1));
+  }
   void setZero() { 
     if(this->size() > 0)
       for (int i = 0; i < this->size(); i++)
@@ -147,5 +158,6 @@ class tvector
 };
 
 #include "tvector.cpp"
+#endif
 
 #endif /* __TVECTOR_H__ */

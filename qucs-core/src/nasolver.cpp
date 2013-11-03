@@ -234,9 +234,11 @@ void nasolver<nr_type_t>::solve_pre (void)
     if (A != NULL) delete A;
     A = new tmatrix<nr_type_t> (M + N, M + N);
     if (z != NULL) delete z;
-    z = new tvector<nr_type_t> (N + M);
+    z = new tvector<nr_type_t>();
+    (*z) = tvector<nr_type_t>::Zero (N + M,  1);
     if (x != NULL) delete x;
-    x = new tvector<nr_type_t> (N + M);
+    x = new tvector<nr_type_t> ();
+    (*x) = tvector<nr_type_t>::Zero (N + M,  1);
 
 #if DEBUG
     logprint (LOG_STATUS, "NOTIFY: %s: solving %s netlist\n", getName (), desc);

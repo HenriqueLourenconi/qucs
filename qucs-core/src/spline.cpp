@@ -225,9 +225,9 @@ void spline::construct (void) {
     }
     else {
       tridiag<nr_double_t> sys;
-      tvector<nr_double_t> o (n);
-      tvector<nr_double_t> d (n);
-      tvector<nr_double_t> b (n);
+      tvector<nr_double_t> o = tvector<nr_double_t>::Zero(n,1);
+      tvector<nr_double_t> d = tvector<nr_double_t>::Zero(n,1);
+      tvector<nr_double_t> b = tvector<nr_double_t>::Zero(n,1);
       /* TODO: avoid copy if possible */
       assert(0);
       for(i=0; i < n; i++)

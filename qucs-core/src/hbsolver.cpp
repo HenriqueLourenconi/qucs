@@ -426,7 +426,8 @@ void hbsolver::collectFrequencies (void) {
   nlfreqs = negfreqs.size ();
 
   // pre-calculate the j[O] vector
-  OM = new tvector<nr_complex_t> (nlfreqs);
+  OM = new tvector<nr_complex_t> ();
+  *OM = tvector<nr_complex_t>::Zero (nlfreqs,1);
   for (n = i = 0; n < nlfreqs; n++, i++)
     OM_(n) = nr_complex_t (0, 2 * M_PI * negfreqs [i]);
 }
@@ -646,8 +647,10 @@ void hbsolver::invertMatrix (tmatrix<nr_complex_t> * A,
 			     tmatrix<nr_complex_t> * H) {
   eqnsys<nr_complex_t> eqns;
   int N = A->cols ();
-  tvector<nr_complex_t> * x = new tvector<nr_complex_t> (N);
-  tvector<nr_complex_t> * z = new tvector<nr_complex_t> (N);
+  tvector<nr_complex_t> * x = new tvector<nr_complex_t> ();
+  *x = tvector<nr_complex_t>::Zero (N,1);
+  tvector<nr_complex_t> * z = new tvector<nr_complex_t> ();
+  *z = tvector<nr_complex_t>::Zero (N,1);
 
   try_running () {
     // create LU decomposition of the A matrix
@@ -730,8 +733,10 @@ void hbsolver::createMatrixLinearY (void) {
   // voltages at the balanced nodes to the currents through these
   // nodes into the non-linear part
   int sn = sv * lnfreqs;
-  V = new tvector<nr_complex_t> (sa);
-  I = new tvector<nr_complex_t> (sa);
+  V = new tvector<nr_complex_t> ();
+  *V = tvector<nr_complex_t>::Zero(sa,1);
+  I = new tvector<nr_complex_t> ();
+  *I = tvector<nr_complex_t>::Zero(sa,1);
 
   // connect a 100 Ohm resistor (to ground) to balanced node in the MNA matrix
   for (c = 0; c < sv * lnfreqs; c++) A_(c, c) += 0.01;
@@ -871,7 +876,7 @@ void hbsolver::calcConstantCurrent (void) {
   int r, c, vsrc = 0;
 
   // collect excitation voltages
-  tvector<nr_complex_t> VC (se);
+  auto VC = tvector<nr_complex_t>::Zero(se,1);
   for (auto it = excitations.begin(); it != excitations.end(); ++it, vsrc++) {
     circuit * vs = *it;
     vs->initHB ();
@@ -884,7 +889,8 @@ void hbsolver::calcConstantCurrent (void) {
   }
 
   // compute constant current vector for balanced nodes
-  IC = new tvector<nr_complex_t> (sn);
+  IC = new tvector<nr_complex_t> ();
+  *IC = tvector<nr_complex_t>::Zero(sn,1);
   // .. | YC * VC
   // ---+---
   // .. | ..
@@ -901,7 +907,8 @@ void hbsolver::calcConstantCurrent (void) {
   *IC = expandVector (*IC, nbanodes);
 
   // compute constant current vector for sources itself
-  IS = new tvector<nr_complex_t> (se);
+  IS = new tvector<nr_complex_t> ();
+  *IS = tvector<nr_complex_t>::Zero(se,1);
   // .. | ..
   // ---+---
   // .. | YC * VC
@@ -992,16 +999,20 @@ void hbsolver::prepareNonLinear (void) {
 
   // allocate matrices and vectors
   if (FQ == NULL) {
-    FQ = new tvector<nr_complex_t> (nlsize);
+    FQ = new tvector<nr_complex_t>;
+    *FQ = tvector<nr_complex_t>::Zero(nlsize,1);
   }
   if (IG == NULL) {
-    IG = new tvector<nr_complex_t> (nlsize);
+    IG = new tvector<nr_complex_t>;
+    *IG = tvector<nr_complex_t>::Zero(nlsize,1);
   }
   if (IR == NULL) {
-    IR = new tvector<nr_complex_t> (nlsize);
+    IR = new tvector<nr_complex_t>;
+    *IR = tvector<nr_complex_t>::Zero(nlsize,1);
   }
   if (QR == NULL) {
-    QR = new tvector<nr_complex_t> (nlsize);
+    QR = new tvector<nr_complex_t> ();
+    *QR = tvector<nr_complex_t>::Zero(nlsize,1);
   }
   if (JG == NULL) {
     JG = new tmatrix<nr_complex_t> (nlsize, nlsize );
@@ -1015,30 +1026,37 @@ void hbsolver::prepareNonLinear (void) {
 
   // voltage vector in frequency and time domain
   if (VS == NULL) {
-    VS = new tvector<nr_complex_t> (nlsize);
+    VS = new tvector<nr_complex_t> ();
+    *VS = tvector<nr_complex_t>::Zero(nlsize,1);
   }
   if (vs == NULL) {
-    vs = new tvector<nr_complex_t> (nlsize);
+    vs = new tvector<nr_complex_t> ();
+    *vs = tvector<nr_complex_t>::Zero(nlsize,1);
   }
   if (VP == NULL) {
-    VP = new tvector<nr_complex_t> (nlsize);
+    VP = new tvector<nr_complex_t> ();
+    *VP = tvector<nr_complex_t>::Zero(nlsize,1);
   }
   
   // error vector
   if (FV == NULL) {
-    FV = new tvector<nr_complex_t> (nlsize);
+    FV = new tvector<nr_complex_t> ();
+    *FV = tvector<nr_complex_t>::Zero(nlsize,1);
   }
   // right hand side vector
   if (RH == NULL) {
-    RH = new tvector<nr_complex_t> (nlsize);
+    RH = new tvector<nr_complex_t> ();
+    *RH = tvector<nr_complex_t>::Zero(nlsize,1);
   }
 
   // linear and non-linear current vector
   if (IL == NULL) {
-    IL = new tvector<nr_complex_t> (nlsize);
+    IL = new tvector<nr_complex_t> ();
+    *IL = tvector<nr_complex_t>::Zero(nlsize,1);
   }
   if (IN == NULL) {
-    IN = new tvector<nr_complex_t> (nlsize);
+    IN = new tvector<nr_complex_t> ();
+    *IN = tvector<nr_complex_t>::Zero(nlsize,1);
   }
   
   // assign nodes
@@ -1141,7 +1159,7 @@ void hbsolver::MatrixFFT (tmatrix<nr_complex_t> * M) {
   // for each non-linear node block
   for (nc = c = 0; c < nbanodes; c++, nc += nlfreqs) {
     for (nr = r = 0; r < nbanodes; r++, nr += nlfreqs) {
-      tvector<nr_complex_t> V (nlfreqs);
+      auto V = tvector<nr_complex_t>::Zero(nlfreqs,1);
       int fr, fc, fi;
       // transform the sub-diagonal only
       for (fc = 0; fc < nlfreqs; fc++) V (fc) = (*M) (nr + fc, nc + fc);
@@ -1220,7 +1238,7 @@ void hbsolver::calcJacobian (void) {
    make it a real valued signal in the time domain. */
 tvector<nr_complex_t> hbsolver::expandVector (tvector<nr_complex_t> V,
 					      int nodes) {
-  tvector<nr_complex_t> res (nodes * nlfreqs);
+  auto res = tvector<nr_complex_t>::Zero(nodes * nlfreqs,1);
   int r, ff, rf, rt;
   for (r = 0; r < nodes; r++) {
     rt = r * nlfreqs;
@@ -1349,11 +1367,14 @@ void hbsolver::finalSolution (void) {
   int N = nnanodes * lnfreqs;
 
   // right hand side vector
-  tvector<nr_complex_t> * I = new tvector<nr_complex_t> (S);
+  tvector<nr_complex_t> * I = new tvector<nr_complex_t> ();
+  *I = tvector<nr_complex_t>::Zero(S,1);
   // temporary solution
-  tvector<nr_complex_t> * V = new tvector<nr_complex_t> (S);
+  tvector<nr_complex_t> * V = new tvector<nr_complex_t> ();
+  *V = tvector<nr_complex_t>::Zero(S,1);
   // final solution
-  x = new tvector<nr_complex_t> (N);
+  x = new tvector<nr_complex_t> ();
+  *x = tvector<nr_complex_t>::Zero(N,1);
 
   // fill in missing MNA entries
   fillMatrixLinearExtended (NA, I);
