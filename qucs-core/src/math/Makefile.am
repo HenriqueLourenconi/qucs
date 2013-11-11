@@ -32,7 +32,7 @@ noinst_HEADERS = complex.h fspecial.h real.h matrix.h tmatrix.h tvector.h
 noinst_LTLIBRARIES = libqucsmath.la
 
 libqucsmath_la_SOURCES = complex.cpp fspecial.cpp real.cpp \
-  cbesselj.cpp
+  cbesselj.cpp matrix.cpp
 
 noinst_TEMPLATES = tmatrix.cpp
 
