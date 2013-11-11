@@ -10,7 +10,6 @@ AC_CONFIG_AUX_DIR([build-aux])
 LT_PREREQ([2.2.2])
 AM_PROG_AR
 LT_INIT([disable-static dlopen win32-dll])
-AC_CONFIG_MACRO_DIR([m4])
 
 AC_CONFIG_SRCDIR([src/circuit.cpp])
 
@@ -262,7 +261,7 @@ AC_CHECK_FUNCS([floor pow exp sqrt log10 log cos sin acos asin tan atan sinh \
 		asinh strdup strerror strchr])
 
 # check for package
-PKG_CHECK_MODULES([EIGEN3],[eigen3])
+PKG_CHECK_MODULES([EIGEN3],[eigen3 >= 3.2])
 
 dnl Checks for complex classes and functions.
 AX_CXX_NAMESPACES
