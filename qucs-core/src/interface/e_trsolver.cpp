@@ -481,7 +481,7 @@ int e_trsolver::stepsolve_sync(nr_double_t synctime)
     if (error) return -1;
 
     // check whether Jacobian matrix is still non-singular
-    if (!A->isFinite ())
+    if (!A->allFinite ())
     {
 //        messagefcn (LOG_ERROR, "ERROR: %s: Jacobian singular at t = %.3e, "
 //                  "aborting %s analysis\n", getName (), (double) current,
@@ -716,7 +716,7 @@ int e_trsolver::stepsolve_async(nr_double_t steptime)
         if (rejected) continue;
 
         // check whether Jacobian matrix is still non-singular
-        if (!A->isFinite ())
+        if (!A->allFinite ())
         {
             messagefcn (LOG_ERROR, "ERROR: %s: Jacobian singular at t = %.3e, "
                       "aborting %s analysis\n", getName (), (double) current,

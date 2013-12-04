@@ -325,7 +325,7 @@ int trsolver::solve (void)
             if (rejected) continue;
 
             // check whether Jacobian matrix is still non-singular
-            if (!A->isFinite ())
+            if (!A->allFinite ())
             {
                 logprint (LOG_ERROR, "ERROR: %s: Jacobian singular at t = %.3e, "
                           "aborting %s analysis\n", getName (), (double) current,
