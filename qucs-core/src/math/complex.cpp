@@ -41,7 +41,6 @@
 using namespace fspecial;
 
 
-
 #ifndef HAVE_CXX_COMPLEX_POLAR_COMPLEX
 /*!\brief Extension of polar construction to complex
    \param[in] a Magnitude
@@ -56,6 +55,7 @@ nr_complex_t polar (const nr_complex_t a, const nr_complex_t p) {
 #endif
 
 #ifndef HAVE_CXX_COMPLEX_COS 
+namespace std {
 /*!\brief Compute complex cosinus
 
    \param[in] z complex angle
@@ -66,9 +66,11 @@ nr_complex_t cos (const nr_complex_t z) {
   nr_double_t i = imag (z);
   return (polar (exp (-i), r) + polar (exp (i), -r)) / 2.0;
 }
+}
 #endif
 
 #ifndef HAVE_CXX_COMPLEX_ACOS
+namespace std {
 /*!\brief Compute complex arc cosinus
 
    \param[in] z complex arc
@@ -85,9 +87,11 @@ nr_complex_t acos (const nr_complex_t z) {
   return nr_complex_t (0, -1.0) * log (z + y);
 #endif
 }
+}
 #endif
 
 #ifndef HAVE_CXX_COMPLEX_COSH
+namespace std {
 /*!\brief Compute complex hyperbolic cosinus
 
    \param[in] z complex angle
@@ -98,9 +102,11 @@ nr_complex_t cosh (const nr_complex_t z) {
   nr_double_t i = imag (z);
   return (polar (exp (r), i) + polar (exp (-r), -i)) / 2.0;
 }
+}
 #endif
 
 #ifndef HAVE_CXX_COMPLEX_ACOSH
+namespace std {
 /*!\brief Compute complex argument hyperbolic cosinus
 
    \param[in] z complex arc
@@ -112,6 +118,7 @@ nr_complex_t acosh (const nr_complex_t z) {
 #endif
 
 #ifndef HAVE_CXX_COMPLEX_EXP
+namespace std {
 /*!\brief Compute complex exponential
 
    \param[in] z complex number
@@ -120,6 +127,7 @@ nr_complex_t acosh (const nr_complex_t z) {
 nr_complex_t exp (const nr_complex_t z) {
   nr_double_t mag = exp (real (z));
   return nr_complex_t (mag * cos (imag (z)), mag * sin (imag (z)));
+}
 }
 #endif
 
@@ -135,6 +143,7 @@ nr_complex_t limexp (const nr_complex_t z) {
 }
 
 #ifndef HAVE_CXX_COMPLEX_LOG 
+namespace std {
 /*!\brief Compute principal value of natural logarithm of z
 
    \param[in] z complex number
@@ -144,9 +153,11 @@ nr_complex_t log (const nr_complex_t z) {
   nr_double_t phi = arg (z);
   return nr_complex_t (log (abs (z)), phi);
 }
+}
 #endif 
 
 #ifndef HAVE_CXX_COMPLEX_LOG10 
+namespace std {
 /*!\brief Compute principal value of decimal logarithm of z
 
    \param[in] z complex number
@@ -155,6 +166,7 @@ nr_complex_t log (const nr_complex_t z) {
 nr_complex_t log10 (const nr_complex_t z) {
   nr_double_t phi = arg (z);
   return nr_complex_t (log10 (abs (z)), phi * M_LOG10E);
+}
 }
 #endif
 
@@ -171,6 +183,7 @@ nr_complex_t log2 (const nr_complex_t z) {
 #endif
 
 #ifndef HAVE_CXX_COMPLEX_POW
+namespace std {
 /*!\brief Compute power function with real exponent
 
    \param[in] z complex mantisse
@@ -200,9 +213,11 @@ nr_complex_t pow (const nr_double_t d, const nr_complex_t z) {
 nr_complex_t pow (const nr_complex_t z1, const nr_complex_t z2) {
   return exp (z2 * log (z1));
 }
+}
 #endif
 
 #ifndef HAVE_CXX_COMPLEX_SIN 
+ namespace std {
 /*!\brief Compute complex sinus
 
    \param[in] z complex angle
@@ -213,9 +228,11 @@ nr_complex_t sin (const nr_complex_t z) {
   nr_double_t i = imag (z);
   return (polar (exp (-i), r - M_PI_2) - polar (exp (i), -r - M_PI_2)) / 2.0;
 }
+}
 #endif
 
 #ifndef HAVE_CXX_COMPLEX_ASIN
+  namespace std {
 /*!\brief Compute complex arc sinus
 
    \param[in] z complex arc
@@ -226,9 +243,11 @@ nr_complex_t asin (const nr_complex_t z) {
   nr_double_t i = imag (z);
   return nr_complex_t (0.0, -1.0) * log (nr_complex_t (-i, r) + sqrt (1.0 - z * z));
 }
+  }
 #endif
 
 #ifndef HAVE_CXX_COMPLEX_SINH
+namespace std {
 /*!\brief Compute complex hyperbolic sinus
 
    \param[in] z complex angle
@@ -239,9 +258,11 @@ nr_complex_t sinh (const nr_complex_t z) {
   nr_double_t i = imag (z);
   return (polar (exp (r), i) - polar (exp (-r), -i)) / 2.0;
 }
+}
 #endif
 
 #ifndef HAVE_CXX_COMPLEX_ASINH
+namespace std {
 /*!\brief Compute complex argument hyperbolic sinus
 
    \param[in] z complex arc
@@ -250,9 +271,11 @@ nr_complex_t sinh (const nr_complex_t z) {
 nr_complex_t asinh (const nr_complex_t z) {
   return log (z + sqrt (z * z + 1.0));
 }
+}
 #endif 
 
 #ifndef HAVE_CXX_COMPLEX_SQRT
+namespace std {
 /*!\brief Compute principal value of square root
 
     Compute the square root of a given complex number (except negative
@@ -294,9 +317,11 @@ nr_complex_t sqrt (const nr_complex_t z) {
   }
 #endif
 }
+}
 #endif
 
 #ifndef HAVE_CXX_COMPLEX_TAN
+namespace std {
 /*!\brief Compute complex tangent
 
    \param[in] z complex angle
@@ -307,9 +332,11 @@ nr_complex_t tan (const nr_complex_t z) {
   nr_double_t i = 2.0 * imag (z);
   return nr_complex_t (0.0, -1.0) + nr_complex_t (0.0, 2.0) / (polar (exp (-i), r) + 1.0);
 }
+}
 #endif
 
 #ifndef HAVE_CXX_COMPLEX_ATAN
+namespace std {
 /*!\brief Compute complex arc tangent
 
    \param[in] z complex arc
@@ -317,6 +344,7 @@ nr_complex_t tan (const nr_complex_t z) {
 */
 nr_complex_t atan (const nr_complex_t z) {
   return nr_complex_t (0.0, -0.5) * log (nr_complex_t (0, 2) / (z + nr_complex_t (0, 1)) - 1.0);
+}
 }
 #endif
 
@@ -330,12 +358,13 @@ nr_complex_t atan (const nr_complex_t z) {
    \return arc tangent of z
 */
 nr_complex_t atan2 (const nr_complex_t y, const nr_complex_t x) {
-  nr_complex_t a = std::tr1::atan (y / x);
+  nr_complex_t a = std::atan (y / x);
   return real (x) > 0.0 ? a : -a;
 }
 #endif
 
 #ifndef HAVE_CXX_COMPLEX_TANH
+namespace std {
 /*!\brief Compute complex hyperbolic tangent
 
    \param[in] z complex angle
@@ -346,9 +375,11 @@ nr_complex_t tanh (const nr_complex_t z) {
   nr_double_t i = 2.0 * imag (z);
   return 1.0 - 2.0 / (polar (exp (r), i) + 1.0);
 }
+}
 #endif
 
 #ifndef HAVE_CXX_COMPLEX_ATANH
+namespace std {
 /*!\brief Compute complex argument hyperbolic tangent
 
    \param[in] z complex arc
@@ -356,6 +387,7 @@ nr_complex_t tanh (const nr_complex_t z) {
 */
 nr_complex_t atanh (const nr_complex_t z) {
   return 0.5 * log ( 2.0 / (1.0 - z) - 1.0);
+}
 }
 #endif
 
@@ -367,7 +399,7 @@ nr_complex_t atanh (const nr_complex_t z) {
 nr_complex_t cot (const nr_complex_t z) {
   nr_double_t r = 2.0 * real (z);
   nr_double_t i = 2.0 * imag (z);
-  return nr_complex_t (0.0, 1.0) + nr_complex_t (0.0, 2.0) / (polar (exp (-i), r) - 1.0);
+  return nr_complex_t (0.0, 1.0) + nr_complex_t (0.0, 2.0) / (std::polar (exp (-i), r) - 1.0);
 }
 
 /*!\brief Compute complex arc cotangent
@@ -397,7 +429,7 @@ nr_complex_t asech (const nr_complex_t z) {
 nr_complex_t coth (const nr_complex_t z) {
   nr_double_t r = 2.0 * real (z);
   nr_double_t i = 2.0 * imag (z);
-  return 1.0 + 2.0 / (polar (exp (r), i) - 1.0);
+  return 1.0 + 2.0 / (std::polar (exp (r), i) - 1.0);
 }
 
 /*!\brief Compute complex argument hyperbolic cotangent
@@ -462,7 +494,8 @@ nr_complex_t rtoy (const nr_complex_t r, nr_complex_t zref) {
    \todo Better implementation z/abs(z) is not really stable
 */
 nr_complex_t signum (const nr_complex_t z) {
-  if (z == 0) return 0;
+  if (z == nr_complex_t(0)) 
+    return 0;
   return z / abs (z);
 }
 
@@ -480,7 +513,8 @@ nr_complex_t signum (const nr_complex_t z) {
    \todo Better implementation z/abs(z) is not really stable
 */
 nr_complex_t sign (const nr_complex_t z) {
-  if (z == 0) return nr_complex_t (1);
+  if (z == nr_complex_t(0)) 
+    return nr_complex_t (1);
   return z / abs (z);
 }
 
@@ -673,19 +707,19 @@ bool operator<(const nr_complex_t z1, const nr_complex_t z2) {
    \todo Why not inline 
 */
 nr_complex_t operator%(const nr_complex_t z1, const nr_complex_t z2) {
-  return z1 - z2 * floor (z1 / z2);
+  return z1 - z2 * ::floor (z1 / z2);
 }
 
 /*!\brief Modulo 
    \todo Why not inline 
 */
 nr_complex_t operator%(const nr_complex_t z1, const nr_double_t r2) {
-  return z1 - r2 * floor (z1 / r2);
+  return z1 - r2 * ::floor (z1 / r2);
 }
 
 /*!\brief Modulo 
    \todo Why not inline 
 */
 nr_complex_t operator%(const nr_double_t r1, const nr_complex_t z2) {
-  return r1 - z2 * floor (r1 / z2);
+  return r1 - z2 * ::floor (r1 / z2);
 }

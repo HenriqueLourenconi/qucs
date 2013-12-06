@@ -279,6 +279,7 @@ AS_VAR_IF([ac_cv_cxx_have_complex],[yes],
 AC_CHECK_CXX_COMPLEX_FUNCS([cos cosh exp log log10 sin sinh sqrt tan tanh])
 AC_CHECK_CXX_COMPLEX_FUNCS([acos acosh asin asinh atan atanh])
 AC_CHECK_CXX_COMPLEX_FUNCS([log2 norm])
+AC_CHECK_CXX_COMPLEX_FUNCS([ceil floor fix round])
 AC_CHECK_CXX_COMPLEX_POW
 AC_CHECK_CXX_COMPLEX_ATAN2
 AC_CHECK_CXX_COMPLEX_FMOD
