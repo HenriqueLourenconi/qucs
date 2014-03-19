@@ -134,8 +134,8 @@ void relais::initTR (void)
     // make the time taken to go from fully on to fully off
     // the smallest switching time / 100, or the smallest possible
     // number, but no bogger than the max specified duration
-    nr_double_t maxduration = getPropertyDouble("MaxDuration");
-    duration = std::max ( 10*NR_TINY, maxduration );
+    nr_double_t duration = getPropertyDouble("MaxDuration");
+    duration = std::max ( 10*NR_TINY, duration );
 
     initDC ();
     deleteHistory ();
@@ -148,6 +148,9 @@ void relais::initTR (void)
 void relais::calcTR (nr_double_t t)
 {
     bool on = false;
+    nr_double_t rdiff = 0;
+    nr_double_t s_i = 0;
+    nr_double_t r_0 = 0;
     nr_double_t vt   = getPropertyDouble ("Vt");
     nr_double_t vh   = getPropertyDouble ("Vh");
     nr_double_t von  = vt + vh;
@@ -157,8 +160,8 @@ void relais::calcTR (nr_double_t t)
     nr_double_t v = real (getV (NODE_1) - getV (NODE_4));
     // make the time taken to go from fully on to fully off
     // the specified time or the smallest possible number
-    nr_double_t maxduration = getPropertyDouble("TSwitch");
-    duration = std::max ( 10*NR_TINY, maxduration );
+    nr_double_t duration = getPropertyDouble("TSwitch");
+    duration = std::max ( 10*NR_TINY, duration );
 
     // initialise the time since the last switching time to be a
     // full duration
@@ -172,32 +175,33 @@ void relais::calcTR (nr_double_t t)
     {
         // go back through the history to determine when we crossed
         // the threshold, i.e. find when v was last lower than voff if ever
-        for (int i = histsize-1; i >=0; i--;)
+        for (int i = histsize-1; i >=0; i--)
         {
             nr_double_t vhist = real (getV (NODE_1, i) - getV (NODE_4, i));
             ts = getHistoryTFromIndex (i);
             if (vhist <= voff)
             {
+                tdiff = t - ts;
                 break;
             }
         }
-        tdiff = t - ts;
         on = true;
     }
     else if (v <= voff)
     {
         // go back through the history to determine when we crossed
         // the threshold, i.e. find when v was last higher than von if ever
-        for (int i = histsize-1; i >=0; i--;)
+        for (int i = histsize-1; i >=0; i--)
         {
             nr_double_t vhist = real (getV (NODE_1, i) - getV (NODE_4, i));
             ts = getHistoryTFromIndex (i);
-            if (vhist <= voff)
+            if (vhist >=von)
             {
+                tdiff = t - ts;
                 break;
             }
         }
-        tdiff = t - ts;
+
         on = false;
     }
 
