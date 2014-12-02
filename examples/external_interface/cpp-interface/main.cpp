@@ -51,11 +51,13 @@ void example_probe_and_subcircuit_access_async (void)
 
     qtr.prepare_netlist (infile);
 
+    qtr.getETR();
+
     qtr.setMessageFcn (&testmessage);
 
     double tend = 1e-3;
     double start = 0.0;
-    double delta = (tend - start) / 113.0;
+    double delta = (tend - start) / 200.0;
 
     qtr.init (start, delta/100, ETR_MODE_ASYNC);
 
@@ -129,6 +131,10 @@ void example_ecvs_async (void)
 
     qtr.prepare_netlist (infile);
 
+    // attempt get an external transient simulation pointer for use
+    qtr.getETR();
+
+    // set the output message function
     qtr.setMessageFcn (&testmessage);
 
     double tend = 1;
